@@ -1,0 +1,1501 @@
+student_id,student_name,attendance_percentage,internal_marks,assignment_score,study_hours_per_day,performance_label
+STU0001,Sakshi Singh,21.7,68.0,64.2,3.3,At Risk
+STU0002,Isha Yadav,73.8,63.4,58.3,2.6,Average
+STU0003,Diya Shah,73.2,46.7,58.0,3.2,Average
+STU0004,Harish Iyer,98.5,76.7,98.4,7.5,Good
+STU0005,Deepak Mishra,59.1,57.8,44.3,1.7,Average
+STU0006,Diya Pillai,79.5,71.0,98.9,3.9,Good
+STU0007,Ananya Iyer,54.8,26.3,10.2,1.0,At Risk
+STU0008,Bhavna Reddy,76.5,74.7,91.4,6.5,Good
+STU0009,Hina Pillai,65.0,39.5,55.5,4.2,Average
+STU0010,Nikhil Reddy,82.6,81.9,77.3,4.5,Good
+STU0011,Deepak Pillai,80.2,63.0,67.3,5.9,Good
+STU0012,Meera Sharma,56.7,52.8,50.5,4.1,Average
+STU0013,Uday Patel,94.5,79.5,62.3,8.0,Good
+STU0014,Uma Tiwari,50.2,56.0,48.5,1.0,At Risk
+STU0015,Varsha Kumar,41.3,26.1,28.7,1.2,At Risk
+STU0016,Geeta Verma,71.6,60.2,38.4,3.1,Average
+STU0017,Sakshi Bhat,56.2,60.8,51.1,2.5,Average
+STU0018,Tara Kumar,94.8,92.0,63.6,5.5,Good
+STU0019,Uma Bhat,76.4,94.9,92.5,8.0,Good
+STU0020,Diya Dubey,75.2,72.9,84.7,7.9,Good
+STU0021,Aarav Singh,81.9,69.1,78.5,4.8,Good
+STU0022,Ananya Yadav,70.6,17.9,12.7,2.5,At Risk
+STU0023,Lokesh Kumar,60.1,54.9,48.8,4.5,Average
+STU0024,Karan Malhotra,71.9,51.7,63.8,4.1,Average
+STU0025,Naina Shah,65.1,52.0,67.9,1.9,Average
+STU0026,Chetan Patel,35.9,33.4,37.5,3.3,At Risk
+STU0027,Sakshi Mishra,98.6,63.5,88.2,7.6,Good
+STU0028,Tanvi Patel,68.1,57.1,45.6,2.8,Average
+STU0029,Bhavna Mishra,79.4,96.7,76.8,4.9,Good
+STU0030,Bharat Tiwari,97.2,86.5,71.4,7.1,Good
+STU0031,Om Rao,88.0,80.2,61.0,4.7,Good
+STU0032,Chirag Patel,57.6,49.4,61.9,1.9,Average
+STU0033,Gaurav Dubey,63.2,58.4,49.8,3.3,Average
+STU0034,Jaya Sharma,66.7,54.4,50.9,1.6,Average
+STU0035,Priya Shah,22.6,8.8,38.0,0.5,At Risk
+STU0036,Lata Mishra,93.8,92.7,99.6,5.1,Good
+STU0037,Uma Kumar,72.3,44.3,56.8,3.7,Average
+STU0038,Sakshi Iyer,62.4,59.1,52.1,2.2,Average
+STU0039,Aarav Dubey,57.0,64.8,42.7,4.5,Average
+STU0040,Vivek Mishra,50.0,31.6,13.6,1.3,At Risk
+STU0041,Lata Iyer,76.1,86.1,98.1,6.0,Good
+STU0042,Jaideep Pandey,96.7,96.7,80.5,5.5,Good
+STU0043,Ritu Singh,95.3,85.4,72.3,6.1,Good
+STU0044,Irfan Pillai,79.1,74.5,90.3,5.6,Good
+STU0045,Chirag Shah,93.4,92.5,71.3,3.9,Good
+STU0046,Jaya Shah,80.8,82.5,95.2,6.3,Good
+STU0047,Hina Mehta,91.5,68.2,62.8,6.2,Good
+STU0048,Ananya Reddy,95.5,95.6,69.1,4.1,Good
+STU0049,Fiza Verma,95.0,86.7,88.1,7.0,Good
+STU0050,Priya Reddy,60.3,58.0,38.8,2.6,Average
+STU0051,Yashika Yadav,94.2,69.1,72.9,5.1,Good
+STU0052,Waqar Sharma,98.8,95.8,78.2,6.1,Good
+STU0053,Vivek Singh,73.1,41.0,56.2,2.3,Average
+STU0054,Vivek Mishra,26.5,61.3,29.8,2.6,At Risk
+STU0055,Veer Pandey,42.8,55.2,25.0,2.1,At Risk
+STU0056,Priya Patel,55.8,31.7,27.4,0.5,At Risk
+STU0057,Manish Malhotra,80.0,43.7,46.0,3.5,Average
+STU0058,Varsha Kumar,60.8,10.9,44.2,2.7,At Risk
+STU0059,Arjun Pillai,95.1,82.5,72.5,6.1,Good
+STU0060,Jaya Menon,27.8,54.9,36.7,2.8,At Risk
+STU0061,Qasim Gupta,92.7,66.1,82.7,4.3,Good
+STU0062,Sanjay Rao,67.6,51.7,42.2,4.4,Average
+STU0063,Tara Bhat,65.5,47.7,55.8,3.2,Average
+STU0064,Priya Gupta,56.7,43.1,54.7,2.4,Average
+STU0065,Geeta Singh,92.7,67.8,83.1,6.0,Good
+STU0066,Uma Rao,86.8,77.6,74.0,7.6,Good
+STU0067,Arjun Nair,64.7,60.4,42.0,4.3,Average
+STU0068,Kavita Verma,56.0,46.7,54.8,4.1,Average
+STU0069,Kavita Verma,62.5,50.8,43.0,2.6,Average
+STU0070,Uday Nair,88.1,78.2,61.0,3.5,Good
+STU0071,Hina Reddy,72.5,49.1,53.1,1.5,Average
+STU0072,Jaya Bhat,52.7,16.2,24.9,0.7,At Risk
+STU0073,Pooja Verma,77.7,58.5,58.3,2.4,Average
+STU0074,Qasim Joshi,77.9,33.0,14.1,1.5,At Risk
+STU0075,Sakshi Pillai,88.0,91.3,80.8,7.3,Good
+STU0076,Bhavna Tiwari,24.3,64.4,20.0,2.0,At Risk
+STU0077,Varsha Yadav,26.1,73.7,25.1,1.9,At Risk
+STU0078,Farhan Pillai,90.5,88.7,82.4,3.0,Good
+STU0079,Chetan Reddy,57.5,38.4,57.9,3.3,Average
+STU0080,Waqar Rao,70.0,62.4,49.5,2.1,Average
+STU0081,Zara Menon,78.3,62.9,53.1,2.5,Average
+STU0082,Jaideep Bhat,94.7,81.7,77.6,3.7,Good
+STU0083,Tara Bhat,96.7,91.5,90.8,7.2,Good
+STU0084,Yashika Shah,67.6,57.8,66.7,2.2,Average
+STU0085,Rahul Singh,87.2,87.3,65.6,3.1,Good
+STU0086,Veer Iyer,92.4,87.8,84.7,6.8,Good
+STU0087,Deepak Iyer,74.8,54.6,39.3,3.4,Average
+STU0088,Naina Gupta,78.5,45.4,48.0,3.6,Average
+STU0089,Jaya Nair,57.7,26.8,36.8,0.1,At Risk
+STU0090,Uday Patel,73.6,44.3,50.2,2.3,Average
+STU0091,Deepak Menon,63.0,51.7,42.9,4.4,Average
+STU0092,Ritu Nair,62.4,47.6,54.9,2.3,Average
+STU0093,Tanvi Rao,79.5,96.5,83.3,5.0,Good
+STU0094,Naina Kapoor,88.4,97.0,73.9,4.7,Good
+STU0095,Chetan Gupta,48.7,51.8,35.0,3.3,At Risk
+STU0096,Tara Rao,90.2,91.1,67.0,5.5,Good
+STU0097,Vivek Rao,82.5,88.9,62.7,5.9,Good
+STU0098,Arjun Malhotra,80.0,68.2,66.6,7.1,Good
+STU0099,Vivek Dubey,41.9,6.7,9.1,0.8,At Risk
+STU0100,Chetan Yadav,67.5,57.7,56.6,2.1,Average
+STU0101,Priya Verma,99.9,83.1,90.8,7.7,Good
+STU0102,Chirag Pandey,97.0,77.4,73.1,6.3,Good
+STU0103,Priya Reddy,90.5,76.0,78.5,6.7,Good
+STU0104,Yashika Shah,78.6,54.5,63.0,3.6,Average
+STU0105,Waqar Pandey,58.1,43.6,38.0,1.6,Average
+STU0106,Isha Sharma,74.3,42.6,49.5,2.5,Average
+STU0107,Harish Dubey,87.6,93.9,89.3,5.7,Good
+STU0108,Sanjay Rao,95.6,76.5,91.0,7.8,Good
+STU0109,Arjun Kumar,25.6,30.1,52.3,3.1,At Risk
+STU0110,Chirag Mishra,42.1,25.2,9.8,0.9,At Risk
+STU0111,Qasim Pillai,78.0,39.1,46.7,2.1,Average
+STU0112,Yashika Reddy,60.5,39.6,41.9,3.3,Average
+STU0113,Lata Verma,30.4,39.6,21.5,1.6,At Risk
+STU0114,Naina Kumar,99.9,76.0,77.9,6.6,Good
+STU0115,Sanjay Rao,76.0,84.5,87.1,3.1,Good
+STU0116,Yashika Pillai,57.5,62.6,62.6,3.8,Average
+STU0117,Diya Singh,74.1,40.9,67.4,2.6,Average
+STU0118,Lata Kumar,65.0,63.6,50.2,3.8,Average
+STU0119,Irfan Pillai,86.4,91.8,68.0,5.6,Good
+STU0120,Aditya Menon,57.7,6.8,30.1,0.5,At Risk
+STU0121,Qasim Yadav,38.8,38.1,16.1,0.2,At Risk
+STU0122,Nikhil Patel,81.7,92.3,72.4,5.3,Good
+STU0123,Ananya Malhotra,52.2,21.5,10.2,0.5,At Risk
+STU0124,Jaideep Bhat,40.6,35.3,35.2,1.0,At Risk
+STU0125,Irfan Reddy,97.9,75.8,83.2,6.2,Good
+STU0126,Karan Patel,79.1,76.9,98.8,4.3,Good
+STU0127,Pooja Yadav,70.7,41.9,62.7,2.2,Average
+STU0128,Uma Rao,71.8,18.1,36.2,1.2,At Risk
+STU0129,Lokesh Dubey,52.2,34.8,27.0,3.8,At Risk
+STU0130,Sakshi Kapoor,61.0,62.5,52.0,2.9,Average
+STU0131,Gaurav Joshi,69.9,60.0,49.5,1.9,Average
+STU0132,Farhan Kumar,58.6,42.1,51.0,3.3,Average
+STU0133,Chirag Rao,60.0,59.2,65.3,2.6,Average
+STU0134,Jaideep Kapoor,90.6,77.6,82.1,5.2,Good
+STU0135,Diya Singh,86.6,98.0,66.1,5.9,Good
+STU0136,Sanjay Menon,90.7,65.1,94.9,7.6,Good
+STU0137,Ritu Pillai,46.9,7.5,32.7,0.0,At Risk
+STU0138,Uma Singh,70.2,48.5,45.2,1.8,Average
+STU0139,Karan Mehta,85.6,90.0,97.4,7.6,Good
+STU0140,Sakshi Nair,52.7,6.2,14.3,1.3,At Risk
+STU0141,Isha Kapoor,83.2,81.7,63.5,4.8,Good
+STU0142,Uma Kapoor,78.2,42.4,67.0,2.1,Average
+STU0143,Priya Gupta,57.7,50.9,55.6,3.1,Average
+STU0144,Yashika Shah,26.4,10.9,37.1,1.1,At Risk
+STU0145,Meera Patel,56.0,51.4,58.7,2.3,Average
+STU0146,Kavita Kumar,45.2,68.2,39.0,1.6,At Risk
+STU0147,Nikhil Bhat,81.2,80.6,68.8,7.9,Good
+STU0148,Ananya Pillai,65.4,49.4,61.6,2.1,Average
+STU0149,Karan Sinha,78.1,80.8,61.4,7.5,Good
+STU0150,Yashika Rao,65.3,63.2,45.5,1.9,Average
+STU0151,Karan Kumar,77.3,53.4,63.0,4.5,Average
+STU0152,Om Singh,79.5,49.4,53.1,4.2,Average
+STU0153,Chirag Nair,84.3,91.5,73.6,7.7,Good
+STU0154,Aditya Kapoor,59.1,44.3,38.7,4.0,Average
+STU0155,Veer Bhat,76.7,53.7,59.5,2.6,Average
+STU0156,Irfan Iyer,85.8,71.5,84.7,6.5,Good
+STU0157,Bharat Sinha,90.0,73.1,87.8,7.3,Good
+STU0158,Chirag Kumar,72.3,59.5,42.9,1.8,Average
+STU0159,Uday Tiwari,66.4,51.0,60.7,2.3,Average
+STU0160,Chirag Rao,63.7,59.1,67.8,2.2,Average
+STU0161,Eshan Pandey,73.6,62.8,50.7,2.5,Average
+STU0162,Irfan Pillai,86.1,81.6,74.4,6.0,Good
+STU0163,Geeta Mehta,29.1,42.9,49.6,3.9,At Risk
+STU0164,Priya Sinha,91.0,95.0,78.2,5.6,Good
+STU0165,Jaideep Kumar,75.1,93.0,88.3,6.6,Good
+STU0166,Chetan Shah,58.0,57.8,53.9,2.4,Average
+STU0167,Bhavna Patel,67.1,62.2,65.2,1.8,Average
+STU0168,Irfan Kumar,56.9,7.3,26.4,1.3,At Risk
+STU0169,Tanvi Gupta,78.0,79.5,68.3,4.8,Good
+STU0170,Isha Menon,72.2,41.3,66.2,2.0,Average
+STU0171,Uma Mishra,67.0,51.1,55.0,4.3,Average
+STU0172,Vivek Shah,60.4,24.5,16.4,2.2,At Risk
+STU0173,Sakshi Singh,89.6,90.4,92.5,6.3,Good
+STU0174,Pooja Joshi,67.9,64.7,56.3,2.6,Average
+STU0175,Priya Mehta,76.9,99.5,90.9,4.0,Good
+STU0176,Rahul Kumar,70.2,44.5,49.6,1.7,Average
+STU0177,Priya Nair,71.8,55.3,50.3,3.0,Average
+STU0178,Om Mehta,58.7,60.5,54.2,4.0,Average
+STU0179,Deepak Shah,89.8,81.3,71.9,5.8,Good
+STU0180,Qasim Gupta,60.9,60.1,48.1,4.0,Average
+STU0181,Manish Sinha,76.0,66.6,78.1,7.7,Good
+STU0182,Harish Gupta,80.2,96.1,68.2,4.0,Good
+STU0183,Ritu Dubey,39.9,17.0,7.5,0.7,At Risk
+STU0184,Veer Dubey,97.7,85.7,64.7,7.7,Good
+STU0185,Varsha Sinha,100.0,63.8,99.1,5.0,Good
+STU0186,Arjun Sharma,89.6,95.0,68.2,3.6,Good
+STU0187,Deepak Verma,80.5,69.1,91.2,4.8,Good
+STU0188,Qasim Sinha,74.8,54.9,60.5,2.0,Average
+STU0189,Pooja Tiwari,53.2,35.0,39.0,0.6,At Risk
+STU0190,Lokesh Sinha,73.1,39.1,50.2,3.0,Average
+STU0191,Bharat Dubey,74.6,38.3,60.9,4.2,Average
+STU0192,Priya Sharma,83.5,66.3,97.0,7.4,Good
+STU0193,Gaurav Tiwari,29.4,34.6,15.4,0.1,At Risk
+STU0194,Jaya Nair,45.1,61.7,39.0,1.7,At Risk
+STU0195,Qasim Nair,56.0,33.4,34.1,2.6,At Risk
+STU0196,Fiza Mishra,94.2,77.3,79.2,6.1,Good
+STU0197,Sanjay Reddy,64.9,23.5,29.6,2.1,At Risk
+STU0198,Tanvi Rao,46.5,56.3,62.8,0.6,At Risk
+STU0199,Chirag Kapoor,88.8,73.6,75.9,5.2,Good
+STU0200,Bhavna Gupta,90.4,99.6,65.6,5.6,Good
+STU0201,Diya Iyer,75.8,59.7,64.0,1.7,Average
+STU0202,Fiza Rao,56.5,56.9,38.3,2.7,Average
+STU0203,Lokesh Menon,98.5,98.2,96.6,4.9,Good
+STU0204,Naina Kumar,79.6,56.0,46.6,3.3,Average
+STU0205,Uday Kapoor,37.3,19.8,9.0,0.6,At Risk
+STU0206,Uday Malhotra,80.8,96.2,75.4,5.7,Good
+STU0207,Vivek Reddy,93.4,79.2,69.0,5.3,Good
+STU0208,Geeta Pillai,76.8,42.6,39.6,3.7,Average
+STU0209,Hina Mehta,87.6,85.2,60.7,7.4,Good
+STU0210,Divya Menon,75.1,60.8,49.9,1.7,Average
+STU0211,Nikhil Rao,75.0,40.8,55.3,2.9,Average
+STU0212,Farhan Yadav,58.3,55.4,43.9,1.8,Average
+STU0213,Diya Mishra,65.8,52.5,52.3,2.7,Average
+STU0214,Harish Patel,56.5,46.0,46.9,2.5,Average
+STU0215,Bhavna Nair,49.3,69.9,28.8,3.1,At Risk
+STU0216,Zara Dubey,58.7,55.4,45.0,2.0,Average
+STU0217,Bharat Mishra,48.5,30.5,51.7,3.9,At Risk
+STU0218,Isha Menon,98.3,83.5,87.9,7.6,Good
+STU0219,Lata Malhotra,69.7,60.7,38.5,1.6,Average
+STU0220,Uday Joshi,60.1,50.7,62.0,2.0,Average
+STU0221,Isha Bhat,85.0,85.4,85.4,3.2,Good
+STU0222,Hina Rao,34.7,74.9,45.2,1.6,At Risk
+STU0223,Gaurav Nair,55.6,56.6,47.5,1.7,Average
+STU0224,Gaurav Sharma,59.8,46.4,67.2,2.7,Average
+STU0225,Deepak Reddy,75.2,63.7,38.7,4.4,Average
+STU0226,Hina Rao,75.7,59.2,46.3,4.3,Average
+STU0227,Nikhil Joshi,72.7,54.8,67.7,2.4,Average
+STU0228,Manish Pillai,29.4,24.4,29.7,0.7,At Risk
+STU0229,Bhavna Verma,64.7,16.5,36.3,1.1,At Risk
+STU0230,Sakshi Bhat,99.6,82.0,66.9,4.4,Good
+STU0231,Naina Tiwari,75.8,59.8,44.7,2.2,Average
+STU0232,Sanjay Bhat,80.7,64.9,71.6,3.8,Good
+STU0233,Sakshi Mehta,63.8,46.5,52.7,2.5,Average
+STU0234,Aarav Patel,77.3,53.6,54.9,3.0,Average
+STU0235,Chetan Kumar,70.2,62.7,42.7,3.8,Average
+STU0236,Pooja Malhotra,83.5,93.0,63.2,7.5,Good
+STU0237,Yashika Reddy,61.2,64.7,49.7,3.7,Average
+STU0238,Yashika Verma,65.7,45.4,61.1,2.2,Average
+STU0239,Aditya Verma,77.6,97.6,87.5,3.3,Good
+STU0240,Lata Mehta,96.8,99.4,90.7,5.1,Good
+STU0241,Kavita Pillai,66.2,48.9,67.5,2.4,Average
+STU0242,Karan Nair,90.5,86.7,66.1,3.3,Good
+STU0243,Chirag Reddy,75.9,64.3,67.3,1.7,Average
+STU0244,Hina Rao,73.1,63.1,50.9,1.9,Average
+STU0245,Karan Yadav,90.3,67.3,71.7,4.8,Good
+STU0246,Om Pandey,67.4,45.7,60.0,1.6,Average
+STU0247,Om Patel,61.4,41.7,45.8,2.7,Average
+STU0248,Geeta Patel,39.6,11.5,7.8,0.0,At Risk
+STU0249,Aditya Pillai,72.1,43.7,45.2,2.3,Average
+STU0250,Varsha Mehta,89.7,90.3,77.3,3.6,Good
+STU0251,Yashika Kumar,65.1,61.9,64.9,4.2,Average
+STU0252,Kavita Dubey,98.8,83.8,85.3,5.2,Good
+STU0253,Hina Reddy,72.6,33.5,27.4,2.8,At Risk
+STU0254,Hina Verma,37.0,60.6,23.4,1.5,At Risk
+STU0255,Arjun Verma,96.7,83.7,61.2,7.7,Good
+STU0256,Geeta Kapoor,57.9,34.9,43.1,2.2,At Risk
+STU0257,Varsha Bhat,71.1,51.8,41.6,2.4,Average
+STU0258,Irfan Rao,72.3,55.9,39.2,2.6,Average
+STU0259,Harish Dubey,63.5,55.5,40.1,4.2,Average
+STU0260,Hina Kumar,95.8,77.1,86.7,4.0,Good
+STU0261,Uday Dubey,80.1,95.4,95.2,7.4,Good
+STU0262,Uday Gupta,58.9,60.3,39.3,2.8,Average
+STU0263,Aditya Dubey,73.2,19.7,31.9,1.6,At Risk
+STU0264,Waqar Nair,29.4,74.3,26.3,1.2,At Risk
+STU0265,Manish Menon,62.4,40.1,43.1,1.9,Average
+STU0266,Hina Shah,20.7,24.1,27.7,1.0,At Risk
+STU0267,Jaya Bhat,80.1,81.9,71.5,7.0,Good
+STU0268,Uma Sinha,73.9,62.2,40.5,2.7,Average
+STU0269,Tanvi Bhat,83.2,67.7,72.2,7.4,Good
+STU0270,Ananya Pillai,76.9,60.4,44.7,2.7,Average
+STU0271,Varsha Pandey,57.7,64.1,43.2,3.4,Average
+STU0272,Farhan Iyer,42.5,7.1,20.0,0.9,At Risk
+STU0273,Manish Nair,63.5,51.8,56.5,4.2,Average
+STU0274,Veer Kapoor,63.2,55.9,60.6,3.9,Average
+STU0275,Priya Sharma,33.6,67.8,28.5,2.9,At Risk
+STU0276,Naina Bhat,62.1,25.9,48.0,2.0,At Risk
+STU0277,Pooja Tiwari,76.7,56.1,51.4,3.0,Average
+STU0278,Manish Sinha,71.8,25.0,40.5,0.6,At Risk
+STU0279,Meera Malhotra,76.2,18.4,41.2,1.7,At Risk
+STU0280,Bhavna Sinha,57.7,59.1,65.3,2.6,Average
+STU0281,Fiza Gupta,29.2,6.6,18.6,0.2,At Risk
+STU0282,Irfan Tiwari,74.8,56.3,58.4,4.3,Average
+STU0283,Veer Dubey,70.3,56.3,47.5,4.0,Average
+STU0284,Zara Kumar,84.4,65.2,91.1,5.8,Good
+STU0285,Sanjay Mishra,94.0,83.3,90.8,5.5,Good
+STU0286,Arjun Sinha,56.9,40.9,63.1,2.2,Average
+STU0287,Tara Patel,79.0,79.5,60.4,4.2,Good
+STU0288,Kavita Sharma,76.6,81.5,92.3,5.3,Good
+STU0289,Diya Menon,68.8,49.8,63.2,2.0,Average
+STU0290,Bharat Kumar,71.8,60.9,47.7,3.5,Average
+STU0291,Bharat Kapoor,65.6,24.6,35.5,1.1,At Risk
+STU0292,Lokesh Iyer,76.6,99.6,72.9,7.0,Good
+STU0293,Hina Dubey,60.1,58.8,50.8,3.2,Average
+STU0294,Fiza Malhotra,96.5,94.2,96.8,4.3,Good
+STU0295,Veer Verma,78.6,46.4,63.8,1.9,Average
+STU0296,Uma Kumar,24.5,16.6,18.1,1.3,At Risk
+STU0297,Irfan Joshi,22.8,29.9,37.4,0.3,At Risk
+STU0298,Karan Menon,38.8,33.1,37.8,0.2,At Risk
+STU0299,Ritu Bhat,71.7,49.8,66.6,3.7,Average
+STU0300,Irfan Reddy,58.9,13.5,18.2,1.7,At Risk
+STU0301,Uday Gupta,77.9,49.0,42.3,3.6,Average
+STU0302,Eshan Mehta,75.6,48.4,51.8,2.4,Average
+STU0303,Varsha Mehta,79.0,56.0,66.0,2.3,Average
+STU0304,Vivek Pandey,43.7,47.2,57.0,2.8,At Risk
+STU0305,Veer Pandey,59.5,59.5,58.3,3.1,Average
+STU0306,Qasim Kapoor,82.9,81.3,61.7,3.7,Good
+STU0307,Pooja Dubey,76.1,50.0,59.3,3.7,Average
+STU0308,Fiza Joshi,76.8,44.4,44.3,3.7,Average
+STU0309,Nikhil Yadav,31.6,17.2,12.6,0.0,At Risk
+STU0310,Karan Nair,95.6,66.9,73.4,6.7,Good
+STU0311,Meera Nair,59.2,47.0,66.2,2.5,Average
+STU0312,Sakshi Kapoor,96.7,68.7,87.7,7.2,Good
+STU0313,Lokesh Kapoor,79.6,56.5,45.3,3.9,Average
+STU0314,Uma Bhat,34.7,50.6,29.4,1.8,At Risk
+STU0315,Uday Bhat,51.2,39.0,12.0,0.9,At Risk
+STU0316,Vivek Mehta,81.9,65.0,63.4,7.5,Good
+STU0317,Veer Yadav,75.9,79.9,82.6,3.3,Good
+STU0318,Sakshi Patel,76.6,11.5,12.7,2.7,At Risk
+STU0319,Lata Pandey,68.7,31.8,44.4,2.4,At Risk
+STU0320,Jaya Reddy,29.0,57.1,33.3,3.0,At Risk
+STU0321,Aditya Pillai,79.5,87.9,67.3,5.6,Good
+STU0322,Harish Nair,76.7,81.7,66.0,6.7,Good
+STU0323,Arjun Nair,77.6,60.1,60.7,1.7,Average
+STU0324,Uma Singh,71.5,49.9,57.4,1.7,Average
+STU0325,Vivek Rao,65.0,47.1,41.8,2.7,Average
+STU0326,Qasim Yadav,34.7,74.1,23.0,2.3,At Risk
+STU0327,Waqar Bhat,67.7,51.5,39.5,1.6,Average
+STU0328,Lokesh Joshi,85.0,67.8,99.7,7.6,Good
+STU0329,Jaya Yadav,75.3,63.6,40.7,2.0,Average
+STU0330,Karan Kapoor,79.2,68.4,61.5,6.7,Good
+STU0331,Rahul Kumar,79.8,74.3,69.1,4.8,Good
+STU0332,Divya Dubey,43.0,44.6,50.9,0.7,At Risk
+STU0333,Waqar Sinha,29.5,32.0,28.3,0.9,At Risk
+STU0334,Nikhil Mishra,58.4,64.4,66.9,2.0,Average
+STU0335,Bhavna Pandey,50.5,27.9,21.9,0.4,At Risk
+STU0336,Irfan Mishra,90.5,75.6,64.5,6.4,Good
+STU0337,Priya Mishra,33.9,14.0,11.5,0.2,At Risk
+STU0338,Bhavna Patel,83.2,78.5,63.5,4.1,Good
+STU0339,Bharat Menon,95.6,75.2,87.1,5.8,Good
+STU0340,Uma Bhat,24.0,13.9,22.1,0.9,At Risk
+STU0341,Divya Pandey,65.0,31.7,46.2,0.5,At Risk
+STU0342,Geeta Sharma,62.8,51.6,61.9,3.7,Average
+STU0343,Karan Gupta,61.8,44.7,66.3,2.4,Average
+STU0344,Bharat Tiwari,75.5,45.6,40.1,1.7,Average
+STU0345,Fiza Bhat,77.9,86.7,89.8,5.9,Good
+STU0346,Qasim Joshi,67.2,41.6,45.8,2.8,Average
+STU0347,Sakshi Menon,56.0,54.1,64.1,4.2,Average
+STU0348,Sakshi Tiwari,77.2,90.7,65.1,7.1,Good
+STU0349,Bhavna Singh,75.5,39.1,64.7,4.5,Average
+STU0350,Qasim Sinha,27.0,40.8,26.6,0.2,At Risk
+STU0351,Meera Mehta,62.4,55.9,67.0,1.7,Average
+STU0352,Waqar Malhotra,86.4,94.1,63.9,5.4,Good
+STU0353,Arjun Gupta,75.3,79.8,62.3,3.6,Good
+STU0354,Bharat Gupta,45.2,10.3,38.5,2.2,At Risk
+STU0355,Arjun Reddy,39.8,44.1,30.0,0.2,At Risk
+STU0356,Gaurav Gupta,75.9,53.6,57.4,2.9,Average
+STU0357,Waqar Nair,90.5,65.8,63.4,6.5,Good
+STU0358,Arjun Sharma,62.3,52.2,58.9,4.2,Average
+STU0359,Tanvi Sinha,66.5,47.5,40.8,3.0,Average
+STU0360,Naina Patel,91.3,70.5,88.5,4.2,Good
+STU0361,Varsha Nair,98.5,68.9,62.7,6.7,Good
+STU0362,Eshan Tiwari,88.3,71.2,70.8,4.9,Good
+STU0363,Jaya Shah,99.6,77.6,95.8,4.1,Good
+STU0364,Gaurav Kumar,26.5,71.3,24.6,2.3,At Risk
+STU0365,Hina Rao,61.4,33.5,38.3,0.7,At Risk
+STU0366,Rahul Joshi,68.3,38.9,52.3,2.7,Average
+STU0367,Farhan Menon,57.5,39.2,43.6,3.1,Average
+STU0368,Isha Malhotra,89.4,94.0,65.6,7.0,Good
+STU0369,Eshan Tiwari,31.7,62.8,49.4,3.5,At Risk
+STU0370,Pooja Kapoor,36.5,30.2,56.2,3.2,At Risk
+STU0371,Jaideep Sharma,71.7,59.6,66.0,1.6,Average
+STU0372,Waqar Menon,38.4,38.5,16.9,1.2,At Risk
+STU0373,Sakshi Sinha,68.5,30.5,20.0,2.1,At Risk
+STU0374,Sanjay Joshi,96.3,95.0,88.3,7.2,Good
+STU0375,Jaideep Dubey,34.1,41.8,24.3,0.8,At Risk
+STU0376,Priya Reddy,95.2,96.1,72.7,3.6,Good
+STU0377,Chetan Shah,37.0,61.1,51.4,2.8,At Risk
+STU0378,Uday Singh,26.0,17.4,14.6,1.2,At Risk
+STU0379,Aditya Pandey,57.9,61.8,50.4,2.7,Average
+STU0380,Divya Gupta,98.9,62.7,67.8,3.0,Good
+STU0381,Geeta Bhat,93.1,96.1,95.5,6.9,Good
+STU0382,Uday Mishra,70.7,49.2,43.0,4.5,Average
+STU0383,Aarav Yadav,62.0,64.0,38.3,3.6,Average
+STU0384,Zara Mishra,87.8,70.6,85.8,3.9,Good
+STU0385,Diya Yadav,46.5,10.3,27.8,1.0,At Risk
+STU0386,Varsha Nair,71.9,48.7,42.0,2.0,Average
+STU0387,Manish Malhotra,59.7,43.1,43.5,1.7,Average
+STU0388,Lata Sharma,31.5,30.9,25.6,1.9,At Risk
+STU0389,Pooja Tiwari,75.3,45.9,51.4,3.7,Average
+STU0390,Yashika Kapoor,65.2,61.8,57.5,4.2,Average
+STU0391,Nikhil Verma,89.9,76.5,98.8,7.2,Good
+STU0392,Ritu Patel,47.3,39.5,10.9,1.1,At Risk
+STU0393,Eshan Nair,65.8,59.1,52.5,3.9,Average
+STU0394,Isha Reddy,31.6,37.9,6.9,0.6,At Risk
+STU0395,Sanjay Shah,59.0,50.7,54.6,3.2,Average
+STU0396,Uma Nair,70.7,40.0,41.4,1.6,Average
+STU0397,Tara Patel,22.3,72.3,42.8,1.9,At Risk
+STU0398,Priya Nair,66.2,50.4,40.3,3.5,Average
+STU0399,Yashika Dubey,70.4,62.1,40.4,2.5,Average
+STU0400,Meera Mishra,56.7,38.5,62.8,3.1,Average
+STU0401,Geeta Bhat,58.7,64.6,44.3,1.9,Average
+STU0402,Harish Rao,78.7,77.8,63.4,8.0,Good
+STU0403,Waqar Dubey,60.5,5.7,22.0,1.8,At Risk
+STU0404,Yashika Iyer,57.5,38.4,66.9,2.6,Average
+STU0405,Tara Mehta,90.0,81.6,96.8,5.5,Good
+STU0406,Fiza Mehta,38.8,20.5,25.9,1.0,At Risk
+STU0407,Ritu Joshi,95.2,91.0,91.9,5.2,Good
+STU0408,Nikhil Pandey,71.6,56.3,66.0,4.5,Average
+STU0409,Naina Singh,59.1,56.7,58.2,4.4,Average
+STU0410,Irfan Rao,80.7,99.9,99.0,6.3,Good
+STU0411,Irfan Kapoor,61.2,61.2,43.1,4.1,Average
+STU0412,Yashika Singh,20.0,53.0,22.1,1.5,At Risk
+STU0413,Lata Patel,82.7,88.8,68.1,6.4,Good
+STU0414,Bhavna Mehta,54.5,33.6,25.1,0.4,At Risk
+STU0415,Hina Joshi,62.4,38.0,46.2,2.2,Average
+STU0416,Lata Mehta,80.8,87.5,60.8,3.5,Good
+STU0417,Harish Gupta,68.5,64.8,63.7,1.8,Average
+STU0418,Uday Shah,70.6,59.8,40.1,2.5,Average
+STU0419,Diya Patel,73.5,52.8,64.5,3.2,Average
+STU0420,Sanjay Joshi,61.1,57.4,61.3,3.5,Average
+STU0421,Uma Sinha,69.3,61.3,42.2,3.2,Average
+STU0422,Gaurav Singh,67.3,43.2,51.9,2.2,Average
+STU0423,Hina Rao,46.6,32.2,18.5,0.0,At Risk
+STU0424,Bhavna Rao,77.5,67.8,69.8,3.8,Good
+STU0425,Geeta Shah,59.9,44.4,47.0,3.4,Average
+STU0426,Bharat Rao,97.2,98.3,94.5,7.0,Good
+STU0427,Lata Verma,99.3,98.8,90.0,3.7,Good
+STU0428,Karan Rao,69.5,63.3,58.2,2.9,Average
+STU0429,Sanjay Nair,81.1,99.5,65.7,5.5,Good
+STU0430,Veer Sharma,59.1,59.1,41.7,3.4,Average
+STU0431,Aditya Yadav,90.4,69.1,74.2,6.9,Good
+STU0432,Aarav Malhotra,66.3,63.5,58.3,2.4,Average
+STU0433,Lokesh Sinha,67.3,46.9,41.2,4.4,Average
+STU0434,Chirag Verma,48.0,68.6,61.2,2.0,At Risk
+STU0435,Chetan Pillai,62.8,55.2,48.7,1.9,Average
+STU0436,Tara Singh,21.2,21.9,7.8,0.8,At Risk
+STU0437,Jaya Verma,63.9,56.4,57.9,3.6,Average
+STU0438,Chirag Bhat,81.5,76.4,83.6,4.3,Good
+STU0439,Arjun Nair,92.2,87.7,68.6,6.3,Good
+STU0440,Bharat Gupta,95.2,87.0,87.7,7.2,Good
+STU0441,Geeta Tiwari,25.4,18.9,19.9,1.0,At Risk
+STU0442,Veer Tiwari,91.6,80.0,93.8,7.0,Good
+STU0443,Bharat Pillai,65.9,45.5,54.7,2.5,Average
+STU0444,Zara Rao,34.3,43.6,7.9,1.0,At Risk
+STU0445,Zara Reddy,71.8,56.8,48.9,4.1,Average
+STU0446,Deepak Pandey,64.4,21.1,17.8,2.6,At Risk
+STU0447,Ritu Mehta,80.7,78.2,92.7,7.3,Good
+STU0448,Geeta Tiwari,51.8,16.1,23.4,2.9,At Risk
+STU0449,Vivek Patel,56.0,24.9,17.6,0.2,At Risk
+STU0450,Jaideep Mehta,62.1,45.5,50.1,4.5,Average
+STU0451,Aditya Shah,60.9,51.3,65.4,2.1,Average
+STU0452,Geeta Malhotra,85.5,90.0,69.6,3.6,Good
+STU0453,Meera Sharma,75.9,41.2,39.4,2.8,Average
+STU0454,Ananya Nair,78.4,46.2,61.5,3.8,Average
+STU0455,Eshan Pandey,76.7,81.7,62.7,7.0,Good
+STU0456,Veer Mehta,66.1,39.3,62.6,4.0,Average
+STU0457,Chetan Mehta,46.7,16.5,48.3,1.8,At Risk
+STU0458,Zara Mishra,74.0,42.2,52.6,2.8,Average
+STU0459,Nikhil Rao,85.6,96.4,64.4,5.5,Good
+STU0460,Vivek Kumar,83.0,93.5,61.5,6.0,Good
+STU0461,Rahul Joshi,70.4,39.1,47.8,2.9,Average
+STU0462,Veer Patel,78.7,61.9,60.2,2.3,Average
+STU0463,Arjun Pandey,70.6,53.7,60.3,3.5,Average
+STU0464,Bharat Dubey,96.8,62.8,95.0,5.6,Good
+STU0465,Ananya Mishra,72.6,58.0,58.3,2.3,Average
+STU0466,Lokesh Singh,75.5,44.6,50.6,4.0,Average
+STU0467,Divya Dubey,58.6,58.5,53.0,4.2,Average
+STU0468,Arjun Rao,93.3,70.2,61.2,4.3,Good
+STU0469,Naina Pandey,75.2,81.4,76.7,4.1,Good
+STU0470,Uma Verma,87.1,71.8,71.4,4.5,Good
+STU0471,Nikhil Malhotra,65.4,63.9,54.2,3.3,Average
+STU0472,Arjun Reddy,84.6,87.8,68.7,7.7,Good
+STU0473,Diya Mishra,94.4,79.2,81.0,5.2,Good
+STU0474,Jaya Joshi,73.2,47.3,58.1,3.9,Average
+STU0475,Bhavna Kumar,47.0,31.6,46.2,4.0,At Risk
+STU0476,Hina Nair,28.0,37.4,9.8,0.5,At Risk
+STU0477,Meera Malhotra,56.2,23.6,24.8,2.0,At Risk
+STU0478,Lata Menon,89.3,84.3,67.4,4.8,Good
+STU0479,Lata Dubey,35.7,74.1,41.8,3.5,At Risk
+STU0480,Sanjay Menon,58.7,46.0,40.7,4.2,Average
+STU0481,Nikhil Nair,77.8,54.5,54.4,2.2,Average
+STU0482,Harish Pandey,78.2,49.3,39.5,1.6,Average
+STU0483,Irfan Mishra,77.0,53.1,66.8,1.6,Average
+STU0484,Bharat Nair,73.4,39.4,39.5,2.7,Average
+STU0485,Rahul Verma,91.6,81.9,74.4,7.4,Good
+STU0486,Karan Sinha,59.2,62.9,62.6,2.6,Average
+STU0487,Waqar Gupta,84.0,73.2,92.4,7.1,Good
+STU0488,Priya Pandey,98.5,96.0,83.9,7.6,Good
+STU0489,Chetan Mehta,62.9,40.6,43.3,4.5,Average
+STU0490,Gaurav Verma,67.8,47.4,49.2,3.4,Average
+STU0491,Vivek Tiwari,72.0,57.3,56.2,1.8,Average
+STU0492,Ritu Reddy,75.7,84.3,97.6,5.9,Good
+STU0493,Irfan Menon,72.1,54.0,60.6,2.4,Average
+STU0494,Tara Iyer,58.0,33.9,42.3,3.0,At Risk
+STU0495,Bharat Kumar,99.9,68.6,75.8,6.8,Good
+STU0496,Tanvi Reddy,55.3,40.2,45.8,1.6,Average
+STU0497,Jaideep Mehta,94.2,70.2,84.9,3.4,Good
+STU0498,Fiza Mishra,61.9,57.2,46.1,4.2,Average
+STU0499,Meera Nair,56.4,58.2,63.5,2.4,Average
+STU0500,Uma Kumar,69.6,64.2,49.3,1.7,Average
+STU0501,Eshan Verma,75.4,54.5,49.2,2.3,Average
+STU0502,Karan Iyer,69.9,57.9,39.0,3.5,Average
+STU0503,Bharat Mehta,66.0,51.8,45.8,2.4,Average
+STU0504,Irfan Kumar,68.8,54.1,64.2,3.2,Average
+STU0505,Zara Mishra,99.7,67.2,87.8,5.0,Good
+STU0506,Pooja Joshi,79.4,44.5,57.9,4.0,Average
+STU0507,Varsha Tiwari,56.4,53.6,40.5,2.0,Average
+STU0508,Deepak Rao,76.0,96.3,78.5,6.2,Good
+STU0509,Yashika Singh,71.3,48.9,55.9,1.8,Average
+STU0510,Jaya Malhotra,67.9,40.3,54.5,2.6,Average
+STU0511,Kavita Verma,45.7,17.5,30.5,1.1,At Risk
+STU0512,Rahul Reddy,72.9,39.8,50.5,1.8,Average
+STU0513,Sanjay Dubey,75.9,52.8,43.7,3.7,Average
+STU0514,Naina Verma,67.0,63.1,48.0,2.9,Average
+STU0515,Chirag Joshi,98.3,94.9,61.8,3.1,Good
+STU0516,Manish Malhotra,56.5,54.3,60.9,3.1,Average
+STU0517,Ritu Mehta,20.9,19.4,30.9,0.8,At Risk
+STU0518,Lokesh Bhat,90.2,62.3,64.1,6.3,Good
+STU0519,Lokesh Menon,53.2,66.8,58.4,3.8,At Risk
+STU0520,Tanvi Sharma,96.5,98.0,74.9,4.4,Good
+STU0521,Lokesh Joshi,49.4,56.4,46.1,4.0,At Risk
+STU0522,Waqar Patel,75.6,53.0,61.4,1.5,Average
+STU0523,Waqar Bhat,92.5,82.4,72.4,7.1,Good
+STU0524,Nikhil Kapoor,45.0,69.7,29.1,2.6,At Risk
+STU0525,Naina Kapoor,31.3,8.7,24.8,0.9,At Risk
+STU0526,Lokesh Reddy,66.7,43.1,59.1,3.2,Average
+STU0527,Nikhil Mehta,99.1,94.4,71.8,4.9,Good
+STU0528,Uday Nair,35.2,53.0,48.2,3.7,At Risk
+STU0529,Zara Rao,84.5,77.2,83.2,5.7,Good
+STU0530,Jaya Tiwari,61.7,62.6,57.0,3.7,Average
+STU0531,Vivek Nair,83.1,75.9,75.8,6.5,Good
+STU0532,Pooja Pillai,82.2,75.5,88.8,4.5,Good
+STU0533,Hina Bhat,76.7,57.1,41.2,3.8,Average
+STU0534,Eshan Patel,58.9,14.7,12.6,1.1,At Risk
+STU0535,Veer Bhat,61.1,64.1,66.7,2.2,Average
+STU0536,Uday Joshi,29.5,58.9,51.2,2.3,At Risk
+STU0537,Yashika Menon,63.6,57.8,57.8,4.3,Average
+STU0538,Bharat Verma,81.7,95.4,91.9,6.3,Good
+STU0539,Lata Mishra,50.6,10.1,12.8,1.0,At Risk
+STU0540,Waqar Kumar,31.7,19.1,25.5,0.5,At Risk
+STU0541,Ananya Yadav,63.9,52.9,50.1,4.0,Average
+STU0542,Karan Sinha,76.5,53.6,64.7,3.3,Average
+STU0543,Manish Malhotra,74.8,63.4,56.7,3.7,Average
+STU0544,Bharat Nair,76.4,88.4,99.3,4.2,Good
+STU0545,Harish Joshi,69.6,59.9,47.8,2.4,Average
+STU0546,Varsha Mishra,62.7,48.0,61.1,3.9,Average
+STU0547,Zara Sinha,73.2,59.1,41.5,1.5,Average
+STU0548,Nikhil Bhat,88.8,83.3,95.1,5.0,Good
+STU0549,Karan Tiwari,72.7,34.1,47.7,2.9,At Risk
+STU0550,Sanjay Menon,65.4,42.3,43.1,2.8,Average
+STU0551,Pooja Bhat,63.6,59.7,54.2,1.7,Average
+STU0552,Veer Tiwari,83.7,96.2,60.9,6.3,Good
+STU0553,Waqar Bhat,60.5,42.9,62.8,2.4,Average
+STU0554,Eshan Gupta,78.6,80.6,99.4,4.2,Good
+STU0555,Veer Pillai,81.4,87.1,92.7,5.8,Good
+STU0556,Isha Kumar,62.0,63.9,42.3,3.2,Average
+STU0557,Veer Mehta,76.8,83.0,98.8,5.6,Good
+STU0558,Gaurav Gupta,31.9,31.2,12.7,0.0,At Risk
+STU0559,Jaya Tiwari,48.1,20.6,13.1,1.5,At Risk
+STU0560,Bhavna Shah,88.9,62.2,90.4,3.2,Good
+STU0561,Arjun Singh,98.4,88.4,82.8,3.5,Good
+STU0562,Ritu Verma,85.5,95.9,92.7,4.7,Good
+STU0563,Aarav Iyer,76.4,46.2,43.8,1.9,Average
+STU0564,Geeta Tiwari,72.3,41.8,50.5,3.1,Average
+STU0565,Meera Singh,91.1,64.5,83.2,5.8,Good
+STU0566,Uma Kumar,48.8,9.1,22.0,0.7,At Risk
+STU0567,Aarav Joshi,77.1,99.5,75.0,4.9,Good
+STU0568,Hina Rao,76.5,97.5,74.1,3.5,Good
+STU0569,Yashika Verma,69.2,9.3,22.0,1.4,At Risk
+STU0570,Om Tiwari,75.1,61.0,46.7,4.4,Average
+STU0571,Ritu Dubey,90.2,91.1,92.5,6.6,Good
+STU0572,Fiza Pandey,56.0,12.7,18.6,1.6,At Risk
+STU0573,Gaurav Sharma,92.1,68.2,96.4,7.1,Good
+STU0574,Aarav Mehta,60.3,60.7,38.9,4.0,Average
+STU0575,Karan Iyer,76.1,45.1,50.7,1.6,Average
+STU0576,Aarav Sharma,23.8,43.0,33.9,1.4,At Risk
+STU0577,Irfan Malhotra,99.9,87.1,82.3,6.7,Good
+STU0578,Rahul Mehta,69.4,47.2,62.3,2.2,Average
+STU0579,Sakshi Sharma,31.6,36.6,19.7,1.1,At Risk
+STU0580,Hina Kapoor,61.7,51.7,61.3,4.1,Average
+STU0581,Sanjay Iyer,57.3,54.9,54.5,2.7,Average
+STU0582,Jaideep Patel,79.8,38.7,56.1,3.5,Average
+STU0583,Divya Shah,78.7,97.2,79.7,4.3,Good
+STU0584,Harish Mishra,94.9,72.3,77.6,3.4,Good
+STU0585,Kavita Dubey,64.4,59.5,49.0,1.8,Average
+STU0586,Irfan Yadav,60.5,38.0,65.5,4.0,Average
+STU0587,Vivek Yadav,56.3,32.1,39.2,0.7,At Risk
+STU0588,Aditya Singh,74.9,12.7,48.4,1.0,At Risk
+STU0589,Yashika Reddy,81.8,81.7,71.9,7.7,Good
+STU0590,Eshan Sinha,98.5,92.4,99.9,4.8,Good
+STU0591,Nikhil Kapoor,77.0,81.9,76.4,7.9,Good
+STU0592,Meera Nair,29.2,41.1,22.8,2.1,At Risk
+STU0593,Sanjay Singh,79.1,97.9,94.0,6.3,Good
+STU0594,Qasim Tiwari,79.7,51.1,43.4,4.2,Average
+STU0595,Arjun Singh,90.5,79.6,75.2,7.3,Good
+STU0596,Aditya Reddy,35.5,18.1,20.0,1.1,At Risk
+STU0597,Zara Mehta,98.9,85.0,69.1,6.4,Good
+STU0598,Fiza Verma,56.0,38.6,61.2,1.9,Average
+STU0599,Priya Sharma,49.9,23.2,25.8,0.3,At Risk
+STU0600,Tara Gupta,55.3,51.8,61.1,4.3,Average
+STU0601,Deepak Bhat,80.0,87.8,62.9,3.2,Good
+STU0602,Chetan Tiwari,69.5,62.0,55.1,3.4,Average
+STU0603,Varsha Sinha,59.5,48.6,66.4,1.9,Average
+STU0604,Divya Shah,70.6,44.0,47.2,3.1,Average
+STU0605,Arjun Mishra,80.7,64.8,84.1,6.3,Good
+STU0606,Lokesh Kapoor,56.4,58.7,59.1,2.5,Average
+STU0607,Lata Bhat,88.0,88.7,74.5,7.9,Good
+STU0608,Rahul Verma,76.6,40.8,41.8,4.4,Average
+STU0609,Chirag Pandey,56.0,47.8,62.8,3.6,Average
+STU0610,Rahul Mehta,55.2,51.1,41.7,2.4,Average
+STU0611,Lata Pandey,96.5,78.3,90.0,6.8,Good
+STU0612,Arjun Gupta,78.9,48.2,48.2,1.7,Average
+STU0613,Uday Sharma,78.2,64.2,55.1,1.9,Average
+STU0614,Lokesh Sinha,80.7,89.4,88.8,6.2,Good
+STU0615,Harish Kapoor,82.3,96.1,60.5,3.4,Good
+STU0616,Aditya Singh,57.5,63.8,56.0,3.7,Average
+STU0617,Tanvi Gupta,81.9,83.1,86.1,7.1,Good
+STU0618,Lata Mishra,90.8,71.9,85.4,5.7,Good
+STU0619,Lata Reddy,57.7,55.5,64.0,4.0,Average
+STU0620,Sanjay Mehta,63.0,63.0,39.7,3.0,Average
+STU0621,Varsha Reddy,40.7,43.3,26.1,2.8,At Risk
+STU0622,Waqar Kumar,76.6,98.1,98.6,7.0,Good
+STU0623,Tara Malhotra,91.4,82.9,63.5,5.0,Good
+STU0624,Deepak Shah,86.6,64.3,82.5,7.8,Good
+STU0625,Waqar Pillai,97.2,79.9,64.8,6.6,Good
+STU0626,Bhavna Patel,27.6,9.4,33.2,0.6,At Risk
+STU0627,Chetan Mishra,73.4,39.0,52.2,2.5,Average
+STU0628,Chirag Menon,66.4,33.0,39.0,0.8,At Risk
+STU0629,Naina Dubey,34.0,23.6,28.9,0.9,At Risk
+STU0630,Naina Reddy,47.1,23.5,35.4,1.0,At Risk
+STU0631,Uday Sharma,32.4,33.5,32.0,0.3,At Risk
+STU0632,Priya Yadav,89.2,80.1,86.5,7.7,Good
+STU0633,Diya Bhat,76.8,93.2,88.2,3.4,Good
+STU0634,Meera Pillai,43.5,39.3,37.6,3.6,At Risk
+STU0635,Karan Reddy,93.4,94.8,68.7,3.5,Good
+STU0636,Chetan Gupta,78.1,97.0,94.8,5.6,Good
+STU0637,Sanjay Sinha,96.6,80.0,98.7,3.9,Good
+STU0638,Ritu Reddy,75.7,57.2,41.2,4.0,Average
+STU0639,Deepak Dubey,49.4,37.0,23.7,2.2,At Risk
+STU0640,Sakshi Mishra,76.3,61.3,50.2,3.8,Average
+STU0641,Uma Singh,44.8,73.5,30.1,2.8,At Risk
+STU0642,Deepak Yadav,69.5,42.5,59.4,2.0,Average
+STU0643,Harish Reddy,38.8,47.8,25.9,3.5,At Risk
+STU0644,Uma Tiwari,26.9,52.9,38.9,0.6,At Risk
+STU0645,Harish Malhotra,72.0,39.5,39.0,2.7,Average
+STU0646,Zara Menon,78.0,95.8,83.7,6.4,Good
+STU0647,Yashika Patel,76.2,10.9,13.2,1.1,At Risk
+STU0648,Deepak Sharma,50.5,58.0,63.8,2.1,At Risk
+STU0649,Tanvi Rao,93.6,69.7,98.3,4.8,Good
+STU0650,Yashika Yadav,82.6,65.7,87.4,5.2,Good
+STU0651,Divya Kumar,73.6,42.5,41.6,1.7,Average
+STU0652,Deepak Gupta,92.2,95.2,85.5,6.8,Good
+STU0653,Chetan Rao,79.3,51.8,46.7,2.9,Average
+STU0654,Karan Mehta,55.6,7.6,32.2,0.4,At Risk
+STU0655,Hina Iyer,62.8,42.9,53.1,2.5,Average
+STU0656,Divya Sharma,90.8,71.1,63.0,3.6,Good
+STU0657,Deepak Pillai,44.0,61.0,36.9,1.1,At Risk
+STU0658,Karan Singh,77.9,67.7,69.0,4.3,Good
+STU0659,Naina Dubey,93.2,80.8,87.5,5.2,Good
+STU0660,Uday Reddy,70.9,9.6,40.1,2.4,At Risk
+STU0661,Aarav Nair,57.0,63.4,60.7,3.3,Average
+STU0662,Bharat Reddy,57.6,47.6,50.4,3.5,Average
+STU0663,Deepak Malhotra,88.7,89.2,86.4,4.4,Good
+STU0664,Karan Mishra,56.5,26.4,21.1,0.6,At Risk
+STU0665,Lata Shah,82.2,84.1,66.2,5.4,Good
+STU0666,Isha Pandey,84.8,93.0,77.6,4.9,Good
+STU0667,Zara Gupta,68.5,61.0,66.7,3.2,Average
+STU0668,Geeta Yadav,46.4,26.3,22.9,2.7,At Risk
+STU0669,Tanvi Yadav,63.0,52.2,58.6,2.3,Average
+STU0670,Gaurav Kumar,79.6,82.6,94.9,6.7,Good
+STU0671,Chirag Gupta,66.2,53.6,55.1,2.5,Average
+STU0672,Chetan Yadav,78.8,74.3,89.5,5.4,Good
+STU0673,Bharat Nair,92.9,72.4,76.5,3.6,Good
+STU0674,Fiza Singh,68.8,42.1,59.8,3.3,Average
+STU0675,Yashika Yadav,94.0,62.9,60.9,4.6,Good
+STU0676,Nikhil Malhotra,97.3,86.0,91.8,5.5,Good
+STU0677,Priya Bhat,75.5,55.5,57.4,1.9,Average
+STU0678,Naina Dubey,88.2,71.2,63.7,7.5,Good
+STU0679,Kavita Rao,26.8,32.8,12.6,0.2,At Risk
+STU0680,Divya Kumar,85.5,86.3,75.9,4.4,Good
+STU0681,Tanvi Sharma,95.4,71.8,66.8,6.3,Good
+STU0682,Aditya Menon,82.4,91.2,85.0,4.9,Good
+STU0683,Om Reddy,30.7,19.1,34.5,1.3,At Risk
+STU0684,Varsha Rao,38.8,53.4,26.4,3.2,At Risk
+STU0685,Varsha Iyer,77.6,96.3,80.2,7.1,Good
+STU0686,Qasim Dubey,92.2,78.6,70.2,7.2,Good
+STU0687,Geeta Nair,79.9,64.6,64.0,3.1,Good
+STU0688,Uday Dubey,90.8,71.8,65.6,7.2,Good
+STU0689,Tara Joshi,28.3,32.6,37.6,1.3,At Risk
+STU0690,Fiza Menon,77.1,40.3,54.2,4.2,Average
+STU0691,Jaideep Reddy,77.1,84.9,69.8,4.9,Good
+STU0692,Uday Nair,97.3,74.8,75.0,3.5,Good
+STU0693,Waqar Kapoor,20.3,74.9,50.5,3.4,At Risk
+STU0694,Priya Bhat,82.1,63.4,84.4,5.5,Good
+STU0695,Lata Mishra,57.2,39.5,41.2,3.3,Average
+STU0696,Uday Reddy,59.1,43.0,44.1,2.7,Average
+STU0697,Rahul Reddy,59.1,14.4,19.3,1.2,At Risk
+STU0698,Yashika Patel,79.2,66.0,85.5,6.5,Good
+STU0699,Lata Joshi,55.2,64.4,67.0,2.7,Average
+STU0700,Manish Mehta,58.6,61.7,53.8,2.9,Average
+STU0701,Jaideep Pandey,79.4,59.4,57.8,3.2,Average
+STU0702,Karan Sharma,93.6,78.2,73.8,4.9,Good
+STU0703,Veer Rao,76.2,39.2,60.0,2.5,Average
+STU0704,Uma Joshi,69.7,47.5,62.0,3.2,Average
+STU0705,Diya Nair,63.6,61.0,54.8,3.0,Average
+STU0706,Tara Singh,60.1,47.5,41.8,1.9,Average
+STU0707,Bharat Pandey,91.4,74.4,90.9,3.7,Good
+STU0708,Gaurav Kumar,57.5,54.8,51.4,3.8,Average
+STU0709,Priya Nair,69.9,54.3,58.5,3.2,Average
+STU0710,Nikhil Yadav,58.1,52.0,45.4,2.6,Average
+STU0711,Ritu Kumar,56.2,44.9,52.0,2.2,Average
+STU0712,Uma Iyer,73.1,41.0,50.2,4.2,Average
+STU0713,Zara Singh,77.0,77.3,66.9,6.5,Good
+STU0714,Diya Dubey,78.2,67.8,65.6,6.2,Good
+STU0715,Fiza Sinha,84.7,72.3,93.1,4.8,Good
+STU0716,Aditya Mehta,23.1,63.7,61.2,2.0,At Risk
+STU0717,Hina Kapoor,44.2,67.2,24.5,1.3,At Risk
+STU0718,Bharat Mehta,65.3,44.3,38.6,4.1,Average
+STU0719,Arjun Pillai,98.9,90.0,74.1,4.5,Good
+STU0720,Tara Mehta,74.4,48.6,42.2,1.5,Average
+STU0721,Naina Tiwari,97.5,78.0,71.1,6.0,Good
+STU0722,Deepak Patel,58.4,6.2,11.2,1.5,At Risk
+STU0723,Nikhil Pandey,76.2,43.3,41.8,4.4,Average
+STU0724,Ritu Pillai,84.4,92.8,99.5,3.8,Good
+STU0725,Isha Tiwari,76.8,21.2,17.5,0.7,At Risk
+STU0726,Om Verma,57.9,18.8,11.2,1.1,At Risk
+STU0727,Lata Tiwari,63.4,61.5,40.5,2.1,Average
+STU0728,Sanjay Tiwari,51.3,27.6,28.2,2.2,At Risk
+STU0729,Aditya Menon,67.6,36.2,43.9,0.6,At Risk
+STU0730,Chetan Patel,63.2,56.7,61.0,2.4,Average
+STU0731,Aarav Patel,83.8,71.0,91.2,4.4,Good
+STU0732,Pooja Mishra,69.6,57.7,48.9,3.4,Average
+STU0733,Hina Malhotra,71.3,64.5,65.4,2.8,Average
+STU0734,Irfan Mehta,62.6,64.5,57.3,3.7,Average
+STU0735,Manish Kapoor,92.3,76.7,97.5,3.7,Good
+STU0736,Lata Mishra,83.7,99.1,85.6,7.1,Good
+STU0737,Diya Pillai,66.2,51.5,45.4,2.9,Average
+STU0738,Aditya Rao,42.2,15.1,19.9,1.3,At Risk
+STU0739,Sanjay Sinha,78.8,57.9,55.9,4.1,Average
+STU0740,Tara Shah,65.1,56.2,58.5,2.4,Average
+STU0741,Harish Pillai,70.8,52.7,41.9,2.6,Average
+STU0742,Ananya Bhat,78.2,77.1,91.9,3.7,Good
+STU0743,Divya Nair,88.2,89.8,63.3,3.3,Good
+STU0744,Bharat Singh,69.2,45.4,52.2,2.5,Average
+STU0745,Farhan Malhotra,99.1,80.4,92.2,5.8,Good
+STU0746,Harish Pillai,68.4,43.3,43.0,4.2,Average
+STU0747,Tanvi Menon,78.7,48.8,61.5,2.3,Average
+STU0748,Eshan Joshi,97.8,70.0,84.9,6.2,Good
+STU0749,Irfan Bhat,81.7,64.2,81.2,7.7,Good
+STU0750,Vivek Bhat,79.7,92.5,78.3,5.4,Good
+STU0751,Divya Rao,48.1,41.7,14.2,1.2,At Risk
+STU0752,Veer Kapoor,95.0,73.1,99.2,6.0,Good
+STU0753,Diya Menon,59.3,48.3,62.0,2.7,Average
+STU0754,Chirag Nair,70.0,56.9,46.6,3.4,Average
+STU0755,Arjun Kapoor,37.7,73.9,25.6,0.6,At Risk
+STU0756,Farhan Sharma,43.5,49.3,50.3,1.5,At Risk
+STU0757,Varsha Tiwari,23.2,20.4,7.3,0.3,At Risk
+STU0758,Divya Pandey,71.0,46.5,66.7,1.6,Average
+STU0759,Isha Malhotra,72.5,28.5,25.4,0.6,At Risk
+STU0760,Nikhil Shah,59.6,47.2,50.9,4.0,Average
+STU0761,Jaideep Mehta,62.4,63.3,62.6,4.5,Average
+STU0762,Isha Menon,69.9,65.0,61.1,2.7,Average
+STU0763,Karan Iyer,81.0,79.1,99.4,6.9,Good
+STU0764,Eshan Mishra,62.4,43.7,61.0,2.3,Average
+STU0765,Aditya Tiwari,75.6,67.1,98.5,5.7,Good
+STU0766,Jaideep Gupta,84.3,71.9,88.9,5.5,Good
+STU0767,Priya Pandey,89.5,63.4,78.6,5.7,Good
+STU0768,Chetan Reddy,78.4,63.1,90.2,6.1,Good
+STU0769,Ananya Malhotra,42.9,8.1,7.5,1.3,At Risk
+STU0770,Om Joshi,75.7,64.5,78.6,7.5,Good
+STU0771,Diya Sinha,77.2,49.1,56.1,3.4,Average
+STU0772,Chetan Reddy,92.3,82.6,70.1,4.7,Good
+STU0773,Aarav Kapoor,56.8,43.4,48.4,3.4,Average
+STU0774,Lokesh Joshi,72.0,60.3,42.4,2.0,Average
+STU0775,Rahul Kapoor,79.4,48.2,62.1,2.8,Average
+STU0776,Chirag Sinha,78.3,89.6,92.7,4.1,Good
+STU0777,Divya Mehta,97.9,67.2,98.0,5.2,Good
+STU0778,Jaideep Pillai,89.0,84.9,87.1,7.0,Good
+STU0779,Uday Joshi,69.1,62.5,49.9,2.4,Average
+STU0780,Eshan Patel,99.1,78.4,72.5,5.5,Good
+STU0781,Pooja Pandey,77.3,95.3,70.6,3.6,Good
+STU0782,Gaurav Shah,73.4,31.7,23.3,2.2,At Risk
+STU0783,Priya Menon,62.2,52.5,54.0,2.7,Average
+STU0784,Naina Reddy,75.5,53.3,57.7,4.2,Average
+STU0785,Om Reddy,23.0,26.8,28.4,0.2,At Risk
+STU0786,Manish Patel,43.9,32.5,13.4,0.0,At Risk
+STU0787,Vivek Pillai,75.9,71.6,88.5,7.5,Good
+STU0788,Eshan Dubey,73.8,41.4,61.2,2.2,Average
+STU0789,Jaideep Pandey,90.7,88.4,78.2,6.1,Good
+STU0790,Uma Nair,55.6,45.7,51.3,3.4,Average
+STU0791,Om Sinha,73.4,47.7,58.1,2.3,Average
+STU0792,Deepak Pandey,68.6,43.5,46.8,3.7,Average
+STU0793,Geeta Menon,78.0,88.5,85.2,7.4,Good
+STU0794,Farhan Mishra,77.9,93.1,75.2,7.4,Good
+STU0795,Tanvi Patel,60.7,54.6,45.6,3.2,Average
+STU0796,Jaideep Pillai,77.2,69.4,61.8,4.6,Good
+STU0797,Tara Kumar,63.1,18.8,22.7,1.6,At Risk
+STU0798,Hina Reddy,64.5,40.4,48.3,4.4,Average
+STU0799,Bharat Dubey,94.7,80.9,63.5,5.7,Good
+STU0800,Geeta Sinha,57.2,60.0,46.4,1.9,Average
+STU0801,Zara Iyer,63.8,47.8,62.2,2.5,Average
+STU0802,Jaideep Bhat,71.7,17.4,30.5,1.7,At Risk
+STU0803,Priya Mehta,49.3,33.4,30.1,1.6,At Risk
+STU0804,Tara Tiwari,95.1,69.1,95.7,5.7,Good
+STU0805,Jaideep Mehta,89.6,65.0,99.0,7.9,Good
+STU0806,Isha Bhat,78.3,65.1,89.1,5.5,Good
+STU0807,Sakshi Kumar,52.9,16.3,36.4,0.8,At Risk
+STU0808,Jaideep Menon,27.4,24.6,29.5,0.7,At Risk
+STU0809,Diya Dubey,94.5,66.1,90.4,5.7,Good
+STU0810,Bhavna Pillai,96.2,71.4,78.0,3.6,Good
+STU0811,Aarav Bhat,79.0,50.0,52.7,2.6,Average
+STU0812,Geeta Joshi,68.4,55.2,43.9,2.1,Average
+STU0813,Zara Mehta,70.0,51.9,46.6,1.5,Average
+STU0814,Hina Tiwari,77.2,62.1,48.1,3.3,Average
+STU0815,Gaurav Iyer,72.9,13.7,37.7,1.2,At Risk
+STU0816,Sanjay Bhat,30.5,11.2,26.0,0.8,At Risk
+STU0817,Bharat Kapoor,68.6,44.3,57.1,4.0,Average
+STU0818,Diya Bhat,78.3,52.2,45.8,1.7,Average
+STU0819,Isha Singh,59.6,40.3,51.1,3.5,Average
+STU0820,Lata Sharma,65.7,54.6,40.4,1.8,Average
+STU0821,Meera Nair,95.4,66.6,81.8,3.0,Good
+STU0822,Arjun Yadav,63.9,55.1,43.6,3.7,Average
+STU0823,Meera Mehta,83.6,93.2,64.4,7.2,Good
+STU0824,Sakshi Gupta,75.5,55.5,50.6,2.9,Average
+STU0825,Eshan Sinha,64.4,49.2,39.2,2.3,Average
+STU0826,Waqar Bhat,57.3,50.4,49.8,4.1,Average
+STU0827,Karan Shah,69.6,22.3,13.9,1.1,At Risk
+STU0828,Farhan Sinha,45.3,19.9,48.5,1.8,At Risk
+STU0829,Farhan Yadav,78.9,67.9,62.3,7.3,Good
+STU0830,Jaya Pillai,47.0,44.3,58.6,3.7,At Risk
+STU0831,Jaya Verma,81.6,75.7,63.5,7.7,Good
+STU0832,Veer Rao,21.9,52.1,61.7,0.9,At Risk
+STU0833,Jaya Joshi,76.1,95.9,81.1,8.0,Good
+STU0834,Chetan Patel,99.4,74.8,67.3,6.9,Good
+STU0835,Waqar Tiwari,65.3,49.5,47.9,3.2,Average
+STU0836,Nikhil Nair,75.8,65.0,75.9,3.7,Good
+STU0837,Arjun Rao,66.2,56.7,60.0,4.5,Average
+STU0838,Pooja Pillai,76.9,57.9,45.6,1.7,Average
+STU0839,Deepak Rao,76.3,72.6,96.3,4.2,Good
+STU0840,Farhan Mishra,68.4,31.5,45.2,1.9,At Risk
+STU0841,Lokesh Malhotra,44.3,34.1,29.0,3.6,At Risk
+STU0842,Manish Kapoor,27.8,56.9,61.8,3.8,At Risk
+STU0843,Vivek Kapoor,77.2,62.2,46.9,2.2,Average
+STU0844,Om Tiwari,75.4,49.7,61.9,3.3,Average
+STU0845,Chetan Gupta,73.3,58.8,67.3,3.2,Average
+STU0846,Om Kumar,81.4,86.9,67.9,5.8,Good
+STU0847,Lokesh Joshi,33.3,63.9,61.3,3.8,At Risk
+STU0848,Bhavna Sinha,78.3,94.8,96.9,5.4,Good
+STU0849,Vivek Mehta,99.7,63.5,94.7,5.9,Good
+STU0850,Rahul Dubey,82.1,75.8,85.8,5.9,Good
+STU0851,Jaya Gupta,83.8,66.4,65.7,6.8,Good
+STU0852,Uday Kapoor,70.6,41.5,47.3,2.1,Average
+STU0853,Sakshi Nair,88.7,93.1,78.1,6.2,Good
+STU0854,Lata Yadav,93.3,67.0,88.6,7.5,Good
+STU0855,Hina Pandey,68.3,40.8,43.2,3.2,Average
+STU0856,Divya Kumar,66.4,50.8,49.6,4.4,Average
+STU0857,Bharat Verma,40.7,61.5,57.7,3.3,At Risk
+STU0858,Rahul Tiwari,28.7,46.0,50.3,0.7,At Risk
+STU0859,Geeta Kapoor,70.7,60.4,50.5,2.3,Average
+STU0860,Geeta Mishra,25.8,38.8,60.1,3.1,At Risk
+STU0861,Harish Kapoor,41.4,32.4,53.7,1.6,At Risk
+STU0862,Uday Mishra,73.2,41.3,47.1,3.1,Average
+STU0863,Sanjay Reddy,25.3,31.1,49.1,2.7,At Risk
+STU0864,Gaurav Kumar,86.6,73.5,89.9,5.5,Good
+STU0865,Lata Tiwari,96.3,80.8,79.2,6.0,Good
+STU0866,Rahul Tiwari,79.4,65.7,86.4,6.8,Good
+STU0867,Bharat Reddy,45.1,44.2,49.0,1.9,At Risk
+STU0868,Diya Singh,53.5,60.1,48.6,1.1,At Risk
+STU0869,Priya Singh,63.6,52.1,51.2,4.1,Average
+STU0870,Aditya Shah,95.8,98.7,65.0,6.7,Good
+STU0871,Waqar Yadav,53.2,34.6,20.4,2.0,At Risk
+STU0872,Tara Pillai,76.7,45.8,52.0,3.4,Average
+STU0873,Eshan Bhat,71.8,57.7,55.3,2.1,Average
+STU0874,Uday Sinha,58.7,45.2,48.8,2.7,Average
+STU0875,Aarav Malhotra,59.3,47.8,57.1,1.7,Average
+STU0876,Deepak Malhotra,71.8,60.3,49.9,2.0,Average
+STU0877,Eshan Tiwari,60.5,54.9,55.1,2.1,Average
+STU0878,Ritu Kapoor,68.2,38.9,57.2,1.7,Average
+STU0879,Vivek Singh,82.8,74.4,89.2,6.2,Good
+STU0880,Jaya Reddy,68.7,24.4,24.6,1.0,At Risk
+STU0881,Lokesh Iyer,54.3,7.7,22.6,0.2,At Risk
+STU0882,Lokesh Bhat,48.5,57.9,45.4,2.7,At Risk
+STU0883,Rahul Menon,25.6,5.3,25.8,0.6,At Risk
+STU0884,Sakshi Menon,65.0,59.9,38.4,3.4,Average
+STU0885,Karan Sinha,56.7,40.4,56.0,2.5,Average
+STU0886,Geeta Sinha,97.7,71.5,76.4,6.8,Good
+STU0887,Gaurav Menon,98.6,80.0,94.5,7.2,Good
+STU0888,Sanjay Verma,54.6,33.9,22.6,1.2,At Risk
+STU0889,Arjun Patel,71.4,62.5,43.1,4.4,Average
+STU0890,Priya Rao,45.6,7.1,23.1,0.4,At Risk
+STU0891,Ananya Patel,84.4,77.0,78.4,6.9,Good
+STU0892,Isha Rao,62.1,45.8,49.3,2.7,Average
+STU0893,Eshan Sharma,22.2,18.7,13.9,1.4,At Risk
+STU0894,Chetan Joshi,73.8,62.2,63.4,2.0,Average
+STU0895,Tara Kumar,63.4,52.0,43.9,3.9,Average
+STU0896,Qasim Nair,99.1,83.3,97.5,3.3,Good
+STU0897,Isha Yadav,31.1,41.4,29.9,1.1,At Risk
+STU0898,Deepak Tiwari,88.6,65.1,78.3,5.4,Good
+STU0899,Yashika Yadav,80.6,82.4,83.7,5.9,Good
+STU0900,Deepak Pillai,94.6,88.9,61.4,4.5,Good
+STU0901,Ritu Tiwari,75.2,61.6,47.1,4.1,Average
+STU0902,Isha Verma,63.5,49.7,63.5,2.6,Average
+STU0903,Aditya Tiwari,58.0,64.5,44.4,1.7,Average
+STU0904,Tanvi Malhotra,97.2,84.5,75.7,5.1,Good
+STU0905,Tara Mishra,78.9,63.7,48.6,1.6,Average
+STU0906,Chetan Tiwari,71.9,61.2,66.9,3.4,Average
+STU0907,Deepak Kapoor,66.9,62.9,40.2,2.3,Average
+STU0908,Divya Sharma,75.7,40.2,52.3,3.4,Average
+STU0909,Lokesh Bhat,78.3,38.7,58.9,3.7,Average
+STU0910,Chirag Kumar,42.0,42.0,20.7,3.9,At Risk
+STU0911,Manish Mishra,34.6,18.6,22.9,0.2,At Risk
+STU0912,Irfan Pandey,80.0,80.7,62.6,5.9,Good
+STU0913,Diya Sharma,46.7,11.9,21.5,0.6,At Risk
+STU0914,Aarav Kapoor,77.8,77.1,98.8,7.3,Good
+STU0915,Varsha Patel,71.5,39.9,49.9,2.0,Average
+STU0916,Chetan Kapoor,70.5,59.1,59.1,4.0,Average
+STU0917,Geeta Bhat,86.5,99.2,79.7,4.6,Good
+STU0918,Chirag Mishra,46.2,33.1,19.7,1.9,At Risk
+STU0919,Zara Singh,99.8,70.8,97.7,6.2,Good
+STU0920,Veer Patel,75.4,63.1,40.9,2.9,Average
+STU0921,Divya Menon,32.6,32.4,54.5,2.0,At Risk
+STU0922,Yashika Nair,96.7,80.5,95.8,7.0,Good
+STU0923,Geeta Reddy,62.5,40.7,46.2,3.9,Average
+STU0924,Geeta Tiwari,80.6,98.6,60.5,7.8,Good
+STU0925,Sanjay Kumar,95.7,89.9,90.8,3.1,Good
+STU0926,Chirag Shah,86.3,66.3,99.4,7.2,Good
+STU0927,Lata Sharma,58.6,22.3,48.7,0.7,At Risk
+STU0928,Om Tiwari,59.6,58.4,52.2,2.2,Average
+STU0929,Isha Rao,38.5,6.1,21.7,1.3,At Risk
+STU0930,Vivek Malhotra,59.0,55.7,67.1,3.2,Average
+STU0931,Lokesh Tiwari,56.2,42.0,54.1,3.2,Average
+STU0932,Waqar Kumar,77.7,60.1,64.6,2.1,Average
+STU0933,Bharat Dubey,78.3,41.2,66.0,3.6,Average
+STU0934,Sanjay Rao,88.0,63.8,66.7,6.7,Good
+STU0935,Lokesh Singh,45.3,11.5,23.6,1.1,At Risk
+STU0936,Divya Kumar,82.2,84.5,61.2,3.2,Good
+STU0937,Farhan Sinha,93.9,79.5,93.7,6.6,Good
+STU0938,Veer Reddy,74.2,64.1,67.1,4.1,Average
+STU0939,Vivek Iyer,60.3,49.1,59.1,2.2,Average
+STU0940,Uday Kumar,79.0,95.5,94.9,3.1,Good
+STU0941,Nikhil Yadav,72.0,25.9,16.1,2.7,At Risk
+STU0942,Qasim Singh,99.1,75.0,85.3,7.7,Good
+STU0943,Nikhil Mehta,96.8,84.7,84.0,6.3,Good
+STU0944,Naina Dubey,78.0,74.8,97.7,4.6,Good
+STU0945,Veer Dubey,83.6,85.6,61.8,7.4,Good
+STU0946,Sakshi Kapoor,69.4,41.4,55.5,3.8,Average
+STU0947,Ananya Pandey,53.5,43.0,63.3,1.9,At Risk
+STU0948,Tanvi Joshi,55.2,14.1,25.9,0.3,At Risk
+STU0949,Irfan Dubey,69.3,46.8,39.2,2.3,Average
+STU0950,Hina Joshi,96.7,92.6,91.6,4.5,Good
+STU0951,Waqar Reddy,90.0,88.9,60.8,7.8,Good
+STU0952,Sakshi Tiwari,60.2,40.3,52.0,2.9,Average
+STU0953,Bhavna Mishra,93.2,99.1,80.7,4.6,Good
+STU0954,Gaurav Reddy,58.1,61.6,67.1,2.0,Average
+STU0955,Farhan Mishra,56.6,39.9,55.2,3.2,Average
+STU0956,Gaurav Tiwari,83.4,91.3,64.3,3.4,Good
+STU0957,Naina Singh,75.5,74.2,68.5,4.6,Good
+STU0958,Irfan Sharma,75.4,66.4,61.8,3.2,Good
+STU0959,Yashika Menon,78.2,64.0,53.3,2.9,Average
+STU0960,Geeta Reddy,94.7,65.4,76.7,7.4,Good
+STU0961,Lata Iyer,74.4,47.2,56.8,2.1,Average
+STU0962,Yashika Mehta,50.2,33.3,6.7,0.1,At Risk
+STU0963,Sanjay Gupta,64.0,52.4,67.9,2.9,Average
+STU0964,Fiza Singh,70.6,24.4,36.9,0.7,At Risk
+STU0965,Ananya Sinha,83.0,96.0,75.6,3.1,Good
+STU0966,Chirag Sharma,68.5,25.2,18.0,1.5,At Risk
+STU0967,Pooja Joshi,65.2,32.7,49.2,1.5,At Risk
+STU0968,Arjun Verma,75.4,97.3,77.1,7.8,Good
+STU0969,Aditya Shah,70.1,40.2,58.5,4.3,Average
+STU0970,Sakshi Tiwari,67.3,6.6,20.3,0.6,At Risk
+STU0971,Uma Shah,56.7,64.3,48.8,2.9,Average
+STU0972,Bharat Iyer,99.0,80.5,64.4,5.7,Good
+STU0973,Tara Reddy,63.4,53.4,65.3,1.5,Average
+STU0974,Deepak Tiwari,76.7,42.9,66.4,2.2,Average
+STU0975,Jaya Mehta,77.1,87.9,86.2,4.4,Good
+STU0976,Om Kumar,63.5,51.7,42.9,3.5,Average
+STU0977,Rahul Singh,63.6,60.5,66.1,2.1,Average
+STU0978,Tanvi Singh,98.6,71.1,64.9,4.0,Good
+STU0979,Hina Joshi,58.6,38.2,38.6,3.3,Average
+STU0980,Harish Mehta,51.1,26.6,28.4,0.4,At Risk
+STU0981,Uday Reddy,42.6,69.7,56.6,2.9,At Risk
+STU0982,Manish Tiwari,85.6,62.9,70.7,5.7,Good
+STU0983,Qasim Pandey,57.4,57.5,46.5,2.1,Average
+STU0984,Qasim Singh,27.5,73.2,47.7,2.4,At Risk
+STU0985,Tanvi Kapoor,64.4,22.3,40.5,2.6,At Risk
+STU0986,Chetan Malhotra,29.4,69.5,62.5,1.0,At Risk
+STU0987,Nikhil Verma,86.0,66.0,85.6,4.1,Good
+STU0988,Nikhil Singh,56.2,38.5,31.6,1.2,At Risk
+STU0989,Chetan Patel,64.6,60.7,42.4,3.0,Average
+STU0990,Eshan Dubey,89.6,96.2,61.8,4.4,Good
+STU0991,Naina Verma,79.5,83.6,96.6,3.2,Good
+STU0992,Tanvi Pandey,84.4,85.8,80.1,7.3,Good
+STU0993,Waqar Pandey,94.0,85.8,65.2,3.2,Good
+STU0994,Waqar Gupta,77.2,63.2,65.5,3.4,Good
+STU0995,Farhan Sharma,77.6,17.7,13.5,2.0,At Risk
+STU0996,Uma Kumar,40.8,7.7,30.3,0.8,At Risk
+STU0997,Tara Sharma,87.6,88.2,61.6,7.0,Good
+STU0998,Isha Bhat,69.6,63.4,43.2,2.9,Average
+STU0999,Vivek Shah,83.1,90.4,86.0,7.2,Good
+STU1000,Irfan Malhotra,55.4,62.6,46.1,4.0,Average
+STU1001,Pooja Gupta,79.3,24.3,24.3,2.1,At Risk
+STU1002,Yashika Kumar,20.4,49.0,33.3,2.2,At Risk
+STU1003,Waqar Yadav,76.3,82.2,81.6,6.2,Good
+STU1004,Veer Patel,97.7,67.3,81.3,5.1,Good
+STU1005,Ananya Menon,88.5,94.0,80.8,6.1,Good
+STU1006,Chetan Yadav,96.9,90.1,87.9,6.5,Good
+STU1007,Irfan Singh,51.9,58.6,34.6,1.4,At Risk
+STU1008,Pooja Kapoor,99.1,76.2,71.4,7.3,Good
+STU1009,Lata Tiwari,77.7,53.4,60.9,3.9,Average
+STU1010,Chirag Bhat,52.9,49.8,32.5,3.3,At Risk
+STU1011,Eshan Shah,75.1,61.3,42.1,4.4,Average
+STU1012,Yashika Verma,70.8,49.5,54.4,2.0,Average
+STU1013,Gaurav Sinha,69.3,42.9,46.1,2.1,Average
+STU1014,Isha Pillai,79.4,41.7,44.9,4.1,Average
+STU1015,Isha Yadav,90.7,74.7,65.6,7.0,Good
+STU1016,Divya Sinha,79.2,81.8,73.5,7.1,Good
+STU1017,Sanjay Malhotra,55.0,46.3,45.2,2.2,Average
+STU1018,Farhan Mishra,78.0,77.6,93.6,4.9,Good
+STU1019,Waqar Shah,63.2,48.0,60.8,2.5,Average
+STU1020,Aarav Verma,79.0,93.1,93.3,5.5,Good
+STU1021,Aarav Mishra,59.7,46.2,40.8,1.9,Average
+STU1022,Arjun Bhat,75.5,52.7,40.3,4.4,Average
+STU1023,Yashika Reddy,79.0,52.5,38.4,2.3,Average
+STU1024,Harish Gupta,61.7,46.5,41.8,3.5,Average
+STU1025,Arjun Mehta,78.6,56.4,47.9,3.0,Average
+STU1026,Uma Malhotra,64.8,50.8,63.6,2.5,Average
+STU1027,Qasim Iyer,34.6,36.4,60.1,1.7,At Risk
+STU1028,Meera Menon,95.3,98.0,99.4,6.8,Good
+STU1029,Nikhil Iyer,77.4,88.0,62.8,4.6,Good
+STU1030,Veer Menon,49.1,53.5,22.9,3.4,At Risk
+STU1031,Rahul Singh,83.5,89.5,62.6,4.6,Good
+STU1032,Lata Pillai,98.2,92.7,85.3,7.4,Good
+STU1033,Farhan Shah,66.5,51.5,40.2,3.6,Average
+STU1034,Sanjay Verma,57.8,57.9,46.3,3.4,Average
+STU1035,Jaideep Mishra,44.8,68.8,32.3,3.3,At Risk
+STU1036,Irfan Verma,94.4,86.9,67.1,5.7,Good
+STU1037,Aditya Singh,55.1,33.8,14.6,2.9,At Risk
+STU1038,Eshan Nair,85.7,89.3,87.7,8.0,Good
+STU1039,Tanvi Menon,95.1,62.2,73.3,5.0,Good
+STU1040,Deepak Mehta,54.6,17.6,26.9,1.5,At Risk
+STU1041,Eshan Sharma,70.7,45.2,39.2,2.9,Average
+STU1042,Yashika Joshi,55.3,59.3,47.2,1.6,Average
+STU1043,Sakshi Sinha,97.3,98.3,91.5,4.6,Good
+STU1044,Tanvi Malhotra,60.1,60.3,54.7,1.7,Average
+STU1045,Om Mishra,91.2,96.1,69.7,7.6,Good
+STU1046,Eshan Pillai,89.9,64.0,79.9,6.0,Good
+STU1047,Manish Bhat,42.3,30.0,7.4,1.0,At Risk
+STU1048,Kavita Malhotra,75.6,86.4,84.3,5.7,Good
+STU1049,Jaya Mishra,69.2,59.5,60.1,3.3,Average
+STU1050,Harish Sharma,93.2,99.7,64.0,5.0,Good
+STU1051,Bharat Sharma,70.8,49.6,51.1,2.4,Average
+STU1052,Meera Mehta,72.9,53.7,61.9,4.1,Average
+STU1053,Vivek Tiwari,51.5,16.3,33.8,0.2,At Risk
+STU1054,Tara Sharma,63.5,40.1,51.3,2.3,Average
+STU1055,Varsha Sharma,58.1,39.9,65.3,2.1,Average
+STU1056,Ritu Reddy,58.7,63.3,65.5,4.2,Average
+STU1057,Waqar Malhotra,42.2,28.7,16.7,0.1,At Risk
+STU1058,Tanvi Patel,37.0,30.5,20.4,1.7,At Risk
+STU1059,Lokesh Shah,61.0,58.5,60.8,2.4,Average
+STU1060,Nikhil Iyer,58.8,61.9,51.8,3.2,Average
+STU1061,Gaurav Verma,52.2,40.7,7.1,1.2,At Risk
+STU1062,Harish Kapoor,90.3,67.1,90.1,6.3,Good
+STU1063,Rahul Singh,73.0,41.0,39.1,4.5,Average
+STU1064,Arjun Mishra,81.6,62.8,63.3,7.8,Good
+STU1065,Irfan Iyer,79.6,19.5,37.5,0.9,At Risk
+STU1066,Tara Pillai,78.8,73.8,69.9,6.7,Good
+STU1067,Eshan Malhotra,99.1,71.6,79.9,4.5,Good
+STU1068,Deepak Sinha,55.6,50.1,45.1,1.6,Average
+STU1069,Divya Shah,65.3,44.5,58.2,4.0,Average
+STU1070,Geeta Tiwari,65.8,48.2,65.5,2.3,Average
+STU1071,Aditya Singh,83.4,63.0,61.0,7.2,Good
+STU1072,Manish Sinha,75.3,53.9,44.3,2.2,Average
+STU1073,Bhavna Iyer,78.2,55.3,47.3,3.1,Average
+STU1074,Ritu Kumar,81.5,78.3,94.9,7.2,Good
+STU1075,Nikhil Nair,88.3,64.0,73.5,3.7,Good
+STU1076,Pooja Menon,95.6,78.1,86.7,3.5,Good
+STU1077,Aditya Kapoor,64.0,62.6,38.6,2.4,Average
+STU1078,Waqar Menon,96.6,85.7,73.2,3.3,Good
+STU1079,Uday Rao,72.1,24.3,45.7,1.6,At Risk
+STU1080,Rahul Mishra,36.4,38.8,47.5,1.5,At Risk
+STU1081,Chirag Joshi,52.3,74.8,52.0,3.9,At Risk
+STU1082,Geeta Sinha,60.4,24.7,13.3,2.7,At Risk
+STU1083,Divya Kumar,37.8,32.5,63.8,1.3,At Risk
+STU1084,Divya Gupta,86.2,69.4,74.7,5.1,Good
+STU1085,Diya Rao,73.8,39.4,52.8,2.8,Average
+STU1086,Uday Iyer,68.6,64.3,49.1,2.6,Average
+STU1087,Farhan Mehta,61.5,33.2,18.6,2.2,At Risk
+STU1088,Vivek Joshi,70.4,44.4,52.5,2.8,Average
+STU1089,Diya Nair,89.4,80.7,67.8,6.6,Good
+STU1090,Eshan Yadav,60.8,39.5,43.7,1.6,Average
+STU1091,Farhan Singh,66.9,60.9,49.5,2.0,Average
+STU1092,Isha Pandey,66.4,52.0,38.2,2.8,Average
+STU1093,Tanvi Kapoor,78.0,38.3,54.6,3.7,Average
+STU1094,Tara Dubey,74.4,44.3,48.4,1.6,Average
+STU1095,Arjun Joshi,64.2,48.6,67.3,4.4,Average
+STU1096,Uday Kumar,81.4,87.9,90.4,6.0,Good
+STU1097,Deepak Kapoor,76.6,80.5,61.3,3.3,Good
+STU1098,Nikhil Pillai,55.4,8.4,41.3,2.1,At Risk
+STU1099,Aditya Shah,37.5,39.6,23.0,0.5,At Risk
+STU1100,Bhavna Pandey,67.1,64.6,60.6,2.2,Average
+STU1101,Tanvi Yadav,73.0,45.8,64.4,1.6,Average
+STU1102,Jaideep Sharma,69.3,48.6,38.9,3.2,Average
+STU1103,Aditya Rao,68.6,42.3,58.7,2.0,Average
+STU1104,Karan Malhotra,20.7,43.5,29.0,0.4,At Risk
+STU1105,Karan Mishra,58.8,50.9,56.1,3.2,Average
+STU1106,Divya Rao,70.6,54.3,52.7,3.1,Average
+STU1107,Divya Kumar,35.6,62.6,45.8,2.8,At Risk
+STU1108,Farhan Sharma,77.9,66.8,87.4,5.2,Good
+STU1109,Bhavna Mishra,67.3,46.1,55.9,2.8,Average
+STU1110,Geeta Joshi,52.5,33.0,29.0,0.8,At Risk
+STU1111,Aditya Pillai,31.5,27.5,31.5,0.2,At Risk
+STU1112,Sanjay Tiwari,85.0,83.3,66.2,3.9,Good
+STU1113,Qasim Singh,72.4,43.2,57.2,2.3,Average
+STU1114,Manish Sinha,71.1,42.2,54.4,1.8,Average
+STU1115,Pooja Singh,75.8,86.2,72.6,5.5,Good
+STU1116,Ananya Singh,41.6,15.4,19.4,0.8,At Risk
+STU1117,Kavita Tiwari,72.8,49.3,53.5,1.8,Average
+STU1118,Diya Kumar,83.8,84.4,75.7,5.2,Good
+STU1119,Deepak Menon,45.5,34.6,32.5,1.5,At Risk
+STU1120,Farhan Verma,61.2,40.0,57.9,3.3,Average
+STU1121,Eshan Verma,60.7,56.0,40.4,2.8,Average
+STU1122,Isha Sinha,39.6,46.1,55.4,1.4,At Risk
+STU1123,Chetan Malhotra,96.4,88.7,79.0,3.5,Good
+STU1124,Aditya Bhat,81.2,93.1,92.0,6.5,Good
+STU1125,Ananya Reddy,36.2,54.4,30.2,3.9,At Risk
+STU1126,Sanjay Iyer,78.5,68.7,79.9,5.1,Good
+STU1127,Jaideep Pillai,85.9,89.7,90.6,3.8,Good
+STU1128,Lokesh Gupta,79.6,70.0,74.8,5.4,Good
+STU1129,Rahul Yadav,79.4,88.2,68.0,5.7,Good
+STU1130,Diya Kumar,75.5,25.2,31.3,0.8,At Risk
+STU1131,Arjun Dubey,30.6,42.2,46.9,3.5,At Risk
+STU1132,Om Dubey,47.5,72.6,23.3,3.8,At Risk
+STU1133,Nikhil Tiwari,75.1,68.1,81.9,6.5,Good
+STU1134,Sakshi Bhat,65.9,45.9,54.4,1.9,Average
+STU1135,Bharat Mehta,33.8,33.0,35.7,0.9,At Risk
+STU1136,Fiza Verma,81.4,79.6,94.7,6.6,Good
+STU1137,Deepak Yadav,58.5,61.2,53.0,3.5,Average
+STU1138,Zara Kumar,96.4,80.7,69.9,7.4,Good
+STU1139,Bharat Joshi,55.0,18.8,37.4,1.3,At Risk
+STU1140,Qasim Shah,89.4,86.1,91.9,5.0,Good
+STU1141,Nikhil Tiwari,61.4,57.4,38.8,2.6,Average
+STU1142,Jaya Sharma,91.5,96.0,85.5,6.1,Good
+STU1143,Zara Kapoor,75.5,96.7,64.7,5.9,Good
+STU1144,Vivek Bhat,55.5,38.9,51.4,3.9,Average
+STU1145,Jaya Bhat,80.8,66.6,63.1,6.5,Good
+STU1146,Vivek Sinha,58.6,38.4,55.0,4.3,Average
+STU1147,Hina Menon,58.0,46.9,62.5,3.3,Average
+STU1148,Zara Yadav,77.3,93.7,72.8,3.9,Good
+STU1149,Jaideep Sharma,61.5,50.5,42.0,4.3,Average
+STU1150,Uday Dubey,79.1,62.7,53.1,3.9,Average
+STU1151,Meera Sharma,96.3,74.0,66.8,5.8,Good
+STU1152,Rahul Verma,85.5,71.4,74.2,6.8,Good
+STU1153,Fiza Shah,77.9,47.1,66.6,3.1,Average
+STU1154,Vivek Sinha,78.2,74.9,97.1,4.1,Good
+STU1155,Meera Gupta,78.4,60.3,61.7,2.1,Average
+STU1156,Divya Mishra,76.4,82.9,77.7,7.4,Good
+STU1157,Ritu Mishra,65.4,38.6,48.1,2.0,Average
+STU1158,Rahul Mehta,91.8,90.9,69.5,6.6,Good
+STU1159,Waqar Verma,75.2,58.7,41.4,3.4,Average
+STU1160,Meera Sinha,79.7,72.8,66.9,7.5,Good
+STU1161,Zara Pillai,76.3,91.9,68.1,4.3,Good
+STU1162,Jaideep Gupta,45.7,19.9,36.1,0.2,At Risk
+STU1163,Nikhil Sinha,45.3,52.8,48.5,0.7,At Risk
+STU1164,Uday Malhotra,56.2,64.0,58.4,3.4,Average
+STU1165,Tara Pillai,49.7,35.7,31.2,1.1,At Risk
+STU1166,Manish Sharma,32.5,32.6,25.0,2.3,At Risk
+STU1167,Uma Kapoor,64.3,63.1,39.9,1.8,Average
+STU1168,Vivek Sinha,88.2,78.2,65.2,7.4,Good
+STU1169,Lata Kumar,30.2,38.4,5.5,0.5,At Risk
+STU1170,Lata Joshi,68.6,41.4,46.7,2.2,Average
+STU1171,Gaurav Mehta,50.0,49.2,27.3,0.5,At Risk
+STU1172,Tanvi Gupta,69.1,54.2,43.0,2.6,Average
+STU1173,Gaurav Verma,84.7,79.1,69.5,4.9,Good
+STU1174,Deepak Verma,65.0,46.8,38.3,4.0,Average
+STU1175,Meera Dubey,92.4,67.8,92.6,4.1,Good
+STU1176,Meera Sharma,48.8,32.8,35.1,0.7,At Risk
+STU1177,Irfan Bhat,98.2,83.2,82.9,4.4,Good
+STU1178,Aarav Menon,70.1,44.1,54.3,3.6,Average
+STU1179,Om Joshi,76.4,58.6,42.4,3.6,Average
+STU1180,Geeta Menon,26.3,40.6,13.0,0.5,At Risk
+STU1181,Uma Gupta,91.4,83.6,63.7,4.8,Good
+STU1182,Uday Verma,56.3,48.7,53.4,2.9,Average
+STU1183,Ananya Kumar,69.3,60.1,47.8,2.5,Average
+STU1184,Manish Kapoor,76.0,44.0,49.4,3.9,Average
+STU1185,Harish Patel,86.0,89.6,79.5,7.4,Good
+STU1186,Irfan Pillai,44.1,30.4,29.8,2.8,At Risk
+STU1187,Chirag Pillai,29.9,18.8,35.3,0.4,At Risk
+STU1188,Uma Pandey,37.5,54.1,36.1,1.7,At Risk
+STU1189,Aditya Sinha,82.0,62.9,85.8,3.9,Good
+STU1190,Divya Menon,64.4,52.8,39.5,2.8,Average
+STU1191,Tanvi Menon,72.2,32.6,22.6,1.8,At Risk
+STU1192,Geeta Gupta,54.3,39.1,27.0,0.8,At Risk
+STU1193,Veer Iyer,92.9,64.7,62.9,3.1,Good
+STU1194,Priya Bhat,63.4,48.7,53.9,2.0,Average
+STU1195,Qasim Menon,83.7,91.4,86.5,3.9,Good
+STU1196,Jaideep Kapoor,60.2,47.6,58.1,3.0,Average
+STU1197,Karan Kapoor,57.2,46.2,67.0,4.3,Average
+STU1198,Om Pillai,71.5,19.2,38.3,1.5,At Risk
+STU1199,Meera Pandey,78.3,15.5,24.2,1.8,At Risk
+STU1200,Manish Gupta,36.7,17.1,13.6,0.3,At Risk
+STU1201,Zara Nair,31.3,68.5,29.3,0.7,At Risk
+STU1202,Veer Kapoor,88.7,69.0,98.8,6.9,Good
+STU1203,Sakshi Kumar,76.1,51.1,53.4,2.4,Average
+STU1204,Jaideep Malhotra,48.1,5.5,13.2,0.3,At Risk
+STU1205,Aarav Kapoor,69.9,64.9,51.1,4.3,Average
+STU1206,Lata Reddy,84.2,86.0,85.3,5.7,Good
+STU1207,Lata Verma,65.4,48.2,64.3,4.2,Average
+STU1208,Jaideep Dubey,51.5,36.6,15.2,1.3,At Risk
+STU1209,Uday Dubey,31.6,53.7,29.5,4.0,At Risk
+STU1210,Meera Tiwari,85.0,67.6,74.7,3.3,Good
+STU1211,Lata Patel,98.7,89.6,84.5,5.1,Good
+STU1212,Gaurav Kumar,48.4,37.3,33.3,1.4,At Risk
+STU1213,Varsha Malhotra,64.0,60.2,62.6,2.9,Average
+STU1214,Chirag Mishra,65.2,64.4,43.4,3.9,Average
+STU1215,Vivek Menon,45.6,14.4,40.9,1.8,At Risk
+STU1216,Isha Tiwari,50.9,64.1,46.9,2.8,At Risk
+STU1217,Deepak Kapoor,73.9,32.0,20.0,1.9,At Risk
+STU1218,Ritu Tiwari,96.0,79.8,76.6,4.4,Good
+STU1219,Veer Menon,75.3,71.2,99.0,7.0,Good
+STU1220,Diya Sharma,98.0,85.4,91.9,5.4,Good
+STU1221,Pooja Joshi,45.3,63.2,43.5,0.7,At Risk
+STU1222,Nikhil Kapoor,95.0,69.8,82.2,6.7,Good
+STU1223,Chirag Pillai,80.3,63.2,86.1,4.8,Good
+STU1224,Pooja Patel,77.0,70.4,87.3,3.4,Good
+STU1225,Veer Sharma,83.9,99.5,84.2,4.2,Good
+STU1226,Bhavna Reddy,62.9,48.6,45.1,1.8,Average
+STU1227,Diya Malhotra,33.7,15.8,32.8,0.4,At Risk
+STU1228,Bharat Gupta,50.8,30.4,17.8,0.9,At Risk
+STU1229,Bharat Bhat,20.4,51.1,33.6,2.6,At Risk
+STU1230,Zara Pillai,92.4,62.1,84.8,4.8,Good
+STU1231,Jaya Reddy,71.3,7.3,13.2,1.4,At Risk
+STU1232,Divya Bhat,87.8,82.2,64.3,5.2,Good
+STU1233,Lata Tiwari,58.5,53.4,43.6,2.3,Average
+STU1234,Sanjay Mishra,42.8,9.6,8.1,1.3,At Risk
+STU1235,Isha Rao,91.1,78.0,85.4,6.9,Good
+STU1236,Chirag Verma,69.7,48.7,67.2,3.1,Average
+STU1237,Sakshi Sharma,75.3,63.4,57.5,4.4,Average
+STU1238,Uday Yadav,28.1,53.1,24.7,1.8,At Risk
+STU1239,Divya Singh,85.5,71.9,89.2,7.9,Good
+STU1240,Varsha Gupta,47.3,52.7,63.5,2.0,At Risk
+STU1241,Zara Gupta,71.9,53.3,65.9,2.7,Average
+STU1242,Veer Singh,70.7,48.9,60.6,3.1,Average
+STU1243,Karan Singh,75.8,97.6,62.1,5.7,Good
+STU1244,Varsha Dubey,75.7,42.6,38.9,2.1,Average
+STU1245,Om Bhat,58.8,54.1,57.9,2.8,Average
+STU1246,Uma Sharma,50.0,69.7,49.7,1.2,At Risk
+STU1247,Chetan Tiwari,71.5,55.1,55.8,1.5,Average
+STU1248,Isha Dubey,61.2,45.1,38.0,4.1,Average
+STU1249,Chetan Gupta,54.5,20.9,21.4,0.8,At Risk
+STU1250,Bhavna Patel,70.0,56.8,48.9,4.0,Average
+STU1251,Varsha Joshi,65.3,43.7,67.3,3.4,Average
+STU1252,Kavita Iyer,75.6,55.0,61.5,3.3,Average
+STU1253,Tara Mehta,70.4,64.2,59.8,4.3,Average
+STU1254,Veer Malhotra,90.2,81.5,69.2,3.9,Good
+STU1255,Jaya Yadav,71.5,58.3,60.6,3.2,Average
+STU1256,Ritu Nair,81.8,84.4,74.4,3.5,Good
+STU1257,Tanvi Mishra,96.3,83.3,80.9,3.6,Good
+STU1258,Divya Verma,60.8,62.2,45.7,2.2,Average
+STU1259,Aditya Sinha,97.6,65.5,72.8,7.8,Good
+STU1260,Karan Bhat,61.5,64.2,50.9,2.5,Average
+STU1261,Harish Verma,71.9,48.7,60.7,2.9,Average
+STU1262,Yashika Sharma,99.2,65.6,86.9,5.2,Good
+STU1263,Chetan Singh,87.8,87.8,61.7,3.4,Good
+STU1264,Sakshi Pandey,50.4,23.3,21.1,2.8,At Risk
+STU1265,Priya Dubey,91.1,77.5,61.0,3.8,Good
+STU1266,Fiza Joshi,81.5,87.2,72.5,5.6,Good
+STU1267,Divya Sharma,81.8,99.9,77.0,5.3,Good
+STU1268,Lokesh Gupta,98.9,64.6,62.3,4.4,Good
+STU1269,Priya Nair,66.5,43.9,42.0,4.4,Average
+STU1270,Deepak Bhat,76.3,43.4,66.0,3.6,Average
+STU1271,Farhan Nair,29.1,46.6,60.3,2.8,At Risk
+STU1272,Aditya Bhat,78.2,66.0,89.0,5.9,Good
+STU1273,Gaurav Pandey,61.4,58.3,53.4,2.5,Average
+STU1274,Pooja Singh,76.1,15.4,46.0,3.0,At Risk
+STU1275,Qasim Mehta,59.1,54.1,42.5,4.4,Average
+STU1276,Zara Gupta,91.7,68.5,67.7,3.2,Good
+STU1277,Yashika Reddy,76.7,40.4,61.3,4.0,Average
+STU1278,Yashika Gupta,71.9,49.6,59.9,4.0,Average
+STU1279,Diya Verma,81.8,90.9,78.0,6.9,Good
+STU1280,Pooja Rao,96.1,62.9,92.6,4.4,Good
+STU1281,Eshan Yadav,63.5,64.9,45.9,2.3,Average
+STU1282,Meera Yadav,87.2,91.3,87.3,5.2,Good
+STU1283,Lata Verma,77.4,79.1,90.2,4.7,Good
+STU1284,Harish Kapoor,84.3,78.4,77.6,6.1,Good
+STU1285,Ritu Patel,68.0,29.5,43.8,2.0,At Risk
+STU1286,Deepak Pandey,94.9,65.5,83.5,5.4,Good
+STU1287,Vivek Mehta,75.8,83.7,90.5,7.4,Good
+STU1288,Bharat Sinha,41.2,65.2,46.0,1.0,At Risk
+STU1289,Meera Mehta,67.1,40.3,67.2,3.1,Average
+STU1290,Bhavna Reddy,62.7,54.6,64.9,3.9,Average
+STU1291,Irfan Iyer,48.0,73.0,57.0,0.5,At Risk
+STU1292,Jaya Pandey,87.7,71.2,64.6,6.1,Good
+STU1293,Fiza Sinha,99.2,79.2,69.4,3.4,Good
+STU1294,Nikhil Bhat,59.2,61.7,54.7,2.2,Average
+STU1295,Tanvi Singh,58.3,55.1,41.8,3.2,Average
+STU1296,Aditya Kapoor,94.0,67.2,81.4,4.1,Good
+STU1297,Arjun Shah,71.8,44.0,44.5,4.1,Average
+STU1298,Lata Shah,77.9,45.2,64.9,1.8,Average
+STU1299,Lata Pandey,56.3,39.4,58.8,2.9,Average
+STU1300,Om Kumar,56.7,35.4,36.4,1.0,At Risk
+STU1301,Farhan Rao,78.9,49.5,52.3,4.2,Average
+STU1302,Jaideep Gupta,64.8,59.7,48.2,2.8,Average
+STU1303,Lokesh Joshi,69.9,45.4,38.8,3.7,Average
+STU1304,Geeta Verma,76.9,44.6,54.5,2.1,Average
+STU1305,Chetan Singh,42.6,5.4,26.0,1.3,At Risk
+STU1306,Sanjay Iyer,65.6,17.0,21.4,1.0,At Risk
+STU1307,Kavita Tiwari,84.4,98.1,89.3,6.0,Good
+STU1308,Harish Dubey,74.5,53.2,45.8,3.6,Average
+STU1309,Pooja Menon,49.7,35.1,31.5,0.7,At Risk
+STU1310,Veer Singh,43.6,13.1,18.0,0.1,At Risk
+STU1311,Deepak Reddy,67.8,54.3,51.8,4.0,Average
+STU1312,Karan Reddy,74.1,54.0,43.8,3.5,Average
+STU1313,Karan Menon,99.7,98.7,60.2,7.8,Good
+STU1314,Rahul Shah,28.8,49.5,52.6,0.5,At Risk
+STU1315,Eshan Sharma,57.3,31.0,31.5,1.0,At Risk
+STU1316,Tara Dubey,90.6,79.2,83.5,3.8,Good
+STU1317,Manish Shah,88.5,92.0,72.8,6.1,Good
+STU1318,Bharat Patel,65.4,41.9,40.8,1.6,Average
+STU1319,Bharat Kumar,25.4,31.1,54.0,2.1,At Risk
+STU1320,Harish Sinha,42.0,33.3,36.9,3.3,At Risk
+STU1321,Manish Sinha,44.2,39.0,60.1,1.5,At Risk
+STU1322,Divya Patel,61.6,27.9,20.8,1.0,At Risk
+STU1323,Lata Patel,30.0,30.6,53.2,3.4,At Risk
+STU1324,Sakshi Mehta,72.8,47.6,45.6,1.5,Average
+STU1325,Vivek Iyer,57.8,40.2,25.6,0.8,At Risk
+STU1326,Pooja Reddy,92.4,73.3,97.0,7.9,Good
+STU1327,Qasim Bhat,71.2,51.8,51.4,4.4,Average
+STU1328,Lata Dubey,62.9,40.9,49.0,1.8,Average
+STU1329,Fiza Verma,72.0,30.8,14.8,1.2,At Risk
+STU1330,Jaideep Yadav,84.9,85.6,94.5,7.7,Good
+STU1331,Aditya Kumar,56.4,14.6,19.3,0.8,At Risk
+STU1332,Om Dubey,36.6,14.4,28.3,1.1,At Risk
+STU1333,Sanjay Kapoor,88.3,74.3,73.3,6.3,Good
+STU1334,Aditya Verma,64.6,53.0,40.3,1.5,Average
+STU1335,Aditya Menon,79.9,50.2,48.6,2.7,Average
+STU1336,Tara Mishra,95.8,70.1,67.3,3.9,Good
+STU1337,Bhavna Malhotra,60.6,51.6,45.8,1.5,Average
+STU1338,Fiza Yadav,71.4,52.5,58.3,3.5,Average
+STU1339,Yashika Sharma,88.5,80.9,64.2,6.3,Good
+STU1340,Varsha Nair,90.3,77.6,93.6,7.5,Good
+STU1341,Tanvi Yadav,63.6,39.5,44.1,2.8,Average
+STU1342,Gaurav Kapoor,46.8,22.1,19.6,0.9,At Risk
+STU1343,Sanjay Patel,66.1,53.6,67.5,2.2,Average
+STU1344,Meera Kumar,72.3,56.9,60.6,4.1,Average
+STU1345,Tanvi Malhotra,67.1,43.8,67.0,3.6,Average
+STU1346,Diya Menon,51.9,44.6,34.4,0.5,At Risk
+STU1347,Rahul Malhotra,47.3,71.8,38.2,3.7,At Risk
+STU1348,Bharat Dubey,36.3,6.2,20.9,0.9,At Risk
+STU1349,Qasim Singh,29.3,52.0,23.7,2.1,At Risk
+STU1350,Kavita Rao,57.7,61.9,48.3,3.6,Average
+STU1351,Lokesh Iyer,77.5,71.2,88.9,7.3,Good
+STU1352,Waqar Bhat,75.6,98.6,93.4,6.5,Good
+STU1353,Irfan Pillai,60.5,42.4,50.2,4.3,Average
+STU1354,Bhavna Shah,55.2,59.0,51.8,4.5,Average
+STU1355,Isha Singh,84.8,86.7,64.3,6.3,Good
+STU1356,Tanvi Kapoor,22.7,62.9,28.4,3.5,At Risk
+STU1357,Hina Reddy,58.0,53.7,65.9,3.0,Average
+STU1358,Geeta Shah,81.6,71.3,98.9,5.0,Good
+STU1359,Lata Sharma,33.2,19.9,5.0,0.4,At Risk
+STU1360,Jaideep Joshi,71.1,39.2,66.4,4.0,Average
+STU1361,Kavita Verma,70.3,22.1,43.4,2.6,At Risk
+STU1362,Nikhil Verma,66.1,52.4,64.2,4.5,Average
+STU1363,Eshan Verma,72.4,40.2,63.9,2.9,Average
+STU1364,Yashika Kapoor,62.4,11.5,33.6,1.0,At Risk
+STU1365,Kavita Yadav,49.9,13.9,48.9,1.3,At Risk
+STU1366,Yashika Rao,97.6,75.2,80.6,6.9,Good
+STU1367,Hina Reddy,28.6,46.3,41.3,0.7,At Risk
+STU1368,Priya Patel,38.7,21.2,22.5,0.8,At Risk
+STU1369,Sanjay Sharma,47.0,33.1,41.3,2.5,At Risk
+STU1370,Nikhil Pillai,80.8,76.9,83.8,5.5,Good
+STU1371,Gaurav Dubey,63.7,62.2,67.0,2.8,Average
+STU1372,Diya Gupta,97.5,86.1,73.6,4.7,Good
+STU1373,Fiza Sinha,91.1,82.2,61.7,7.8,Good
+STU1374,Karan Pillai,99.6,97.6,61.7,3.8,Good
+STU1375,Vivek Gupta,51.4,35.6,23.9,1.3,At Risk
+STU1376,Pooja Malhotra,34.8,56.1,43.3,3.2,At Risk
+STU1377,Tara Singh,59.1,41.1,54.4,4.2,Average
+STU1378,Sakshi Sharma,91.6,92.2,97.1,4.2,Good
+STU1379,Zara Verma,80.1,66.6,84.6,6.9,Good
+STU1380,Isha Sinha,70.3,63.3,57.9,1.7,Average
+STU1381,Lokesh Mishra,85.2,68.6,66.3,4.3,Good
+STU1382,Qasim Mishra,77.6,22.4,18.0,2.0,At Risk
+STU1383,Sanjay Joshi,95.0,68.8,86.1,4.2,Good
+STU1384,Rahul Tiwari,92.7,95.1,88.6,7.0,Good
+STU1385,Bharat Shah,44.8,42.5,33.7,1.1,At Risk
+STU1386,Ananya Pandey,86.6,98.9,84.3,4.7,Good
+STU1387,Aarav Bhat,67.6,58.7,52.6,1.9,Average
+STU1388,Geeta Tiwari,54.3,26.2,42.6,2.4,At Risk
+STU1389,Jaideep Dubey,54.1,36.3,30.8,0.6,At Risk
+STU1390,Aarav Mishra,96.8,91.7,82.7,6.7,Good
+STU1391,Pooja Dubey,91.1,65.2,66.5,7.5,Good
+STU1392,Tanvi Kapoor,45.9,38.4,24.0,2.9,At Risk
+STU1393,Uma Tiwari,98.6,88.0,79.9,6.1,Good
+STU1394,Rahul Iyer,91.5,80.9,82.2,6.6,Good
+STU1395,Zara Pillai,81.7,93.4,79.9,3.4,Good
+STU1396,Eshan Yadav,75.3,64.8,75.7,5.4,Good
+STU1397,Lokesh Rao,59.9,51.6,61.1,1.7,Average
+STU1398,Tanvi Pandey,24.8,60.2,47.9,3.1,At Risk
+STU1399,Irfan Dubey,72.3,64.1,49.8,1.9,Average
+STU1400,Aditya Sinha,38.3,42.7,39.1,0.6,At Risk
+STU1401,Divya Sharma,75.3,87.2,67.1,7.8,Good
+STU1402,Hina Pandey,75.0,44.5,40.0,2.5,Average
+STU1403,Yashika Mehta,96.5,89.5,62.7,6.5,Good
+STU1404,Qasim Dubey,66.5,39.5,50.8,2.9,Average
+STU1405,Naina Nair,78.6,66.6,72.1,3.5,Good
+STU1406,Tanvi Pandey,45.6,47.7,46.6,2.8,At Risk
+STU1407,Divya Bhat,98.9,90.0,82.2,6.1,Good
+STU1408,Chirag Menon,40.8,43.7,6.7,0.7,At Risk
+STU1409,Rahul Tiwari,47.4,42.5,29.5,3.9,At Risk
+STU1410,Uday Yadav,87.3,80.0,66.9,5.2,Good
+STU1411,Pooja Tiwari,97.1,85.4,69.3,3.1,Good
+STU1412,Uma Tiwari,27.8,51.1,32.1,0.9,At Risk
+STU1413,Tanvi Joshi,79.1,92.2,87.7,4.1,Good
+STU1414,Harish Shah,75.3,49.6,60.5,4.2,Average
+STU1415,Nikhil Verma,72.7,47.3,38.2,2.7,Average
+STU1416,Naina Reddy,75.0,50.2,59.6,3.3,Average
+STU1417,Ritu Menon,95.6,75.7,65.1,5.6,Good
+STU1418,Sanjay Kumar,78.7,61.7,65.2,4.5,Good
+STU1419,Veer Sharma,98.8,67.7,77.3,7.7,Good
+STU1420,Qasim Bhat,59.6,40.9,62.4,3.2,Average
+STU1421,Sakshi Yadav,76.5,72.5,92.2,6.7,Good
+STU1422,Bharat Reddy,82.4,98.0,90.5,3.7,Good
+STU1423,Zara Malhotra,79.1,47.2,48.2,1.5,Average
+STU1424,Arjun Sinha,67.6,46.4,50.8,3.4,Average
+STU1425,Uma Sinha,30.9,37.1,37.9,0.0,At Risk
+STU1426,Kavita Menon,68.0,62.2,43.9,1.6,Average
+STU1427,Veer Kapoor,68.9,60.8,61.9,2.0,Average
+STU1428,Meera Pandey,81.2,68.1,94.9,4.1,Good
+STU1429,Jaya Tiwari,37.9,37.9,20.2,0.5,At Risk
+STU1430,Fiza Pandey,66.1,58.0,44.8,1.7,Average
+STU1431,Vivek Shah,83.9,72.9,71.9,4.2,Good
+STU1432,Tanvi Gupta,22.0,73.1,62.4,3.2,At Risk
+STU1433,Ritu Mehta,89.8,63.8,84.3,3.9,Good
+STU1434,Jaideep Nair,84.7,86.4,78.3,5.7,Good
+STU1435,Divya Bhat,40.6,58.4,46.6,3.0,At Risk
+STU1436,Geeta Malhotra,48.5,37.6,20.9,3.2,At Risk
+STU1437,Pooja Malhotra,73.5,39.7,49.6,2.3,Average
+STU1438,Karan Gupta,90.5,82.3,95.8,6.9,Good
+STU1439,Sanjay Menon,82.3,74.5,86.9,6.8,Good
+STU1440,Qasim Singh,86.6,77.6,86.0,5.7,Good
+STU1441,Meera Pillai,69.3,59.7,60.8,2.0,Average
+STU1442,Meera Malhotra,63.6,41.6,40.8,4.0,Average
+STU1443,Tanvi Iyer,67.8,24.9,24.1,2.6,At Risk
+STU1444,Varsha Pillai,74.1,63.1,44.1,3.9,Average
+STU1445,Pooja Sinha,68.7,40.5,60.7,3.2,Average
+STU1446,Sakshi Rao,99.8,94.4,68.3,7.7,Good
+STU1447,Farhan Bhat,36.2,62.3,31.1,2.7,At Risk
+STU1448,Bhavna Tiwari,92.3,64.4,80.4,8.0,Good
+STU1449,Manish Sinha,65.0,56.2,51.5,3.7,Average
+STU1450,Om Singh,23.9,45.5,42.8,3.6,At Risk
+STU1451,Fiza Joshi,55.4,14.6,39.7,0.6,At Risk
+STU1452,Hina Patel,94.5,63.5,79.2,3.5,Good
+STU1453,Sanjay Reddy,61.2,46.3,54.7,3.3,Average
+STU1454,Irfan Nair,92.9,87.0,61.1,4.1,Good
+STU1455,Bharat Verma,80.2,62.4,65.5,7.5,Good
+STU1456,Harish Kumar,36.0,74.1,48.5,0.9,At Risk
+STU1457,Kavita Menon,76.4,98.8,95.4,7.6,Good
+STU1458,Bharat Sinha,87.6,84.6,62.7,6.7,Good
+STU1459,Eshan Kumar,71.9,39.7,55.9,3.7,Average
+STU1460,Uday Kapoor,41.2,18.9,24.2,0.2,At Risk
+STU1461,Jaideep Singh,59.3,52.0,44.4,2.3,Average
+STU1462,Gaurav Menon,76.1,47.7,58.6,2.4,Average
+STU1463,Priya Gupta,82.0,82.6,65.6,7.0,Good
+STU1464,Uday Tiwari,66.0,55.4,49.4,1.7,Average
+STU1465,Bhavna Sharma,59.2,64.4,63.6,3.0,Average
+STU1466,Diya Yadav,59.5,49.6,43.0,3.6,Average
+STU1467,Lokesh Gupta,25.0,36.6,9.1,1.1,At Risk
+STU1468,Lata Gupta,74.1,63.3,66.2,2.0,Average
+STU1469,Gaurav Singh,63.4,57.7,50.6,3.2,Average
+STU1470,Geeta Dubey,49.4,11.3,48.1,0.9,At Risk
+STU1471,Chetan Tiwari,89.2,88.2,92.0,4.0,Good
+STU1472,Chetan Reddy,40.5,60.9,25.2,1.8,At Risk
+STU1473,Chetan Bhat,22.2,20.0,36.2,0.9,At Risk
+STU1474,Zara Sharma,81.5,71.4,96.3,4.2,Good
+STU1475,Arjun Mehta,92.6,70.1,65.5,3.1,Good
+STU1476,Kavita Malhotra,28.4,6.6,6.2,0.2,At Risk
+STU1477,Yashika Sharma,98.6,79.8,84.5,3.8,Good
+STU1478,Uday Shah,71.1,38.5,66.8,1.6,Average
+STU1479,Kavita Sharma,78.0,55.5,41.1,2.7,Average
+STU1480,Sanjay Sharma,85.4,80.3,60.8,4.3,Good
+STU1481,Priya Malhotra,79.7,56.5,66.5,1.9,Average
+STU1482,Nikhil Mishra,79.2,72.6,67.1,3.4,Good
+STU1483,Tara Pillai,89.8,77.2,62.2,4.7,Good
+STU1484,Tanvi Kumar,67.2,40.9,45.5,2.5,Average
+STU1485,Divya Reddy,69.4,41.2,39.1,1.7,Average
+STU1486,Hina Sinha,62.8,56.7,46.1,2.1,Average
+STU1487,Tanvi Gupta,94.3,64.8,74.3,3.6,Good
+STU1488,Chirag Verma,79.5,75.1,95.9,5.4,Good
+STU1489,Tanvi Nair,53.5,27.8,42.9,2.5,At Risk
+STU1490,Eshan Malhotra,55.2,43.7,57.9,2.7,Average
+STU1491,Irfan Dubey,35.1,58.2,42.0,1.9,At Risk
+STU1492,Irfan Menon,66.5,57.2,67.5,1.7,Average
+STU1493,Chetan Pandey,68.0,39.4,45.0,3.0,Average
+STU1494,Geeta Menon,76.1,62.7,99.5,5.1,Good
+STU1495,Gaurav Pillai,59.6,18.7,31.6,2.2,At Risk
+STU1496,Kavita Gupta,25.9,68.5,30.2,3.4,At Risk
+STU1497,Aditya Sharma,90.0,90.0,99.9,7.7,Good
+STU1498,Meera Mishra,32.2,24.1,12.5,0.9,At Risk
+STU1499,Veer Kumar,73.0,50.0,60.0,2.2,Average
+STU1500,Lokesh Malhotra,72.3,64.7,44.8,3.5,Average

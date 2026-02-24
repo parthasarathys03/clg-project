@@ -1,0 +1,5 @@
+PROJECT FEATURES:
+
+1. Student Performance Prediction
+2. AI Explanation of Prediction
+3. AI Study Recommendation System

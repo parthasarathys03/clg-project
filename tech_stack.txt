@@ -1,0 +1,4 @@
+BACKEND: Python FastAPI
+ML MODEL: Scikit-learn RandomForest
+AI ENGINE: OpenAI API
+FRONTEND: Simple Web UI
