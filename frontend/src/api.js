@@ -5,11 +5,21 @@ const api = axios.create({
   timeout: 60000,
 })
 
-export const trainModel    = ()       => api.post('/train')
-export const predictStudent = (data)  => api.post('/predict', data)
-export const getDashboard  = ()       => api.get('/dashboard')
-export const getPredictions = (params)=> api.get('/predictions', { params })
-export const getDatasetInfo = ()      => api.get('/dataset/info')
-export const getHealth      = ()      => api.get('/health')
+export const trainModel      = ()        => api.post('/train')
+export const predictStudent  = (data)    => api.post('/predict', data)
+export const getDashboard    = ()        => api.get('/dashboard')
+export const getPredictions  = (params)  => api.get('/predictions', { params })
+export const getDatasetInfo  = ()        => api.get('/dataset/info')
+export const getHealth       = ()        => api.get('/health')
+
+// ── SaaS endpoints ──────────────────────────────────────────────────────────
+export const batchUpload       = (formData) => api.post('/batch-upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+export const getStudentProgress = (id)      => api.get(`/student/${id}/progress`)
+export const getAlerts          = (params)  => api.get('/alerts', { params })
+export const getRankings        = ()        => api.get('/rankings')
+export const exportPredictions  = ()        => api.get('/export', { responseType: 'blob' })
+export const getModelInsights   = ()        => api.get('/model/insights')
+export const deletePrediction   = (id)      => api.delete(`/predictions/${id}`)
+export const getTrainingHistory = ()        => api.get('/training-history')
 
 export default api

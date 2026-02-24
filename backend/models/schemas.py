@@ -63,3 +63,64 @@ class TrainResponse(BaseModel):
     model_path: str
     dataset_rows: int
     feature_importances: dict
+
+
+class BatchUploadResponse(BaseModel):
+    batch_id: str
+    filename: str
+    total: int
+    processed: int
+    results: List[dict]
+
+
+class AlertStudent(BaseModel):
+    student_id: str
+    student_name: str
+    risk_level: str
+    confidence: float
+    consecutive_at_risk: int
+    last_seen: str
+
+
+class AlertsResponse(BaseModel):
+    count: int
+    students: List[AlertStudent]
+
+
+class StudentProgressResponse(BaseModel):
+    student_id: str
+    student_name: str
+    history: List[dict]
+    total: int
+
+
+class RankingEntry(BaseModel):
+    rank: int
+    student_id: str
+    student_name: str
+    risk_level: str
+    confidence: float
+    composite_score: float
+    inputs: dict
+    timestamp: str
+
+
+class RankingsResponse(BaseModel):
+    total: int
+    rankings: List[RankingEntry]
+
+
+class TrainingHistoryEntry(BaseModel):
+    id: int
+    accuracy: float
+    cv_score: Optional[float]
+    dataset_rows: Optional[int]
+    feature_importances: dict
+    trained_at: str
+
+
+class ModelInsightsResponse(BaseModel):
+    feature_importances: dict
+    training_history: List[TrainingHistoryEntry]
+    current_accuracy: Optional[float]
+    last_trained: Optional[str]

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Users, TrendingUp, AlertTriangle, CheckCircle,
   BarChart2, RefreshCw, Search, GraduationCap
@@ -10,6 +11,7 @@ import {
 } from 'recharts'
 import StatCard from '../components/StatCard'
 import RiskBadge from '../components/RiskBadge'
+import ExportButton from '../components/ExportButton'
 import { getDashboard, getPredictions, getDatasetInfo } from '../api'
 
 const PIE_COLORS = { Good: '#10b981', Average: '#f59e0b', 'At Risk': '#f43f5e' }
@@ -194,6 +196,7 @@ export default function TeacherDashboard() {
             <span className="bg-indigo-50 text-indigo-600 text-xs font-bold px-2 py-0.5 rounded-full border border-indigo-100">{total}</span>
           </p>
           <div className="flex items-center gap-3">
+            <ExportButton />
             <div className="relative">
               <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
               <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
@@ -229,8 +232,10 @@ export default function TeacherDashboard() {
                   <tr key={r.id} className="tr-hover border-b border-gray-50">
                     <td className="py-3 pr-4 text-gray-300">{(page-1)*PER + i + 1}</td>
                     <td className="py-3 pr-4">
-                      <p className="font-semibold text-gray-800">{r.student_name}</p>
-                      <p className="text-gray-300 font-mono text-[10px]">{r.student_id}</p>
+                      <Link to={`/student/${r.student_id}`} className="hover:text-indigo-600 transition-colors">
+                        <p className="font-semibold text-gray-800">{r.student_name}</p>
+                        <p className="text-gray-300 font-mono text-[10px]">{r.student_id}</p>
+                      </Link>
                     </td>
                     <td className="py-3 pr-4 text-gray-500">{r.inputs?.attendance_percentage}%</td>
                     <td className="py-3 pr-4 text-gray-500">{r.inputs?.internal_marks}</td>

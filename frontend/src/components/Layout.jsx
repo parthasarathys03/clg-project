@@ -2,15 +2,23 @@ import React, { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, BrainCircuit, GraduationCap,
-  ClipboardList, BookOpen, Menu, X, Bell,
-  Sparkles, User, ChevronRight
+  ClipboardList, BookOpen, Menu, X,
+  Sparkles, User, ChevronRight,
+  Upload, Trophy, Cpu,
 } from 'lucide-react'
+import NotificationPanel from './NotificationPanel'
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard',         icon: LayoutDashboard, color: '#818cf8' },
   { to: '/predict',   label: 'Predict Student',   icon: BrainCircuit,    color: '#a78bfa' },
   { to: '/teacher',   label: 'Teacher Analytics', icon: GraduationCap,   color: '#c084fc' },
   { to: '/history',   label: 'History',           icon: ClipboardList,   color: '#f472b6' },
+]
+
+const navItemsExtra = [
+  { to: '/batch',     label: 'Batch Upload',      icon: Upload,          color: '#34d399' },
+  { to: '/analytics', label: 'Analytics',         icon: Trophy,          color: '#fbbf24' },
+  { to: '/insights',  label: 'Model Insights',    icon: Cpu,             color: '#38bdf8' },
   { to: '/about',     label: 'About / IEEE',      icon: BookOpen,        color: '#60a5fa' },
 ]
 
@@ -62,13 +70,60 @@ export default function Layout({ children }) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-5 px-2.5 space-y-1">
+        <nav className="flex-1 py-5 px-2.5 space-y-1 overflow-y-auto">
           {!collapsed && (
             <p className="text-white/20 text-[9px] font-bold uppercase tracking-[0.2em] px-3 mb-3 select-none">
               Main Menu
             </p>
           )}
-          {navItems.map(({ to, label, icon: Icon, color }, i) => (
+          {navItems.map(({ to, label, icon: Icon, color }) => (
+            <NavLink
+              key={to}
+              to={to}
+              title={collapsed ? label : undefined}
+              className={({ isActive }) =>
+                `group flex items-center gap-3 px-3 py-2.5 rounded-xl
+                 transition-all duration-200 relative select-none
+                 ${collapsed ? 'justify-center' : ''}
+                 ${isActive
+                   ? 'nav-link-active text-white'
+                   : 'text-white/40 hover:text-white/80 hover:bg-white/[0.06]'
+                 }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && !collapsed && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full"
+                          style={{ background: color }} />
+                  )}
+                  <Icon
+                    size={17}
+                    className="flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
+                    style={{ color: isActive ? color : 'currentColor' }}
+                  />
+                  {!collapsed && (
+                    <>
+                      <span className="text-sm font-medium flex-1 truncate">{label}</span>
+                      {isActive && <ChevronRight size={12} className="text-white/30" />}
+                    </>
+                  )}
+                </>
+              )}
+            </NavLink>
+          ))}
+
+          {/* Divider */}
+          <div className={`py-2 ${collapsed ? 'px-1' : 'px-3'}`}>
+            <div className="border-t border-white/[0.06]" />
+          </div>
+
+          {!collapsed && (
+            <p className="text-white/20 text-[9px] font-bold uppercase tracking-[0.2em] px-3 mb-2 select-none">
+              SaaS Features
+            </p>
+          )}
+          {navItemsExtra.map(({ to, label, icon: Icon, color }) => (
             <NavLink
               key={to}
               to={to}
@@ -149,10 +204,7 @@ export default function Layout({ children }) {
               <span className="text-[11px] font-bold text-emerald-600">System Live</span>
             </div>
 
-            <button className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400
-                               hover:bg-indigo-50 hover:text-indigo-600 transition-all duration-200">
-              <Bell size={17} />
-            </button>
+            <NotificationPanel />
 
             <div className="flex items-center gap-2 bg-white/90 border border-gray-200/80
                             rounded-xl px-3 py-2 cursor-pointer hover:border-indigo-200

@@ -4,25 +4,33 @@ AI-Based Student Performance Prediction and Advisory System
 FastAPI Backend  |  Python 3.10+
 
 Endpoints:
-  GET  /api/health              → system health & model status
-  POST /api/train               → train / retrain the ML model
-  POST /api/predict             → predict + explain + advise a single student
-  GET  /api/dashboard           → aggregated teacher dashboard stats
-  GET  /api/predictions         → paginated prediction history
-  GET  /api/dataset/info        → dataset statistics
+  GET    /api/health                      → system health & model status
+  POST   /api/train                       → train / retrain the ML model
+  POST   /api/predict                     → predict + explain + advise a single student
+  GET    /api/dashboard                   → aggregated teacher dashboard stats
+  GET    /api/predictions                 → paginated prediction history
+  DELETE /api/predictions/{id}            → delete a prediction record
+  GET    /api/dataset/info                → dataset statistics
+  POST   /api/batch-upload                → bulk predict from uploaded CSV
+  GET    /api/student/{student_id}/progress → per-student prediction timeline
+  GET    /api/alerts                      → students with consecutive At Risk flags
+  GET    /api/rankings                    → all students ranked by composite score
+  GET    /api/export                      → download predictions as CSV
+  GET    /api/model/insights              → feature importances + training history
+  GET    /api/training-history            → list of past training runs
 """
 
+import io
 import os
 import sys
-import json
+import csv
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from pydantic import ValidationError
+from fastapi.responses import StreamingResponse
 
 # ── Ensure backend directory is on path ──────────────────────────────────────
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -31,91 +39,45 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from models.schemas import (
-    StudentInput, PredictionResult, ExplanationRequest,
-    ExplanationResponse, DashboardStats, TrainResponse
+    StudentInput, TrainResponse,
+    BatchUploadResponse, AlertsResponse, AlertStudent,
+    StudentProgressResponse, RankingsResponse, RankingEntry,
+    ModelInsightsResponse, TrainingHistoryEntry,
 )
 from ml_model import predict as predictor
 from ml_model import train as trainer
 from ai_advisory.advisor import get_explanation_and_advisory
-
-# ── In-memory prediction store (replace with SQLite for persistence) ──────────
-_prediction_history: List[dict] = []
+import database as db
 
 # ── App setup ────────────────────────────────────────────────────────────────
 app = FastAPI(
     title="AI Student Performance Advisory System",
-    version="1.0.0",
+    version="2.0.0",
     description=(
         "Predicts student academic risk levels using RandomForestClassifier "
-        "and provides AI-generated explanations and study advisory."
+        "and provides AI-generated explanations and study advisory. "
+        "Institutional SaaS edition with SQLite persistence."
     ),
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],      # tighten in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-# ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  HEALTH                                                                      ║
-# ╚══════════════════════════════════════════════════════════════════════════════╝
-
-@app.get("/api/health")
-def health():
-    return {
-        "status": "ok",
-        "model_ready": predictor.is_model_ready(),
-        "openai_configured": bool(os.getenv("OPENAI_API_KEY", "").strip()),
-        "predictions_in_memory": len(_prediction_history),
-    }
+@app.on_event("startup")
+def startup():
+    db.init_db()
 
 
-# ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  TRAINING                                                                    ║
-# ╚══════════════════════════════════════════════════════════════════════════════╝
+# ─── shared helpers ───────────────────────────────────────────────────────────
 
-@app.post("/api/train", response_model=TrainResponse)
-def train_model():
-    """
-    Trains the RandomForestClassifier.
-    Auto-generates synthetic dataset if student_data.csv is absent.
-    """
-    try:
-        result = trainer.train_model()
-        predictor.reload_model()        # refresh cached payload
-        return TrainResponse(
-            message="Model trained successfully",
-            accuracy=result["accuracy"],
-            model_path=result["model_path"],
-            dataset_rows=result["dataset_rows"],
-            feature_importances=result["feature_importances"],
-        )
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-
-# ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  PREDICTION + EXPLANATION + ADVISORY                                         ║
-# ╚══════════════════════════════════════════════════════════════════════════════╝
-
-@app.post("/api/predict")
-def predict_student(student: StudentInput):
-    """
-    Full pipeline: ML prediction → AI explanation → AI advisory.
-
-    Steps:
-      1. Validate input
-      2. Auto-train model if not present
-      3. Run RandomForest prediction
-      4. Call AI advisory module (OpenAI or fallback)
-      5. Store result in memory
-      6. Return unified response
-    """
-    # ── Auto-train if model missing ───────────────────────────────────────────
+def _auto_train():
+    """Train and reload model if not ready."""
     if not predictor.is_model_ready():
         try:
             trainer.train_model()
@@ -126,7 +88,11 @@ def predict_student(student: StudentInput):
                 detail=f"Model not ready and auto-training failed: {exc}"
             )
 
-    # ── ML Prediction ─────────────────────────────────────────────────────────
+
+def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
+    """Core predict + advise pipeline. Returns a storable record dict."""
+    _auto_train()
+
     try:
         ml_result = predictor.predict(
             attendance_percentage=student.attendance_percentage,
@@ -139,7 +105,6 @@ def predict_student(student: StudentInput):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Prediction error: {exc}")
 
-    # ── AI Explanation + Advisory ─────────────────────────────────────────────
     try:
         advisory = get_explanation_and_advisory(
             student_name=student.student_name,
@@ -151,21 +116,23 @@ def predict_student(student: StudentInput):
             confidence=ml_result["confidence"],
             key_factors=ml_result["key_factors"],
         )
-    except Exception as exc:
-        # Non-fatal: return prediction with fallback advisory
+    except Exception:
         advisory = {
-            "explanation": "Advisory generation failed. Please review input data manually.",
+            "explanation":    "Advisory generation failed. Please review input data manually.",
+            "risk_factors":   [],
+            "strengths":      [],
             "recommendations": [
-                "Ensure attendance is above 75%.",
-                "Target 60+ in internal marks.",
-                "Submit all assignments on time.",
-                "Study at least 3 hours daily.",
+                {"priority": 1, "category": "Attendance",      "action": "Ensure attendance is above 75%.",       "timeframe": "2 weeks",  "expected_impact": "Reduces At-Risk probability."},
+                {"priority": 2, "category": "Internal Marks",  "action": "Target 60+ in internal marks.",         "timeframe": "3 weeks",  "expected_impact": "Passes the critical threshold."},
+                {"priority": 3, "category": "Assignment Score","action": "Submit all assignments on time.",        "timeframe": "1 week",   "expected_impact": "Improves composite score."},
+                {"priority": 4, "category": "Study Hours",     "action": "Study at least 3 hours daily.",         "timeframe": "Ongoing",  "expected_impact": "Builds consistent retention."},
             ],
-            "fallback_used": True,
+            "weekly_plan":    {},
+            "report_summary": "Advisory generation failed. Manual review recommended.",
+            "fallback_used":  True,
+            "ai_provider":    "rule-based",
         }
 
-    # ── Build response ────────────────────────────────────────────────────────
-    timestamp = datetime.now().isoformat()
     record = {
         "id":              str(uuid.uuid4()),
         "student_id":      student.student_id,
@@ -175,20 +142,73 @@ def predict_student(student: StudentInput):
         "probabilities":   ml_result["probabilities"],
         "key_factors":     ml_result["key_factors"],
         "explanation":     advisory["explanation"],
+        "risk_factors":    advisory.get("risk_factors", []),
+        "strengths":       advisory.get("strengths", []),
         "recommendations": advisory["recommendations"],
+        "weekly_plan":     advisory.get("weekly_plan", {}),
+        "report_summary":  advisory.get("report_summary", ""),
         "fallback_used":   advisory["fallback_used"],
+        "ai_provider":     advisory.get("ai_provider", "rule-based"),
         "inputs": {
             "attendance_percentage": student.attendance_percentage,
             "internal_marks":        student.internal_marks,
             "assignment_score":      student.assignment_score,
             "study_hours_per_day":   student.study_hours_per_day,
         },
-        "timestamp": timestamp,
+        "timestamp": datetime.now().isoformat(),
+    }
+    db.insert_prediction(record, batch_id=batch_id)
+    return record
+
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  HEALTH                                                                      ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+@app.get("/api/health")
+def health():
+    stats = db.get_dashboard_stats()
+    return {
+        "status": "ok",
+        "model_ready": predictor.is_model_ready(),
+        "openai_configured": bool(os.getenv("OPENAI_API_KEY", "").strip()),
+        "predictions_stored": stats["total_students"],
     }
 
-    _prediction_history.append(record)
 
-    return record
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  TRAINING                                                                    ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+@app.post("/api/train", response_model=TrainResponse)
+def train_model():
+    try:
+        result = trainer.train_model()
+        predictor.reload_model()
+        db.insert_training_history(
+            accuracy=result["accuracy"],
+            cv_score=result.get("cv_score"),
+            dataset_rows=result["dataset_rows"],
+            feature_importances=result["feature_importances"],
+        )
+        return TrainResponse(
+            message="Model trained successfully",
+            accuracy=result["accuracy"],
+            model_path=result["model_path"],
+            dataset_rows=result["dataset_rows"],
+            feature_importances=result["feature_importances"],
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  SINGLE PREDICTION                                                           ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+@app.post("/api/predict")
+def predict_student(student: StudentInput):
+    return _run_prediction(student)
 
 
 # ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -197,40 +217,9 @@ def predict_student(student: StudentInput):
 
 @app.get("/api/dashboard")
 def get_dashboard():
-    """Aggregated statistics for the teacher dashboard."""
-    if not _prediction_history:
-        return {
-            "total_students":         0,
-            "risk_distribution":      {"Good": 0, "Average": 0, "At Risk": 0},
-            "average_attendance":     0,
-            "average_internal_marks": 0,
-            "average_assignment_score": 0,
-            "average_study_hours":    0,
-            "recent_predictions":     [],
-        }
-
-    dist = {"Good": 0, "Average": 0, "At Risk": 0}
-    total_att = total_marks = total_assign = total_hours = 0
-
-    for rec in _prediction_history:
-        dist[rec["risk_level"]] = dist.get(rec["risk_level"], 0) + 1
-        inp = rec["inputs"]
-        total_att    += inp["attendance_percentage"]
-        total_marks  += inp["internal_marks"]
-        total_assign += inp["assignment_score"]
-        total_hours  += inp["study_hours_per_day"]
-
-    n = len(_prediction_history)
-
-    return {
-        "total_students":           n,
-        "risk_distribution":        dist,
-        "average_attendance":       round(total_att / n, 1),
-        "average_internal_marks":   round(total_marks / n, 1),
-        "average_assignment_score": round(total_assign / n, 1),
-        "average_study_hours":      round(total_hours / n, 1),
-        "recent_predictions":       _prediction_history[-10:][::-1],
-    }
+    stats = db.get_dashboard_stats()
+    recent = db.get_predictions(page=1, limit=10)["items"]
+    return {**stats, "recent_predictions": recent}
 
 
 # ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -241,32 +230,18 @@ def get_dashboard():
 def get_predictions(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    risk_level: Optional[str] = Query(None, regex="^(Good|Average|At Risk)$"),
+    risk_level: Optional[str] = Query(None),
     search: Optional[str] = None,
 ):
-    """Paginated + filterable prediction history."""
-    filtered = _prediction_history.copy()
+    return db.get_predictions(page=page, limit=limit, risk_level=risk_level, search=search)
 
-    if risk_level:
-        filtered = [r for r in filtered if r["risk_level"] == risk_level]
-    if search:
-        s = search.lower()
-        filtered = [
-            r for r in filtered
-            if s in r["student_name"].lower() or s in r["student_id"].lower()
-        ]
 
-    total = len(filtered)
-    start = (page - 1) * limit
-    end   = start + limit
-    items = filtered[::-1][start:end]      # newest first
-
-    return {
-        "total":  total,
-        "page":   page,
-        "limit":  limit,
-        "items":  items,
-    }
+@app.delete("/api/predictions/{pred_id}")
+def delete_prediction(pred_id: str):
+    deleted = db.delete_prediction(pred_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Prediction not found")
+    return {"message": "Deleted", "id": pred_id}
 
 
 # ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -275,7 +250,6 @@ def get_predictions(
 
 @app.get("/api/dataset/info")
 def dataset_info():
-    """Returns summary statistics about the training dataset."""
     import pandas as pd
     data_path = os.path.join(os.path.dirname(__file__), "data", "student_data.csv")
     if not os.path.exists(data_path):
@@ -283,7 +257,6 @@ def dataset_info():
 
     df = pd.read_csv(data_path)
     dist = df["performance_label"].value_counts().to_dict()
-
     return {
         "available":    True,
         "total_rows":   len(df),
@@ -299,6 +272,190 @@ def dataset_info():
                         "assignment_score", "study_hours_per_day"]
         },
     }
+
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  BATCH UPLOAD                                                                ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+BATCH_REQUIRED_COLS = {
+    "student_name", "student_id",
+    "attendance_percentage", "internal_marks",
+    "assignment_score", "study_hours_per_day",
+}
+
+@app.post("/api/batch-upload")
+async def batch_upload(file: UploadFile = File(...)):
+    """
+    Accept a CSV file with columns:
+      student_name, student_id, attendance_percentage,
+      internal_marks, assignment_score, study_hours_per_day
+    Runs prediction for every valid row and returns results.
+    """
+    if not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="Only CSV files are accepted.")
+
+    content = await file.read()
+    try:
+        text = content.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        text = content.decode("latin-1")
+
+    reader = csv.DictReader(io.StringIO(text))
+    rows = list(reader)
+    if not rows:
+        raise HTTPException(status_code=400, detail="CSV is empty.")
+
+    missing = BATCH_REQUIRED_COLS - set(r.strip() for r in (reader.fieldnames or []))
+    if missing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"CSV missing required columns: {', '.join(sorted(missing))}"
+        )
+
+    batch_id = str(uuid.uuid4())
+    db.insert_batch_job(batch_id, file.filename, len(rows))
+
+    results = []
+    errors  = []
+    for i, row in enumerate(rows):
+        try:
+            student = StudentInput(
+                student_id=str(row["student_id"]).strip(),
+                student_name=str(row["student_name"]).strip(),
+                attendance_percentage=float(row["attendance_percentage"]),
+                internal_marks=float(row["internal_marks"]),
+                assignment_score=float(row["assignment_score"]),
+                study_hours_per_day=float(row["study_hours_per_day"]),
+            )
+            record = _run_prediction(student, batch_id=batch_id)
+            results.append(record)
+        except Exception as exc:
+            errors.append({"row": i + 2, "error": str(exc)})
+
+    db.update_batch_job(batch_id, len(results), "done")
+
+    return {
+        "batch_id":  batch_id,
+        "filename":  file.filename,
+        "total":     len(rows),
+        "processed": len(results),
+        "failed":    len(errors),
+        "errors":    errors[:10],
+        "results":   results,
+    }
+
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  STUDENT PROGRESS                                                            ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+@app.get("/api/student/{student_id}/progress")
+def student_progress(student_id: str):
+    history = db.get_all_predictions_for_student(student_id)
+    if not history:
+        raise HTTPException(status_code=404, detail="No records found for this student.")
+    return {
+        "student_id":   student_id,
+        "student_name": history[0]["student_name"],
+        "history":      history,
+        "total":        len(history),
+    }
+
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  ALERTS                                                                      ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+@app.get("/api/alerts")
+def get_alerts(min_consecutive: int = Query(2, ge=1)):
+    students = db.get_alerts(min_consecutive=min_consecutive)
+    return {"count": len(students), "students": students}
+
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  RANKINGS                                                                    ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+@app.get("/api/rankings")
+def get_rankings():
+    ranked = db.get_rankings()
+    return {"total": len(ranked), "rankings": ranked}
+
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  EXPORT CSV                                                                  ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+@app.get("/api/export")
+def export_predictions():
+    """Stream all predictions as a downloadable CSV file."""
+    all_data = db.get_predictions(page=1, limit=100000)["items"]
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "student_id", "student_name", "risk_level", "confidence",
+        "attendance_percentage", "internal_marks", "assignment_score",
+        "study_hours_per_day", "explanation", "timestamp",
+    ])
+    for r in all_data:
+        inp = r.get("inputs", {})
+        writer.writerow([
+            r["student_id"], r["student_name"], r["risk_level"],
+            round(r["confidence"] * 100, 1),
+            inp.get("attendance_percentage", ""),
+            inp.get("internal_marks", ""),
+            inp.get("assignment_score", ""),
+            inp.get("study_hours_per_day", ""),
+            r.get("explanation", ""),
+            r["timestamp"],
+        ])
+
+    output.seek(0)
+    filename = f"predictions_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  MODEL INSIGHTS                                                              ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+@app.get("/api/model/insights")
+def model_insights():
+    history = db.get_training_history()
+
+    # Feature importances from the loaded model (if ready)
+    fi = {}
+    if predictor.is_model_ready():
+        try:
+            payload = predictor._load_payload()
+            model  = payload["model"]
+            feats  = payload["feature_cols"]
+            fi = {f: round(float(imp), 4)
+                  for f, imp in zip(feats, model.feature_importances_)}
+        except Exception:
+            pass
+
+    return {
+        "feature_importances":  fi,
+        "training_history":     history,
+        "current_accuracy":     history[0]["accuracy"] if history else None,
+        "last_trained":         history[0]["trained_at"] if history else None,
+    }
+
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  TRAINING HISTORY                                                            ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+@app.get("/api/training-history")
+def training_history():
+    return {"history": db.get_training_history()}
 
 
 # ── Run directly ──────────────────────────────────────────────────────────────

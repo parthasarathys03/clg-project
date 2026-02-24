@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Search, ChevronDown, ChevronUp, BrainCircuit, Lightbulb, ChevronRight, ClipboardList } from 'lucide-react'
 import RiskBadge from '../components/RiskBadge'
+import ImprovementDelta from '../components/ImprovementDelta'
 import { getPredictions } from '../api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
@@ -110,10 +112,15 @@ export default function StudentHistory() {
                         className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-black/[0.02] transition-colors text-left">
                   <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3 items-center">
                     <div>
-                      <p className="font-bold text-gray-800 text-sm leading-tight">{r.student_name}</p>
-                      <p className="font-mono text-gray-400 text-[10px]">{r.student_id}</p>
+                      <Link to={`/student/${r.student_id}`} className="hover:text-indigo-600 transition-colors" onClick={e => e.stopPropagation()}>
+                        <p className="font-bold text-gray-800 text-sm leading-tight">{r.student_name}</p>
+                        <p className="font-mono text-gray-400 text-[10px]">{r.student_id}</p>
+                      </Link>
                     </div>
-                    <RiskBadge level={r.risk_level} />
+                    <div className="flex items-center gap-2">
+                      <RiskBadge level={r.risk_level} />
+                      <ImprovementDelta prev={items[idx + 1]} curr={r} />
+                    </div>
                     <div className="text-sm text-gray-500 hidden sm:block">
                       Confidence: <span className="font-bold text-gray-700">{(r.confidence*100).toFixed(1)}%</span>
                     </div>

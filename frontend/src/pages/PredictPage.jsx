@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {
   BrainCircuit, Send, AlertCircle, Lightbulb, ChevronRight,
-  BarChart2, CheckCircle, XCircle, Sparkles, RotateCcw, User
+  BarChart2, CheckCircle, XCircle, Sparkles, RotateCcw, User,
+  Shield, Star, Calendar, Clock, BookOpen, ClipboardList,
+  TrendingUp, TrendingDown, Minus, FileText, ChevronDown, ChevronUp,
 } from 'lucide-react'
 import RiskBadge from '../components/RiskBadge'
 import { predictStudent } from '../api'
@@ -328,10 +330,20 @@ export default function PredictPage() {
                     {new Date(result.timestamp).toLocaleString()}
                   </p>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                        style={{ background: result.fallback_used ? 'rgba(245,158,11,0.15)' : 'rgba(99,102,241,0.2)',
-                                 color: result.fallback_used ? '#fbbf24' : '#a5b4fc',
-                                 border: `1px solid ${result.fallback_used ? 'rgba(245,158,11,0.25)' : 'rgba(99,102,241,0.3)'}` }}>
-                    {result.fallback_used ? '⚡ Rule-based' : '✦ GPT-3.5'}
+                        style={{
+                          background: result.fallback_used ? 'rgba(245,158,11,0.15)'
+                            : result.ai_provider === 'ollama' ? 'rgba(16,185,129,0.15)'
+                            : 'rgba(99,102,241,0.2)',
+                          color: result.fallback_used ? '#fbbf24'
+                            : result.ai_provider === 'ollama' ? '#34d399'
+                            : '#a5b4fc',
+                          border: `1px solid ${result.fallback_used ? 'rgba(245,158,11,0.25)'
+                            : result.ai_provider === 'ollama' ? 'rgba(16,185,129,0.25)'
+                            : 'rgba(99,102,241,0.3)'}`,
+                        }}>
+                    {result.fallback_used ? '⚡ Rule-based'
+                      : result.ai_provider === 'ollama' ? '⬡ Ollama'
+                      : '✦ Gemini'}
                   </span>
                 </div>
               </div>
@@ -340,57 +352,243 @@ export default function PredictPage() {
         </div>
       </div>
 
-      {/* ── Explanation + Advisory ─────────────────────────────────────── */}
-      {result && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-fade-up">
+      {/* ── AI Intelligence Panels ─────────────────────────────────────── */}
+      {result && <AIIntelligencePanels result={result} theme={theme} />}
+    </div>
+  )
+}
 
-          {/* Explanation */}
-          <div className="card" style={{ borderLeft: `3px solid #818cf8`, background: 'rgba(255,255,255,0.97)' }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-                   style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(168,85,247,0.1))', border: '1px solid rgba(99,102,241,0.2)' }}>
-                <BrainCircuit size={14} className="text-indigo-600" />
-              </div>
-              <p className="font-bold text-gray-800 text-sm">AI Explanation</p>
+// ─────────────────────────────────────────────────────────────────────────────
+//  AI INTELLIGENCE PANELS  (standalone component for clean layout)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SEV_CONFIG = {
+  critical: { color: '#f43f5e', bg: 'rgba(244,63,94,0.08)', border: 'rgba(244,63,94,0.2)', label: 'CRITICAL', icon: XCircle },
+  warning:  { color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', label: 'WARNING',  icon: AlertCircle },
+  good:     { color: '#10b981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)', label: 'OK',       icon: CheckCircle },
+}
+
+const CAT_ICONS = {
+  'Attendance':      Calendar,
+  'Internal Marks':  BookOpen,
+  'Assignment Score':ClipboardList,
+  'Study Hours':     Clock,
+  'General':         Lightbulb,
+}
+
+const PRIORITY_COLORS = ['#f43f5e', '#f59e0b', '#6366f1', '#10b981']
+
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+const DAY_ABBR = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+
+function AIIntelligencePanels({ result, theme }) {
+  const [weekOpen, setWeekOpen] = useState(false)
+  const rfs  = result.risk_factors || []
+  const recs = result.recommendations || []
+  const strengths = result.strengths || []
+  const plan = result.weekly_plan || {}
+  const hasWeeklyPlan = Object.keys(plan).length > 0
+
+  // Flatten rec text for display
+  const recText = (r) => typeof r === 'string' ? r : (r.action || r)
+
+  return (
+    <div className="space-y-5 animate-fade-up">
+
+      {/* Row 1: AI Explanation + Risk Factor Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        {/* ── AI Explanation ── */}
+        <div className="card space-y-4" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: '3px solid #818cf8' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                 style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(168,85,247,0.1))', border: '1px solid rgba(99,102,241,0.2)' }}>
+              <BrainCircuit size={14} className="text-indigo-600" />
             </div>
-            <p className="text-gray-600 text-sm leading-relaxed">{result.explanation}</p>
-            {result.key_factors?.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Key Factors</p>
-                {result.key_factors.map((f, i) => (
-                  <div key={i} className="flex items-start gap-2 rounded-lg px-3 py-2"
-                       style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.1)' }}>
-                    <ChevronRight size={12} className="text-indigo-400 mt-0.5 flex-shrink-0" />
-                    <span className="text-xs text-gray-600">{f}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="flex-1">
+              <p className="font-bold text-gray-800 text-sm">AI Explanation</p>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{
+                      background: result.fallback_used ? 'rgba(245,158,11,0.1)'
+                        : result.ai_provider === 'ollama' ? 'rgba(16,185,129,0.1)'
+                        : 'rgba(99,102,241,0.1)',
+                      color: result.fallback_used ? '#f59e0b'
+                        : result.ai_provider === 'ollama' ? '#10b981'
+                        : '#6366f1',
+                    }}>
+                {result.fallback_used ? 'Rule-based'
+                  : result.ai_provider === 'ollama' ? 'Ollama'
+                  : 'Gemini'}
+              </span>
+            </div>
           </div>
 
-          {/* Advisory */}
-          <div className="card" style={{ borderLeft: '3px solid #10b981', background: 'rgba(255,255,255,0.97)' }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-                   style={{ background: 'linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.1))', border: '1px solid rgba(16,185,129,0.2)' }}>
-                <Lightbulb size={14} className="text-emerald-600" />
-              </div>
-              <p className="font-bold text-gray-800 text-sm">Personalised Advisory</p>
-            </div>
-            <div className="space-y-3">
-              {(result.recommendations || []).map((rec, i) => (
-                <div key={i}
-                     className="flex items-start gap-3 rounded-xl px-3 py-3 animate-fade-up"
-                     style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)', animationDelay: `${i * 0.08}s` }}>
-                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                       style={{ background: 'rgba(16,185,129,0.15)' }}>
-                    <CheckCircle size={11} className="text-emerald-500" />
-                  </div>
-                  <span className="text-sm text-gray-700 leading-relaxed">{rec}</span>
+          <p className="text-gray-600 text-sm leading-relaxed">{result.explanation}</p>
+
+          {/* Strengths */}
+          {strengths.length > 0 && (
+            <div className="rounded-xl p-3 space-y-1.5"
+                 style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.15)' }}>
+              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1">
+                <Star size={9} /> Strengths
+              </p>
+              {strengths.map((s, i) => (
+                <div key={i} className="flex items-start gap-2 text-xs text-emerald-700">
+                  <CheckCircle size={10} className="mt-0.5 flex-shrink-0 text-emerald-500" />
+                  {s}
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Report summary */}
+          {result.report_summary && (
+            <div className="rounded-xl p-3"
+                 style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.1)' }}>
+              <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest flex items-center gap-1 mb-1.5">
+                <FileText size={9} /> Executive Summary
+              </p>
+              <p className="text-xs text-gray-500 leading-relaxed">{result.report_summary}</p>
+            </div>
+          )}
+        </div>
+
+        {/* ── Risk Factor Breakdown ── */}
+        <div className="card space-y-4" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: `3px solid ${theme?.accent || '#818cf8'}` }}>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                 style={{ background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)' }}>
+              <Shield size={14} className="text-rose-500" />
+            </div>
+            <p className="font-bold text-gray-800 text-sm">Risk Factor Analysis</p>
           </div>
+
+          <div className="space-y-3">
+            {rfs.map((rf, i) => {
+              const cfg = SEV_CONFIG[rf.severity] || SEV_CONFIG.good
+              const pct = Math.min(100, (rf.value / (rf.threshold * 1.4)) * 100)
+              return (
+                <div key={rf.key || i} className="rounded-xl p-3 animate-fade-up"
+                     style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, animationDelay: `${i * 0.06}s` }}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <cfg.icon size={11} style={{ color: cfg.color }} />
+                      <span className="font-bold text-gray-700 text-xs">{rf.name}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-black text-sm" style={{ color: cfg.color }}>{rf.value}</span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                            style={{ background: cfg.color + '20', color: cfg.color }}>
+                        {cfg.label}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 rounded-full mb-1" style={{ background: 'rgba(0,0,0,0.08)' }}>
+                    <div className="h-full rounded-full transition-all duration-700"
+                         style={{ width: `${pct}%`, background: cfg.color,
+                                  boxShadow: `0 0 6px ${cfg.color}66` }} />
+                  </div>
+                  <p className="text-[10px]" style={{ color: cfg.color + 'cc' }}>{rf.message}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 2: Priority Recommendations */}
+      <div className="card space-y-4" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: '3px solid #10b981' }}>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+               style={{ background: 'linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.1))', border: '1px solid rgba(16,185,129,0.2)' }}>
+            <Lightbulb size={14} className="text-emerald-600" />
+          </div>
+          <p className="font-bold text-gray-800 text-sm">Priority Action Plan</p>
+          <span className="ml-auto text-[10px] text-gray-400 font-semibold">Ordered by urgency</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {recs.map((rec, i) => {
+            const isObj    = typeof rec === 'object'
+            const action   = isObj ? rec.action   : rec
+            const cat      = isObj ? rec.category : 'General'
+            const tf       = isObj ? rec.timeframe: ''
+            const impact   = isObj ? rec.expected_impact : ''
+            const CatIcon  = CAT_ICONS[cat] || Lightbulb
+            const pColor   = PRIORITY_COLORS[i] || '#818cf8'
+            return (
+              <div key={i} className="rounded-xl p-3.5 animate-fade-up flex flex-col gap-2"
+                   style={{ background: pColor + '08', border: `1px solid ${pColor}25`,
+                            animationDelay: `${i * 0.07}s` }}>
+                {/* Header */}
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black text-white flex-shrink-0"
+                       style={{ background: pColor }}>
+                    {i + 1}
+                  </div>
+                  <div className="flex items-center gap-1 flex-1 min-w-0">
+                    <CatIcon size={11} style={{ color: pColor }} className="flex-shrink-0" />
+                    <span className="text-[10px] font-bold truncate" style={{ color: pColor }}>{cat}</span>
+                  </div>
+                  {tf && (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                          style={{ background: pColor + '15', color: pColor }}>
+                      {tf}
+                    </span>
+                  )}
+                </div>
+                {/* Action */}
+                <p className="text-xs text-gray-700 leading-relaxed">{action}</p>
+                {/* Impact */}
+                {impact && (
+                  <div className="flex items-start gap-1 mt-auto pt-1 border-t border-black/[0.04]">
+                    <TrendingUp size={9} className="mt-0.5 flex-shrink-0" style={{ color: pColor }} />
+                    <p className="text-[10px] leading-snug" style={{ color: pColor + 'bb' }}>{impact}</p>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Row 3: 7-Day Study Plan (collapsible) */}
+      {hasWeeklyPlan && (
+        <div className="card space-y-3" style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.94),rgba(30,27,75,0.90))', border: '1px solid rgba(99,102,241,0.2)' }}>
+          <button onClick={() => setWeekOpen(o => !o)}
+                  className="w-full flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                   style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)' }}>
+                <Calendar size={14} className="text-indigo-300" />
+              </div>
+              <p className="font-bold text-white/80 text-sm">7-Day Personalised Study Plan</p>
+            </div>
+            {weekOpen
+              ? <ChevronUp size={14} className="text-white/40" />
+              : <ChevronDown size={14} className="text-white/40" />
+            }
+          </button>
+
+          {weekOpen && (
+            <div className="grid grid-cols-1 sm:grid-cols-7 gap-2 animate-fade-up">
+              {DAYS.map((day, i) => {
+                const task = plan[day] || plan[day.toLowerCase()] || '—'
+                const isWeekend = i >= 5
+                return (
+                  <div key={day} className="rounded-xl p-2.5"
+                       style={{ background: isWeekend ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.05)',
+                                border: isWeekend ? '1px solid rgba(99,102,241,0.25)' : '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[9px] font-black uppercase tracking-widest mb-1.5"
+                       style={{ color: isWeekend ? '#818cf8' : 'rgba(255,255,255,0.35)' }}>
+                      {DAY_ABBR[i]}
+                    </p>
+                    <p className="text-[10px] text-white/55 leading-snug">{task}</p>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
