@@ -1,16 +1,17 @@
 import React from 'react'
 
-const config = {
-  'Good':     { cls: 'badge-good',    dot: 'bg-green-500'  },
-  'Average':  { cls: 'badge-average', dot: 'bg-yellow-500' },
-  'At Risk':  { cls: 'badge-risk',    dot: 'bg-red-500'    },
+const cfg = {
+  'Good':    { cls: 'badge-good',    dot: '#10b981', emoji: '✦' },
+  'Average': { cls: 'badge-average', dot: '#f59e0b', emoji: '◈' },
+  'At Risk': { cls: 'badge-risk',    dot: '#f43f5e', emoji: '▲' },
 }
 
 export default function RiskBadge({ level, size = 'md' }) {
-  const { cls, dot } = config[level] || config['Average']
+  const { cls, dot, emoji } = cfg[level] || cfg['Average']
+  const large = size === 'lg'
   return (
-    <span className={`${cls} ${size === 'lg' ? 'text-sm px-3 py-1' : ''}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${dot} inline-block mr-1`} />
+    <span className={`${cls} ${large ? 'text-sm px-4 py-1.5 gap-2' : 'text-xs px-2.5 py-0.5'}`}>
+      <span style={{ color: dot, fontSize: large ? '10px' : '8px' }}>{emoji}</span>
       {level}
     </span>
   )

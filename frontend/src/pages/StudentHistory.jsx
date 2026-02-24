@@ -1,129 +1,156 @@
 import React, { useEffect, useState } from 'react'
-import { Search, ChevronDown, ChevronUp, BrainCircuit, Lightbulb, ChevronRight } from 'lucide-react'
+import { Search, ChevronDown, ChevronUp, BrainCircuit, Lightbulb, ChevronRight, ClipboardList } from 'lucide-react'
 import RiskBadge from '../components/RiskBadge'
-import LoadingSpinner from '../components/LoadingSpinner'
 import { getPredictions } from '../api'
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
-} from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+
+const riskTheme = {
+  Good:     { accent: '#10b981', bg: 'rgba(16,185,129,0.06)',  border: 'rgba(16,185,129,0.15)' },
+  Average:  { accent: '#f59e0b', bg: 'rgba(245,158,11,0.06)', border: 'rgba(245,158,11,0.15)' },
+  'At Risk':{ accent: '#f43f5e', bg: 'rgba(244,63,94,0.06)',  border: 'rgba(244,63,94,0.15)'  },
+}
+const BAR_COLORS = ['#818cf8', '#a78bfa', '#c084fc', '#f472b6']
 
 export default function StudentHistory() {
-  const [items, setItems]         = useState([])
-  const [total, setTotal]         = useState(0)
-  const [loading, setLoading]     = useState(true)
-  const [search, setSearch]       = useState('')
-  const [filterRisk, setFilterRisk] = useState('')
-  const [page, setPage]           = useState(1)
-  const [expanded, setExpanded]   = useState(null)
-
-  const PER_PAGE = 15
+  const [items, setItems]     = useState([])
+  const [total, setTotal]     = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch]   = useState('')
+  const [filter, setFilter]   = useState('')
+  const [page, setPage]       = useState(1)
+  const [expanded, setExpand] = useState(null)
+  const PER = 15
 
   const load = async () => {
     setLoading(true)
     try {
-      const res = await getPredictions({
-        page, limit: PER_PAGE,
-        risk_level: filterRisk || undefined,
-        search: search || undefined,
-      })
+      const res = await getPredictions({ page, limit: PER, risk_level: filter || undefined, search: search || undefined })
       setItems(res.data.items)
       setTotal(res.data.total)
     } catch (e) { console.error(e) }
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [page, filterRisk, search])
+  useEffect(() => { load() }, [page, filter, search])
 
-  const toggle = id => setExpanded(prev => prev === id ? null : id)
-
-  const totalPages = Math.ceil(total / PER_PAGE)
+  const toggle = id => setExpand(p => p === id ? null : id)
+  const totalPages = Math.ceil(total / PER)
 
   return (
     <div className="space-y-5 max-w-5xl mx-auto">
-      <div>
-        <h2 className="text-xl font-bold text-gray-800">Prediction History</h2>
-        <p className="text-sm text-gray-400">All past student predictions with AI explanations</p>
+
+      {/* Header */}
+      <div className="flex items-center gap-4 animate-fade-up">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+             style={{ background: 'linear-gradient(135deg,#f472b6,#c084fc)', boxShadow: '0 0 24px rgba(244,114,182,0.4)' }}>
+          <ClipboardList size={22} className="text-white" />
+        </div>
+        <div>
+          <h2 className="font-extrabold text-gray-800 text-xl">Prediction History</h2>
+          <p className="text-gray-400 text-sm">{total} prediction{total !== 1 ? 's' : ''} — all AI explanations stored</p>
+        </div>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 animate-fade-up s1">
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1) }}
-            placeholder="Search name or ID…"
-            className="input-field pl-9 w-56 text-sm"
-          />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+          <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
+                 placeholder="Search name or ID…" className="input-field pl-9 w-52 text-sm" />
         </div>
-        <select
-          value={filterRisk}
-          onChange={e => { setFilterRisk(e.target.value); setPage(1) }}
-          className="input-field text-sm w-40"
-        >
-          <option value="">All Risk Levels</option>
-          <option>Good</option>
-          <option>Average</option>
-          <option>At Risk</option>
-        </select>
-        <span className="text-sm text-gray-400 flex items-center">{total} record{total !== 1 ? 's' : ''}</span>
+        <div className="flex gap-2">
+          {['', 'Good', 'Average', 'At Risk'].map(l => (
+            <button key={l}
+                    onClick={() => { setFilter(l); setPage(1) }}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 border
+                      ${filter === l
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg'
+                        : 'bg-white/90 text-gray-500 border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
+                      }`}>
+              {l || 'All'}
+            </button>
+          ))}
+        </div>
       </div>
 
+      {/* List */}
       {loading ? (
-        <LoadingSpinner message="Loading history…" />
+        <div className="space-y-3">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-16 rounded-2xl animate-pulse"
+                 style={{ background: 'rgba(99,102,241,0.06)' }} />
+          ))}
+        </div>
       ) : items.length === 0 ? (
-        <div className="card text-center py-12 border-dashed border-2 border-gray-200">
-          <p className="text-gray-400">No records found.</p>
+        <div className="rounded-2xl p-16 text-center animate-fade-up"
+             style={{ background: 'rgba(99,102,241,0.04)', border: '1px dashed rgba(99,102,241,0.2)' }}>
+          <ClipboardList size={40} style={{ color: 'rgba(129,140,248,0.3)', margin: '0 auto 12px' }} />
+          <p className="text-gray-400 font-semibold text-sm">No records found</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {items.map(r => {
-            const isOpen = expanded === r.id
-            const inputBars = [
-              { name: 'Attendance',  value: r.inputs?.attendance_percentage, fill: '#3b82f6' },
-              { name: 'Int. Marks',  value: r.inputs?.internal_marks,        fill: '#8b5cf6' },
-              { name: 'Assignments', value: r.inputs?.assignment_score,       fill: '#06b6d4' },
-              { name: 'Study×10',    value: (r.inputs?.study_hours_per_day||0)*10, fill: '#10b981' },
+        <div className="space-y-2 animate-fade-up s2">
+          {items.map((r, idx) => {
+            const isOpen  = expanded === r.id
+            const theme   = riskTheme[r.risk_level] || riskTheme.Average
+            const bars    = [
+              { n: 'Attendance',  v: r.inputs?.attendance_percentage, c: BAR_COLORS[0] },
+              { n: 'Int Marks',   v: r.inputs?.internal_marks,        c: BAR_COLORS[1] },
+              { n: 'Assignments', v: r.inputs?.assignment_score,       c: BAR_COLORS[2] },
+              { n: 'Study×10',    v: (r.inputs?.study_hours_per_day||0)*10, c: BAR_COLORS[3] },
             ]
             return (
-              <div key={r.id} className="card p-0 overflow-hidden">
-                {/* Row header */}
-                <button
-                  onClick={() => toggle(r.id)}
-                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors text-left"
-                >
+              <div key={r.id} className="rounded-2xl overflow-hidden transition-all duration-300"
+                   style={{ background: isOpen ? theme.bg : 'rgba(255,255,255,0.97)',
+                            border: `1px solid ${isOpen ? theme.border : 'rgba(229,231,235,0.7)'}`,
+                            boxShadow: isOpen ? `0 4px 24px ${theme.accent}22` : 'none',
+                            animationDelay: `${idx * 0.03}s` }}>
+
+                {/* Row */}
+                <button onClick={() => toggle(r.id)}
+                        className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-black/[0.02] transition-colors text-left">
                   <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3 items-center">
                     <div>
-                      <p className="font-semibold text-gray-800 text-sm">{r.student_name}</p>
-                      <p className="font-mono text-xs text-gray-400">{r.student_id}</p>
+                      <p className="font-bold text-gray-800 text-sm leading-tight">{r.student_name}</p>
+                      <p className="font-mono text-gray-400 text-[10px]">{r.student_id}</p>
                     </div>
-                    <div className="flex gap-2 items-center">
-                      <RiskBadge level={r.risk_level} />
+                    <RiskBadge level={r.risk_level} />
+                    <div className="text-sm text-gray-500 hidden sm:block">
+                      Confidence: <span className="font-bold text-gray-700">{(r.confidence*100).toFixed(1)}%</span>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      Confidence: <span className="font-semibold text-gray-700">{(r.confidence * 100).toFixed(1)}%</span>
-                    </div>
-                    <div className="text-xs text-gray-400">
+                    <p className="text-gray-300 text-xs hidden sm:block">
                       {new Date(r.timestamp).toLocaleString()}
-                    </div>
+                    </p>
                   </div>
-                  {isOpen ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                  <div className="flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200"
+                       style={{ background: isOpen ? theme.bg : 'rgba(99,102,241,0.06)' }}>
+                    {isOpen
+                      ? <ChevronUp size={13} style={{ color: theme.accent }} />
+                      : <ChevronDown size={13} className="text-gray-400" />
+                    }
+                  </div>
                 </button>
 
-                {/* Expanded detail */}
+                {/* Expanded */}
                 {isOpen && (
-                  <div className="border-t border-gray-100 px-5 py-5 bg-gray-50 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="border-t px-5 py-5 grid grid-cols-1 lg:grid-cols-3 gap-5 animate-fade-up"
+                       style={{ borderColor: theme.border }}>
+
                     {/* Bar chart */}
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Input Profile</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Input Profile</p>
                       <ResponsiveContainer width="100%" height={140}>
-                        <BarChart data={inputBars} margin={{ left: -25 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                          <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
-                          <Tooltip formatter={(v, n) => [n === 'Study×10' ? (v/10).toFixed(1)+' hrs' : v, n]} />
-                          <Bar dataKey="value" radius={[3, 3, 0, 0]}>
-                            {inputBars.map(b => <Cell key={b.name} fill={b.fill} />)}
+                        <BarChart data={bars} margin={{ left: -28 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" />
+                          <XAxis dataKey="n" tick={{ fontSize: 9, fill: '#9ca3af' }} />
+                          <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: '#9ca3af' }} />
+                          <Tooltip
+                            contentStyle={{ background: 'rgba(15,12,41,0.95)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '10px', color: 'white', fontSize: 11 }}
+                            formatter={(v, n) => [n === 'Study×10' ? (v/10).toFixed(1)+' hrs' : v, n]}
+                          />
+                          <Bar dataKey="v" radius={[4, 4, 0, 0]}>
+                            {bars.map(b => (
+                              <Cell key={b.n} fill={b.c} style={{ filter: `drop-shadow(0 0 3px ${b.c}88)` }} />
+                            ))}
                           </Bar>
                         </BarChart>
                       </ResponsiveContainer>
@@ -131,30 +158,27 @@ export default function StudentHistory() {
 
                     {/* Explanation */}
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1">
-                        <BrainCircuit size={12} /> AI Explanation
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1">
+                        <BrainCircuit size={10} className="text-indigo-400" /> AI Explanation
                       </p>
                       <p className="text-sm text-gray-600 leading-relaxed">{r.explanation}</p>
-                      {r.key_factors?.length > 0 && (
-                        <ul className="mt-3 space-y-1">
-                          {r.key_factors.slice(0, 3).map((f, i) => (
-                            <li key={i} className="flex items-start gap-1.5 text-xs text-gray-500">
-                              <ChevronRight size={11} className="text-blue-400 mt-0.5" />{f}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                      {r.key_factors?.slice(0,2).map((f, i) => (
+                        <div key={i} className="flex items-start gap-1.5 mt-2 text-xs text-gray-500">
+                          <ChevronRight size={10} className="text-indigo-400 mt-0.5 flex-shrink-0" />{f}
+                        </div>
+                      ))}
                     </div>
 
                     {/* Recommendations */}
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1">
-                        <Lightbulb size={12} /> Recommendations
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1">
+                        <Lightbulb size={10} className="text-emerald-400" /> Advisory
                       </p>
                       <ul className="space-y-2">
                         {(r.recommendations || []).map((rec, i) => (
-                          <li key={i} className="flex items-start gap-2 text-xs text-gray-600 bg-white rounded px-2 py-1.5 border border-gray-100">
-                            <span className="text-green-500 mt-0.5">✓</span> {rec}
+                          <li key={i} className="flex items-start gap-2 rounded-lg px-2.5 py-2 text-xs text-gray-600"
+                              style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.12)' }}>
+                            <span className="text-emerald-500 mt-0.5 flex-shrink-0">✓</span> {rec}
                           </li>
                         ))}
                       </ul>
@@ -169,17 +193,13 @@ export default function StudentHistory() {
 
       {/* Pagination */}
       {!loading && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">
-            {(page-1)*PER_PAGE+1}–{Math.min(page*PER_PAGE, total)} of {total}
-          </span>
+        <div className="flex items-center justify-between animate-fade-up">
+          <span className="text-xs text-gray-400">{(page-1)*PER+1}–{Math.min(page*PER,total)} of {total}</span>
           <div className="flex gap-2">
-            <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page===1}
+            <button onClick={() => setPage(p => Math.max(1,p-1))} disabled={page===1}
                     className="btn-secondary text-xs px-3 py-1.5">← Prev</button>
-            <span className="text-xs text-gray-500 flex items-center px-2">
-              {page} / {totalPages}
-            </span>
-            <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page===totalPages}
+            <span className="text-xs text-gray-400 flex items-center px-2">{page}/{totalPages}</span>
+            <button onClick={() => setPage(p => Math.min(totalPages,p+1))} disabled={page===totalPages}
                     className="btn-secondary text-xs px-3 py-1.5">Next →</button>
           </div>
         </div>

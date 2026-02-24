@@ -44,7 +44,7 @@ def load_or_generate_dataset() -> pd.DataFrame:
         import sys, os as _os
         sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), ".."))
         from data.generate_dataset import generate_dataset
-        df = generate_dataset(n_samples=1500)
+        df = generate_dataset(n_samples=10000)
     else:
         df = pd.read_csv(DATASET_PATH)
         print(f"[Train] Loaded dataset: {len(df)} rows from {DATASET_PATH}")

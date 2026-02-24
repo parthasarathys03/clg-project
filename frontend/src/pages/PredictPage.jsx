@@ -1,69 +1,85 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
-  BrainCircuit, Send, AlertCircle, Lightbulb,
-  ChevronRight, BarChart2, CheckCircle, XCircle
+  BrainCircuit, Send, AlertCircle, Lightbulb, ChevronRight,
+  BarChart2, CheckCircle, XCircle, Sparkles, RotateCcw, User
 } from 'lucide-react'
 import RiskBadge from '../components/RiskBadge'
-import LoadingSpinner from '../components/LoadingSpinner'
 import { predictStudent } from '../api'
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   PolarRadiusAxis, ResponsiveContainer, Tooltip
 } from 'recharts'
 
-const INITIAL = {
-  student_id: '',
-  student_name: '',
-  attendance_percentage: '',
-  internal_marks: '',
-  assignment_score: '',
-  study_hours_per_day: '',
+const FIELDS = [
+  { key: 'attendance_percentage', label: 'Attendance %',      placeholder: '0 – 100', type: 'number', hint: '≥ 75% recommended', icon: '📅' },
+  { key: 'internal_marks',        label: 'Internal Marks',    placeholder: '0 – 100', type: 'number', hint: 'Out of 100',          icon: '📝' },
+  { key: 'assignment_score',      label: 'Assignment Score',  placeholder: '0 – 100', type: 'number', hint: 'Out of 100',          icon: '📋' },
+  { key: 'study_hours_per_day',   label: 'Study Hours/Day',   placeholder: '0 – 12',  type: 'number', hint: '≥ 3 hrs recommended', icon: '🕐' },
+]
+const INIT = { student_id: '', student_name: '', attendance_percentage: '', internal_marks: '', assignment_score: '', study_hours_per_day: '' }
+
+const riskTheme = {
+  Good:     { grad: 'linear-gradient(135deg,#022c22,#064e3b)', accent: '#10b981', glow: 'rgba(16,185,129,0.4)',  label: 'Excellent Performance' },
+  Average:  { grad: 'linear-gradient(135deg,#451a03,#78350f)', accent: '#f59e0b', glow: 'rgba(245,158,11,0.4)', label: 'Average Performance'    },
+  'At Risk':{ grad: 'linear-gradient(135deg,#4c0519,#881337)', accent: '#f43f5e', glow: 'rgba(244,63,94,0.4)',  label: 'Needs Intervention'     },
 }
 
-const FIELDS = [
-  { key: 'student_id',            label: 'Student ID',          placeholder: 'e.g. STU001', type: 'text',   hint: 'Unique identifier' },
-  { key: 'student_name',          label: 'Student Name',         placeholder: 'e.g. Rahul Sharma', type: 'text',   hint: 'Full name' },
-  { key: 'attendance_percentage', label: 'Attendance (%)',       placeholder: '0 – 100',   type: 'number', hint: 'Recommended ≥ 75%' },
-  { key: 'internal_marks',        label: 'Internal Marks',       placeholder: '0 – 100',   type: 'number', hint: 'Out of 100' },
-  { key: 'assignment_score',      label: 'Assignment Score',     placeholder: '0 – 100',   type: 'number', hint: 'Out of 100' },
-  { key: 'study_hours_per_day',   label: 'Study Hours / Day',    placeholder: '0 – 12',    type: 'number', hint: 'Recommended ≥ 3 hrs' },
-]
+function CircleProgress({ value, color, size = 90 }) {
+  const radius = (size - 10) / 2
+  const circ   = 2 * Math.PI * radius
+  const [dash, setDash] = useState(circ)
 
-const riskColor = {
-  Good:     'border-green-400 bg-green-50',
-  Average:  'border-yellow-400 bg-yellow-50',
-  'At Risk':'border-red-400 bg-red-50',
+  useEffect(() => {
+    const timer = setTimeout(() => setDash(circ * (1 - value / 100)), 100)
+    return () => clearTimeout(timer)
+  }, [value, circ])
+
+  return (
+    <svg width={size} height={size} className="rotate-[-90deg]">
+      <circle cx={size/2} cy={size/2} r={radius}
+              fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={8} />
+      <circle cx={size/2} cy={size/2} r={radius}
+              fill="none" stroke={color} strokeWidth={8}
+              strokeDasharray={circ} strokeDashoffset={dash}
+              strokeLinecap="round"
+              style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.34,1.56,0.64,1)',
+                       filter: `drop-shadow(0 0 6px ${color})` }} />
+    </svg>
+  )
 }
 
 export default function PredictPage() {
-  const [form, setForm]       = useState(INITIAL)
+  const [form, setForm]       = useState(INIT)
   const [errors, setErrors]   = useState({})
   const [result, setResult]   = useState(null)
   const [loading, setLoading] = useState(false)
-  const [apiError, setApiError] = useState('')
+  const [apiErr, setApiErr]   = useState('')
+  const [revealed, setRevealed] = useState(false)
+  const resultRef = useRef(null)
 
   const validate = () => {
-    const errs = {}
-    if (!form.student_id.trim())   errs.student_id   = 'Required'
-    if (!form.student_name.trim()) errs.student_name = 'Required'
-    const numFields = [
-      { key: 'attendance_percentage', min: 0,  max: 100 },
-      { key: 'internal_marks',        min: 0,  max: 100 },
-      { key: 'assignment_score',      min: 0,  max: 100 },
-      { key: 'study_hours_per_day',   min: 0,  max: 12  },
+    const e = {}
+    if (!form.student_id.trim())   e.student_id   = 'Required'
+    if (!form.student_name.trim()) e.student_name = 'Required'
+    const nums = [
+      { k: 'attendance_percentage', min: 0, max: 100 },
+      { k: 'internal_marks',        min: 0, max: 100 },
+      { k: 'assignment_score',      min: 0, max: 100 },
+      { k: 'study_hours_per_day',   min: 0, max: 12  },
     ]
-    numFields.forEach(({ key, min, max }) => {
-      const v = parseFloat(form[key])
-      if (form[key] === '') errs[key] = 'Required'
-      else if (isNaN(v))   errs[key] = 'Must be a number'
-      else if (v < min || v > max) errs[key] = `Must be ${min}–${max}`
+    nums.forEach(({ k, min, max }) => {
+      const v = parseFloat(form[k])
+      if (form[k] === '')           e[k] = 'Required'
+      else if (isNaN(v))            e[k] = 'Must be a number'
+      else if (v < min || v > max)  e[k] = `Must be ${min}–${max}`
     })
-    return errs
+    return e
   }
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value })
     if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: '' })
+    if (apiErr) setApiErr('')
   }
 
   const handleSubmit = async e => {
@@ -72,232 +88,308 @@ export default function PredictPage() {
     if (Object.keys(errs).length) { setErrors(errs); return }
 
     setLoading(true)
-    setApiError('')
+    setApiErr('')
     setResult(null)
+    setRevealed(false)
 
     try {
-      const payload = {
+      const res = await predictStudent({
         student_id:            form.student_id.trim(),
         student_name:          form.student_name.trim(),
         attendance_percentage: parseFloat(form.attendance_percentage),
         internal_marks:        parseFloat(form.internal_marks),
         assignment_score:      parseFloat(form.assignment_score),
         study_hours_per_day:   parseFloat(form.study_hours_per_day),
-      }
-      const res = await predictStudent(payload)
+      })
       setResult(res.data)
+      setTimeout(() => {
+        setRevealed(true)
+        resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
     } catch (err) {
-      setApiError(err.response?.data?.detail || 'Prediction request failed.')
+      setApiErr(err.response?.data?.detail || 'Prediction failed. Please try again.')
     }
     setLoading(false)
   }
 
-  const handleReset = () => { setForm(INITIAL); setResult(null); setApiError(''); setErrors({}) }
+  const handleReset = () => { setForm(INIT); setResult(null); setErrors({}); setApiErr(''); setRevealed(false) }
 
-  // Radar chart data
+  const theme     = result ? (riskTheme[result.risk_level] || riskTheme.Average) : null
   const radarData = result ? [
-    { subject: 'Attendance',   value: result.inputs.attendance_percentage,       max: 100 },
-    { subject: 'Int. Marks',   value: result.inputs.internal_marks,              max: 100 },
-    { subject: 'Assignments',  value: result.inputs.assignment_score,            max: 100 },
-    { subject: 'Study Hrs',    value: result.inputs.study_hours_per_day * 8.33,  max: 100 },
+    { s: 'Attendance',  v: result.inputs.attendance_percentage },
+    { s: 'Int Marks',   v: result.inputs.internal_marks        },
+    { s: 'Assignments', v: result.inputs.assignment_score       },
+    { s: 'Study',       v: result.inputs.study_hours_per_day * 8.33 },
   ] : []
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto">
 
-      {/* ── Page header ─────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-          <BrainCircuit size={20} className="text-blue-600" />
+      {/* ── Page header ────────────────────────────────────────────────── */}
+      <div className="animate-fade-up flex items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+             style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)', boxShadow: '0 0 24px rgba(99,102,241,0.5)' }}>
+          <BrainCircuit size={22} className="text-white" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-800">Student Performance Predictor</h2>
-          <p className="text-sm text-gray-400">
-            RandomForest ML prediction + AI-generated explanation and advisory
-          </p>
+          <h2 className="font-extrabold text-gray-800 text-xl">Performance Predictor</h2>
+          <p className="text-gray-400 text-sm">RandomForest ML + AI Explanation + Personalised Advisory</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* ── Input form ────────────────────────────────────────────────── */}
-        <div className="card">
-          <h3 className="font-semibold text-gray-700 mb-5">Student Academic Data</h3>
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            {FIELDS.map(({ key, label, placeholder, type, hint }) => (
-              <div key={key}>
-                <label className="label">
-                  {label}
-                  <span className="text-gray-400 font-normal ml-1 text-xs">({hint})</span>
-                </label>
-                <input
-                  type={type}
-                  name={key}
-                  value={form[key]}
-                  onChange={handleChange}
-                  placeholder={placeholder}
-                  step={type === 'number' ? '0.1' : undefined}
-                  className={`input-field ${errors[key] ? 'border-red-400 focus:ring-red-400' : ''}`}
-                />
-                {errors[key] && (
-                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                    <XCircle size={12} /> {errors[key]}
-                  </p>
-                )}
-              </div>
-            ))}
+        {/* ── Input form ──────────────────────────────────────────────── */}
+        <div className="card animate-fade-up s1 space-y-5"
+             style={{ background: 'rgba(255,255,255,0.97)', border: '1px solid rgba(229,231,235,0.7)' }}>
 
-            {apiError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-2">
-                <AlertCircle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-red-700">{apiError}</p>
+          {/* Form title */}
+          <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm"
+                 style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.12),rgba(168,85,247,0.08))', border: '1px solid rgba(99,102,241,0.2)' }}>
+              <User size={14} className="text-indigo-600" />
+            </div>
+            <p className="font-bold text-gray-700 text-sm">Student Academic Data</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            {/* Identity row */}
+            <div className="grid grid-cols-2 gap-3">
+              {['student_id', 'student_name'].map(key => (
+                <div key={key}>
+                  <label className="label">{key === 'student_id' ? 'Student ID' : 'Full Name'}</label>
+                  <input
+                    type="text" name={key} value={form[key]} onChange={handleChange}
+                    placeholder={key === 'student_id' ? 'e.g. STU001' : 'e.g. Rahul Sharma'}
+                    className={`input-field ${errors[key] ? 'border-rose-400' : ''}`}
+                  />
+                  {errors[key] && (
+                    <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
+                      <XCircle size={10} /> {errors[key]}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Academic fields */}
+            <div className="grid grid-cols-2 gap-3">
+              {FIELDS.map(({ key, label, placeholder, type, hint, icon }) => (
+                <div key={key}>
+                  <label className="label flex items-center gap-1">
+                    <span>{icon}</span> {label}
+                  </label>
+                  <input
+                    type={type} name={key} value={form[key]} onChange={handleChange}
+                    placeholder={placeholder} step="0.1"
+                    className={`input-field ${errors[key] ? 'border-rose-400' : ''}`}
+                  />
+                  <p className="text-[10px] text-gray-300 mt-0.5">{hint}</p>
+                  {errors[key] && (
+                    <p className="text-[11px] text-rose-500 mt-0.5 flex items-center gap-1">
+                      <XCircle size={10} /> {errors[key]}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* API Error */}
+            {apiErr && (
+              <div className="flex items-start gap-2 rounded-xl px-4 py-3 text-sm"
+                   style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', color: '#e11d48' }}>
+                <AlertCircle size={15} className="mt-0.5 flex-shrink-0" />
+                {apiErr}
               </div>
             )}
 
-            <div className="flex gap-3 pt-2">
-              <button type="submit" disabled={loading} className="btn-primary flex-1">
+            {/* Buttons */}
+            <div className="flex gap-3 pt-1">
+              <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">
                 {loading ? (
-                  <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Analyzing…</>
+                  <>
+                    <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    Analysing Student…
+                  </>
                 ) : (
-                  <><Send size={16} /> Predict Performance</>
+                  <><Sparkles size={15} /> Predict Performance</>
                 )}
               </button>
               {result && (
                 <button type="button" onClick={handleReset} className="btn-secondary">
-                  Reset
+                  <RotateCcw size={14} /> Reset
                 </button>
               )}
             </div>
           </form>
         </div>
 
-        {/* ── Result panel ──────────────────────────────────────────────── */}
-        {loading && (
-          <div className="card flex items-center justify-center">
-            <LoadingSpinner message="Running ML prediction and AI advisory…" size="lg" />
-          </div>
-        )}
-
-        {!loading && result && (
-          <div className="space-y-4">
-            {/* Prediction result card */}
-            <div className={`card border-2 ${riskColor[result.risk_level]}`}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 font-medium">{result.student_name}</p>
-                  <p className="text-xs text-gray-400">{result.student_id}</p>
-                </div>
-                <RiskBadge level={result.risk_level} size="lg" />
-              </div>
-              <div className="mt-4 flex items-end justify-between">
-                <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Confidence</p>
-                  <p className="text-2xl font-bold text-gray-800">{(result.confidence * 100).toFixed(1)}%</p>
-                </div>
-                <div className="text-right text-xs text-gray-400">
-                  {Object.entries(result.probabilities || {}).map(([k, v]) => (
-                    <div key={k}>{k}: <span className="font-medium text-gray-600">{(v * 100).toFixed(0)}%</span></div>
-                  ))}
+        {/* ── Result panel ────────────────────────────────────────────── */}
+        <div ref={resultRef}>
+          {loading && (
+            <div className="card flex flex-col items-center justify-center py-20 animate-fade-in"
+                 style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.9),rgba(30,27,75,0.85))', border: '1px solid rgba(99,102,241,0.2)', minHeight: '320px' }}>
+              <div className="relative w-20 h-20 mb-6">
+                <div className="absolute inset-0 rounded-full border-4 border-indigo-900" />
+                <div className="absolute inset-0 rounded-full border-4 border-t-indigo-400 animate-spin" />
+                <div className="absolute inset-2 rounded-full border-2 border-t-purple-400 animate-spin"
+                     style={{ animationDirection: 'reverse', animationDuration: '0.8s' }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <BrainCircuit size={22} className="text-indigo-300 animate-pulse" />
                 </div>
               </div>
+              <p className="text-white/70 font-bold text-sm">Running ML Pipeline…</p>
+              <p className="text-white/35 text-xs mt-1">Prediction · Explanation · Advisory</p>
+            </div>
+          )}
 
-              {/* Probability bars */}
-              <div className="mt-4 space-y-2">
-                {Object.entries(result.probabilities || {}).map(([k, v]) => {
-                  const barColor = k === 'Good' ? 'bg-green-500' : k === 'Average' ? 'bg-yellow-500' : 'bg-red-500'
-                  return (
-                    <div key={k} className="flex items-center gap-2">
-                      <span className="w-16 text-xs text-gray-500">{k}</span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                        <div className={`h-1.5 rounded-full ${barColor}`} style={{ width: `${v * 100}%` }} />
-                      </div>
-                      <span className="w-10 text-right text-xs text-gray-500">{(v * 100).toFixed(0)}%</span>
+          {!loading && !result && (
+            <div className="card flex flex-col items-center justify-center py-20"
+                 style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.8),rgba(30,27,75,0.75))', border: '1px dashed rgba(99,102,241,0.25)', minHeight: '320px' }}>
+              <div className="animate-float">
+                <BrainCircuit size={52} style={{ color: 'rgba(129,140,248,0.35)' }} />
+              </div>
+              <p className="text-white/35 font-semibold text-sm mt-5">Result appears here</p>
+              <p className="text-white/20 text-xs mt-1">Fill form and click Predict</p>
+            </div>
+          )}
+
+          {!loading && result && (
+            <div className={`rounded-2xl overflow-hidden animate-scale-in`}
+                 style={{ background: theme.grad, border: `1px solid ${theme.accent}33`,
+                          boxShadow: `0 8px 40px ${theme.glow}` }}>
+
+              {/* Top accent bar */}
+              <div className="h-1 w-full"
+                   style={{ background: `linear-gradient(90deg, ${theme.accent}, ${theme.accent}66, transparent)` }} />
+
+              <div className="p-6 space-y-5">
+                {/* Name + badge */}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-white/50 text-xs font-bold uppercase tracking-widest">Student</p>
+                    <p className="text-white font-bold text-lg mt-0.5 leading-tight">{result.student_name}</p>
+                    <p className="text-white/35 font-mono text-xs">{result.student_id}</p>
+                  </div>
+                  <RiskBadge level={result.risk_level} size="lg" />
+                </div>
+
+                {/* Confidence circle + probabilities */}
+                <div className="flex items-center gap-6">
+                  <div className="relative flex-shrink-0">
+                    <CircleProgress value={result.confidence * 100} color={theme.accent} size={88} />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <p className="text-white font-black text-base leading-none">{(result.confidence * 100).toFixed(0)}%</p>
+                      <p className="text-white/40 text-[9px] font-bold uppercase tracking-wide">conf</p>
                     </div>
-                  )
-                })}
+                  </div>
+
+                  <div className="flex-1 space-y-2">
+                    {Object.entries(result.probabilities || {}).map(([k, v]) => {
+                      const c = k === 'Good' ? '#10b981' : k === 'Average' ? '#f59e0b' : '#f43f5e'
+                      return (
+                        <div key={k}>
+                          <div className="flex justify-between text-[11px] mb-1">
+                            <span className="text-white/55 font-semibold">{k}</span>
+                            <span className="text-white/80 font-bold">{(v * 100).toFixed(0)}%</span>
+                          </div>
+                          <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                            <div className="animated-bar h-full rounded-full"
+                                 style={{ '--target-width': `${v * 100}%`, width: `${v * 100}%`,
+                                          background: c, boxShadow: `0 0 6px ${c}88` }} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Radar chart */}
+                <div className="rounded-xl p-4" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1">
+                    <BarChart2 size={10} /> Performance Profile
+                  </p>
+                  <ResponsiveContainer width="100%" height={160}>
+                    <RadarChart data={radarData}>
+                      <PolarGrid stroke="rgba(255,255,255,0.1)" />
+                      <PolarAngleAxis dataKey="s" tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 10 }} />
+                      <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+                      <Radar dataKey="v" stroke={theme.accent} fill={theme.accent} fillOpacity={0.2}
+                             strokeWidth={2} dot={{ fill: theme.accent, r: 3 }} />
+                      <Tooltip contentStyle={{ background: 'rgba(15,12,41,0.95)', border: `1px solid ${theme.accent}44`, borderRadius: '10px', color: 'white' }}
+                               formatter={v => [`${v.toFixed(1)}`, 'Score']} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* AI tag */}
+                <div className="flex items-center justify-between">
+                  <p className="text-white/35 text-[10px] font-semibold">
+                    {new Date(result.timestamp).toLocaleString()}
+                  </p>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style={{ background: result.fallback_used ? 'rgba(245,158,11,0.15)' : 'rgba(99,102,241,0.2)',
+                                 color: result.fallback_used ? '#fbbf24' : '#a5b4fc',
+                                 border: `1px solid ${result.fallback_used ? 'rgba(245,158,11,0.25)' : 'rgba(99,102,241,0.3)'}` }}>
+                    {result.fallback_used ? '⚡ Rule-based' : '✦ GPT-3.5'}
+                  </span>
+                </div>
               </div>
             </div>
-
-            {/* Radar chart */}
-            <div className="card">
-              <h4 className="text-sm font-semibold text-gray-600 mb-2 flex items-center gap-2">
-                <BarChart2 size={14} className="text-blue-600" /> Performance Profile
-              </h4>
-              <ResponsiveContainer width="100%" height={180}>
-                <RadarChart data={radarData}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11 }} />
-                  <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 9 }} />
-                  <Radar dataKey="value" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.25} />
-                  <Tooltip formatter={v => [`${v.toFixed(1)}`, 'Score']} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
-
-        {!loading && !result && !apiError && (
-          <div className="card flex flex-col items-center justify-center text-center py-16 border-dashed border-2 border-gray-200">
-            <BrainCircuit size={48} className="text-gray-200 mb-4" />
-            <p className="text-gray-400 font-medium">Fill in student data and click Predict</p>
-            <p className="text-gray-300 text-sm mt-1">Result will appear here</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* ── Explanation + Advisory ─────────────────────────────────────── */}
       {result && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-fade-up">
 
-          {/* AI Explanation */}
-          <div className="card border-l-4 border-blue-500">
-            <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-              <BrainCircuit size={16} className="text-blue-600" />
-              AI Explanation
-              {result.fallback_used && (
-                <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full ml-auto">
-                  Rule-based
-                </span>
-              )}
-              {!result.fallback_used && (
-                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full ml-auto">
-                  GPT-3.5
-                </span>
-              )}
-            </h3>
-            <p className="text-sm text-gray-600 leading-relaxed">{result.explanation}</p>
-
+          {/* Explanation */}
+          <div className="card" style={{ borderLeft: `3px solid #818cf8`, background: 'rgba(255,255,255,0.97)' }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                   style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(168,85,247,0.1))', border: '1px solid rgba(99,102,241,0.2)' }}>
+                <BrainCircuit size={14} className="text-indigo-600" />
+              </div>
+              <p className="font-bold text-gray-800 text-sm">AI Explanation</p>
+            </div>
+            <p className="text-gray-600 text-sm leading-relaxed">{result.explanation}</p>
             {result.key_factors?.length > 0 && (
-              <div className="mt-4">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                  Key Factors
-                </p>
-                <ul className="space-y-1.5">
-                  {result.key_factors.map((f, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                      <ChevronRight size={14} className="text-blue-400 mt-0.5 flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
+              <div className="mt-4 space-y-2">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Key Factors</p>
+                {result.key_factors.map((f, i) => (
+                  <div key={i} className="flex items-start gap-2 rounded-lg px-3 py-2"
+                       style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.1)' }}>
+                    <ChevronRight size={12} className="text-indigo-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-xs text-gray-600">{f}</span>
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
-          {/* Recommendations */}
-          <div className="card border-l-4 border-green-500">
-            <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-              <Lightbulb size={16} className="text-green-600" />
-              Personalized Advisory
-            </h3>
-            <ul className="space-y-3">
+          {/* Advisory */}
+          <div className="card" style={{ borderLeft: '3px solid #10b981', background: 'rgba(255,255,255,0.97)' }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                   style={{ background: 'linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.1))', border: '1px solid rgba(16,185,129,0.2)' }}>
+                <Lightbulb size={14} className="text-emerald-600" />
+              </div>
+              <p className="font-bold text-gray-800 text-sm">Personalised Advisory</p>
+            </div>
+            <div className="space-y-3">
               {(result.recommendations || []).map((rec, i) => (
-                <li key={i} className="flex items-start gap-3 bg-green-50 rounded-lg px-3 py-2.5">
-                  <CheckCircle size={15} className="text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-700">{rec}</span>
-                </li>
+                <div key={i}
+                     className="flex items-start gap-3 rounded-xl px-3 py-3 animate-fade-up"
+                     style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)', animationDelay: `${i * 0.08}s` }}>
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                       style={{ background: 'rgba(16,185,129,0.15)' }}>
+                    <CheckCircle size={11} className="text-emerald-500" />
+                  </div>
+                  <span className="text-sm text-gray-700 leading-relaxed">{rec}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         </div>
       )}
