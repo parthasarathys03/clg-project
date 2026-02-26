@@ -18,6 +18,7 @@ Endpoints:
   GET    /api/export                      → download predictions as CSV
   GET    /api/model/insights              → feature importances + training history
   GET    /api/training-history            → list of past training runs
+  GET    /api/student-clusters            → t-SNE + KMeans behaviour cluster analysis (IEEE)
 """
 
 import io
@@ -48,6 +49,7 @@ from ml_model import predict as predictor
 from ml_model import train as trainer
 from ai_advisory.advisor import get_explanation_and_advisory
 import database as db
+from ml_analysis import analysis_service as cluster_svc
 
 # ── App setup ────────────────────────────────────────────────────────────────
 app = FastAPI(
@@ -456,6 +458,50 @@ def model_insights():
 @app.get("/api/training-history")
 def training_history():
     return {"history": db.get_training_history()}
+
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  STUDENT BEHAVIOUR CLUSTERS  (IEEE — t-SNE + KMeans)                         ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+@app.get("/api/student-clusters")
+def student_clusters(refresh: bool = Query(False)):
+    """
+    Return t-SNE 2D coordinates + KMeans cluster labels for all students.
+
+    Results are computed once and cached in memory.  Pass ?refresh=true to
+    force recomputation (e.g. after the dataset has been regenerated).
+
+    Response schema:
+        {
+            "total_students": int,
+            "clusters": [
+                {
+                    "cluster_id":      int,
+                    "student_count":   int,
+                    "avg_attendance":  float,
+                    "avg_marks":       float,
+                    "avg_assignments": float,
+                    "avg_study_hours": float,
+                    "interpretation":  str
+                }
+            ],
+            "points": [{"x": float, "y": float, "cluster": int}, ...]
+        }
+    """
+    try:
+        result = cluster_svc.get_student_clusters(force_recompute=refresh)
+        return result
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Dataset not available. Please train the model first "
+                f"(POST /api/train) to generate student_data.csv. Detail: {exc}"
+            ),
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Clustering error: {exc}")
 
 
 # ── Run directly ──────────────────────────────────────────────────────────────

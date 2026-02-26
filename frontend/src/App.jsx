@@ -11,6 +11,7 @@ import BatchUploadPage from './pages/BatchUploadPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 import StudentProgressPage from './pages/StudentProgressPage'
 import ModelInsightsPage from './pages/ModelInsightsPage'
+import StudentClusters from './pages/StudentClusters'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/analytics"          element={<AnalyticsPage />} />
           <Route path="/student/:studentId" element={<StudentProgressPage />} />
           <Route path="/insights"           element={<ModelInsightsPage />} />
+          <Route path="/clusters"           element={<StudentClusters />} />
         </Routes>
       </Layout>
     </ToastProvider>

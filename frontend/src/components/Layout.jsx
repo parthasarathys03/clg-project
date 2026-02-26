@@ -4,7 +4,7 @@ import {
   LayoutDashboard, BrainCircuit, GraduationCap,
   ClipboardList, BookOpen, Menu, X,
   Sparkles, User, ChevronRight,
-  Upload, Trophy, Cpu,
+  Upload, Trophy, Cpu, Network,
 } from 'lucide-react'
 import NotificationPanel from './NotificationPanel'
 
@@ -19,6 +19,7 @@ const navItemsExtra = [
   { to: '/batch',     label: 'Batch Upload',      icon: Upload,          color: '#34d399' },
   { to: '/analytics', label: 'Analytics',         icon: Trophy,          color: '#fbbf24' },
   { to: '/insights',  label: 'Model Insights',    icon: Cpu,             color: '#38bdf8' },
+  { to: '/clusters',  label: 'Behaviour Clusters',icon: Network,         color: '#a78bfa' },
   { to: '/about',     label: 'About / IEEE',      icon: BookOpen,        color: '#60a5fa' },
 ]
 
