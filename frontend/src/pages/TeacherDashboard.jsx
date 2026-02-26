@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Users, TrendingUp, AlertTriangle, CheckCircle,
-  BarChart2, RefreshCw, Search, GraduationCap
+  BarChart2, RefreshCw, Search, GraduationCap, Trash2
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -12,7 +12,7 @@ import {
 import StatCard from '../components/StatCard'
 import RiskBadge from '../components/RiskBadge'
 import ExportButton from '../components/ExportButton'
-import { getDashboard, getPredictions, getDatasetInfo } from '../api'
+import { getDashboard, getPredictions, getDatasetInfo, deletePrediction } from '../api'
 
 const PIE_COLORS = { Good: '#10b981', Average: '#f59e0b', 'At Risk': '#f43f5e' }
 
@@ -25,6 +25,7 @@ export default function TeacherDashboard() {
   const [search, setSearch]     = useState('')
   const [filterRisk, setFilter] = useState('')
   const [page, setPage]         = useState(1)
+  const [deleting, setDeleting] = useState(null)
   const PER = 10
 
   const load = async () => {
@@ -44,6 +45,31 @@ export default function TeacherDashboard() {
   }
 
   useEffect(() => { load() }, [page, filterRisk, search])
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this prediction permanently? This cannot be undone.')) return
+    setDeleting(id)
+    try {
+      await deletePrediction(id)
+      window.dispatchEvent(new CustomEvent('predictionDeleted'))
+      await load()
+    } catch (err) {
+      console.error(err)
+      alert('Failed to delete. Please try again.')
+    }
+    setDeleting(null)
+  }
+
+  // Auto-refresh when predictions are saved or deleted
+  useEffect(() => {
+    const onSaved = () => load()
+    window.addEventListener('predictionSaved', onSaved)
+    window.addEventListener('predictionDeleted', onSaved)
+    return () => {
+      window.removeEventListener('predictionSaved', onSaved)
+      window.removeEventListener('predictionDeleted', onSaved)
+    }
+  }, [page, filterRisk, search])
 
   const dist    = stats?.risk_distribution || { Good: 0, Average: 0, 'At Risk': 0 }
   const pieData = Object.entries(dist).map(([name, value]) => ({ name, value }))
@@ -222,7 +248,7 @@ export default function TeacherDashboard() {
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-gray-100">
-                  {['#', 'Student', 'Att.', 'Marks', 'Assign.', 'Hrs', 'Risk', 'Conf.', 'Time'].map(h => (
+                  {['#', 'Student', 'Att.', 'Marks', 'Assign.', 'Hrs', 'Risk', 'Conf.', 'Time', ''].map(h => (
                     <th key={h} className="text-left text-[10px] font-bold text-gray-300 uppercase tracking-wider pb-3 pr-4">{h}</th>
                   ))}
                 </tr>
@@ -244,6 +270,16 @@ export default function TeacherDashboard() {
                     <td className="py-3 pr-4"><RiskBadge level={r.risk_level} /></td>
                     <td className="py-3 pr-4 font-bold text-gray-700">{(r.confidence*100).toFixed(0)}%</td>
                     <td className="py-3 pr-4 text-gray-300">{new Date(r.timestamp).toLocaleTimeString()}</td>
+                    <td className="py-3">
+                      <button
+                        onClick={() => handleDelete(r.id)}
+                        disabled={deleting === r.id}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-rose-50 transition-colors group"
+                        title="Delete"
+                      >
+                        <Trash2 size={12} className={deleting === r.id ? 'text-gray-200' : 'text-gray-300 group-hover:text-rose-500 transition-colors'} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

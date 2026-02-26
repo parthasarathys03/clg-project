@@ -170,10 +170,15 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
 @app.get("/api/health")
 def health():
     stats = db.get_dashboard_stats()
+    has_gemini    = bool(os.getenv("GEMINI_API_KEY", "").strip())
+    has_openai    = bool(os.getenv("OPENAI_API_KEY", "").strip())
+    ai_configured = has_gemini or has_openai
+    ai_provider   = "gemini" if has_gemini else ("openai" if has_openai else "rule-based")
     return {
         "status": "ok",
         "model_ready": predictor.is_model_ready(),
-        "openai_configured": bool(os.getenv("OPENAI_API_KEY", "").strip()),
+        "openai_configured": ai_configured,   # kept for backward-compat
+        "ai_provider": ai_provider,
         "predictions_stored": stats["total_students"],
     }
 

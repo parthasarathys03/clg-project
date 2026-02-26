@@ -104,6 +104,8 @@ export default function PredictPage() {
         study_hours_per_day:   parseFloat(form.study_hours_per_day),
       })
       setResult(res.data)
+      // Notify Dashboard, TeacherDashboard, and StudentHistory to auto-refresh
+      window.dispatchEvent(new CustomEvent('predictionSaved'))
       setTimeout(() => {
         setRevealed(true)
         resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })

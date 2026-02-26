@@ -19,9 +19,11 @@ class StudentInput(BaseModel):
 
     @validator("student_name")
     def name_no_digits(cls, v):
-        if any(c.isdigit() for c in v):
-            raise ValueError("student_name must not contain digits")
-        return v.strip()
+        stripped = v.strip()
+        # Reject only if the name contains NO letters at all (pure numeric / symbol input)
+        if not any(c.isalpha() for c in stripped):
+            raise ValueError("student_name must contain at least one letter")
+        return stripped
 
 
 class PredictionResult(BaseModel):

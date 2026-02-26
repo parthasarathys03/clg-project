@@ -26,7 +26,7 @@ const navItemsExtra = [
 export default function Layout({ children }) {
   const [collapsed, setCollapsed] = useState(false)
   const location = useLocation()
-  const currentPage = navItems.find(n => location.pathname.startsWith(n.to))
+  const currentPage = [...navItems, ...navItemsExtra].find(n => location.pathname.startsWith(n.to))
 
   return (
     <div className="flex h-screen overflow-hidden">

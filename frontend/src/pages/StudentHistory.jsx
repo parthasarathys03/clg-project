@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, ChevronDown, ChevronUp, BrainCircuit, Lightbulb, ChevronRight, ClipboardList } from 'lucide-react'
+import { Search, ChevronDown, ChevronUp, BrainCircuit, Lightbulb, ChevronRight, ClipboardList, Trash2 } from 'lucide-react'
 import RiskBadge from '../components/RiskBadge'
 import ImprovementDelta from '../components/ImprovementDelta'
-import { getPredictions } from '../api'
+import { getPredictions, deletePrediction } from '../api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 const riskTheme = {
@@ -21,6 +21,7 @@ export default function StudentHistory() {
   const [filter, setFilter]   = useState('')
   const [page, setPage]       = useState(1)
   const [expanded, setExpand] = useState(null)
+  const [deleting, setDeleting] = useState(null)
   const PER = 15
 
   const load = async () => {
@@ -35,8 +36,35 @@ export default function StudentHistory() {
 
   useEffect(() => { load() }, [page, filter, search])
 
+  // Auto-refresh when a prediction is saved or deleted
+  useEffect(() => {
+    const onSaved = () => { if (page === 1) load() }
+    window.addEventListener('predictionSaved', onSaved)
+    window.addEventListener('predictionDeleted', onSaved)
+    return () => {
+      window.removeEventListener('predictionSaved', onSaved)
+      window.removeEventListener('predictionDeleted', onSaved)
+    }
+  }, [page, filter, search])
+
   const toggle = id => setExpand(p => p === id ? null : id)
   const totalPages = Math.ceil(total / PER)
+
+  const handleDelete = async (e, id) => {
+    e.stopPropagation()
+    if (!window.confirm('Delete this prediction permanently? This cannot be undone.')) return
+    setDeleting(id)
+    try {
+      await deletePrediction(id)
+      setItems(prev => prev.filter(r => r.id !== id))
+      setTotal(prev => prev - 1)
+      window.dispatchEvent(new CustomEvent('predictionDeleted'))
+    } catch (err) {
+      console.error(err)
+      alert('Failed to delete. Please try again.')
+    }
+    setDeleting(null)
+  }
 
   return (
     <div className="space-y-5 max-w-5xl mx-auto">
@@ -128,12 +156,22 @@ export default function StudentHistory() {
                       {new Date(r.timestamp).toLocaleString()}
                     </p>
                   </div>
-                  <div className="flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200"
-                       style={{ background: isOpen ? theme.bg : 'rgba(99,102,241,0.06)' }}>
-                    {isOpen
-                      ? <ChevronUp size={13} style={{ color: theme.accent }} />
-                      : <ChevronDown size={13} className="text-gray-400" />
-                    }
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <button
+                      onClick={e => handleDelete(e, r.id)}
+                      disabled={deleting === r.id}
+                      className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-rose-50 transition-colors group"
+                      title="Delete prediction"
+                    >
+                      <Trash2 size={12} className={deleting === r.id ? 'text-gray-300' : 'text-gray-300 group-hover:text-rose-500 transition-colors'} />
+                    </button>
+                    <div className="w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200"
+                         style={{ background: isOpen ? theme.bg : 'rgba(99,102,241,0.06)' }}>
+                      {isOpen
+                        ? <ChevronUp size={13} style={{ color: theme.accent }} />
+                        : <ChevronDown size={13} className="text-gray-400" />
+                      }
+                    </div>
                   </div>
                 </button>
 
@@ -185,7 +223,8 @@ export default function StudentHistory() {
                         {(r.recommendations || []).map((rec, i) => (
                           <li key={i} className="flex items-start gap-2 rounded-lg px-2.5 py-2 text-xs text-gray-600"
                               style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.12)' }}>
-                            <span className="text-emerald-500 mt-0.5 flex-shrink-0">✓</span> {rec}
+                            <span className="text-emerald-500 mt-0.5 flex-shrink-0">✓</span>
+                            {typeof rec === 'object' ? (rec.action || rec.category || '') : rec}
                           </li>
                         ))}
                       </ul>

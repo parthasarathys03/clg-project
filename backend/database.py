@@ -73,8 +73,9 @@ def _row_to_record(row: sqlite3.Row) -> dict:
     d["weekly_plan"]    = ai.get("weekly_plan", {})
     d["report_summary"] = ai.get("report_summary", "")
     # Keep recommendations from ai_data if richer (list of dicts instead of list of strings)
-    if ai.get("recommendations") and isinstance(ai["recommendations"][0], dict):
-        d["recommendations"] = ai["recommendations"]
+    ai_recs = ai.get("recommendations", [])
+    if ai_recs and isinstance(ai_recs[0], dict):
+        d["recommendations"] = ai_recs
     return d
 
 

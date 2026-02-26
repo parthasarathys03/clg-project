@@ -56,7 +56,17 @@ export default function Dashboard() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    // Auto-refresh whenever a prediction is saved or deleted
+    const onChange = () => load()
+    window.addEventListener('predictionSaved', onChange)
+    window.addEventListener('predictionDeleted', onChange)
+    return () => {
+      window.removeEventListener('predictionSaved', onChange)
+      window.removeEventListener('predictionDeleted', onChange)
+    }
+  }, [])
 
   const handleTrain = async () => {
     setTraining(true)
@@ -118,7 +128,9 @@ export default function Dashboard() {
               <div className={`w-2.5 h-2.5 rounded-full ${health?.openai_configured ? 'bg-violet-400' : 'bg-amber-400'}`} />
               <span className="text-sm font-semibold text-white/80">
                 AI Engine: <span className={health?.openai_configured ? 'text-violet-400' : 'text-amber-400'}>
-                  {health?.openai_configured ? 'OpenAI GPT' : 'Rule-based'}
+                  {health?.ai_provider === 'gemini' ? 'Gemini AI'
+                    : health?.ai_provider === 'openai' ? 'OpenAI GPT'
+                    : 'Rule-based'}
                 </span>
               </span>
             </div>
@@ -127,7 +139,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <Activity size={14} className="text-indigo-400" />
               <span className="text-sm font-semibold text-white/80">
-                <span className="text-indigo-300">{health?.predictions_in_memory || 0}</span> predictions in session
+                <span className="text-indigo-300">{health?.predictions_stored || 0}</span> predictions stored
               </span>
             </div>
           </div>

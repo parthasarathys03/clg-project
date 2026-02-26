@@ -31,7 +31,8 @@ except ImportError:
     _gemini_available = False
 
 
-OLLAMA_MODEL = "gpt-oss:120b-cloud"
+# Override via OLLAMA_MODEL env-var if a different local model is available
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "mistral")
 
 THRESHOLDS = {
     "attendance_percentage": 75,
@@ -205,7 +206,7 @@ def _get_gemini_model():
         return None
     genai.configure(api_key=key)
     return genai.GenerativeModel(
-        model_name="gemini-2.5-flash",
+        model_name="gemini-1.5-flash",
         system_instruction=_SYSTEM_INSTRUCTION,
         generation_config=genai.GenerationConfig(
             response_mime_type="application/json",
