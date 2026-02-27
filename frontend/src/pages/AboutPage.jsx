@@ -345,7 +345,7 @@ export default function AboutPage() {
       <div className="rounded-2xl p-6 animate-fade-up s6"
            style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.05))', border: '1px solid rgba(16,185,129,0.2)' }}>
         <p className="font-bold text-emerald-700 text-sm mb-4 flex items-center gap-2">
-          <CheckCircle size={14} /> Viva Evaluation Checklist
+          <CheckCircle size={14} /> Evaluation Checklist
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           {viva.map((item, i) => (
