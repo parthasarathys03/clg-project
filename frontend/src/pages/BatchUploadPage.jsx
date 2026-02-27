@@ -81,8 +81,8 @@ export default function BatchUploadPage() {
             <Upload size={22} className="text-white" />
           </div>
           <div>
-            <h2 className="font-extrabold text-gray-800 text-xl">Batch Upload</h2>
-            <p className="text-gray-400 text-sm">Predict an entire class from a CSV file</p>
+            <h2 className="font-extrabold text-black text-xl">Batch Upload</h2>
+            <p className="text-gray-600 text-sm">Predict an entire class from a CSV file</p>
           </div>
         </div>
         <button onClick={downloadSample} className="btn-secondary flex items-center gap-2 text-xs">
@@ -112,7 +112,7 @@ export default function BatchUploadPage() {
               <FileText size={22} className="text-emerald-500" />
             </div>
             <p className="font-bold text-gray-700 text-sm">{file.name}</p>
-            <p className="text-gray-400 text-xs">{(file.size / 1024).toFixed(1)} KB — click to change</p>
+            <p className="text-gray-500 text-xs">{(file.size / 1024).toFixed(1)} KB — click to change</p>
           </>
         ) : (
           <>
@@ -120,8 +120,8 @@ export default function BatchUploadPage() {
                  style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)' }}>
               <Upload size={22} className="text-indigo-400" />
             </div>
-            <p className="font-bold text-gray-600 text-sm">Drop your CSV here or click to browse</p>
-            <p className="text-gray-400 text-xs">Required columns: student_name, student_id, attendance_percentage, internal_marks, assignment_score, study_hours_per_day</p>
+            <p className="font-bold text-black text-sm">Drop your CSV here or click to browse</p>
+            <p className="text-gray-600 text-xs">Required columns: student_name, student_id, attendance_percentage, internal_marks, assignment_score, study_hours_per_day</p>
           </>
         )}
       </div>
@@ -130,7 +130,7 @@ export default function BatchUploadPage() {
       {loading && (
         <div className="animate-fade-up">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-bold text-gray-500">Processing predictions…</span>
+            <span className="text-xs font-bold text-gray-700">Processing predictions…</span>
             <span className="text-xs text-indigo-500 font-bold">{progress}%</span>
           </div>
           <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(99,102,241,0.1)' }}>
@@ -162,7 +162,7 @@ export default function BatchUploadPage() {
               { label: 'At Risk',      value: distCount['At Risk'] || 0, color: '#f59e0b' },
             ].map(m => (
               <div key={m.label} className="card text-center" style={{ background: 'rgba(255,255,255,0.97)' }}>
-                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">{m.label}</p>
+                <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest">{m.label}</p>
                 <p className="text-2xl font-black mt-1" style={{ color: m.color }}>{m.value}</p>
               </div>
             ))}
@@ -175,7 +175,7 @@ export default function BatchUploadPage() {
                 <XCircle size={12} /> Row Errors (first 10)
               </p>
               {result.errors.map((e, i) => (
-                <p key={i} className="text-rose-500/70 text-xs">Row {e.row}: {e.error}</p>
+                <p key={i} className="text-rose-600 text-xs">Row {e.row}: {e.error}</p>
               ))}
             </div>
           )}
@@ -197,9 +197,9 @@ export default function BatchUploadPage() {
                 <tbody>
                   {result.results.map((r, i) => (
                     <tr key={r.id} className="tr-hover border-b border-gray-200">
-                      <td className="py-2.5 pr-3 text-gray-600">{i + 1}</td>
+                      <td className="py-2.5 pr-3 text-gray-700">{i + 1}</td>
                       <td className="py-2.5 pr-3 font-semibold text-black">{r.student_name}</td>
-                      <td className="py-2.5 pr-3 font-mono text-gray-600 text-[10px]">{r.student_id}</td>
+                      <td className="py-2.5 pr-3 font-mono text-gray-700 text-[10px]">{r.student_id}</td>
                       <td className="py-2.5 pr-3 text-black">{r.inputs?.attendance_percentage}%</td>
                       <td className="py-2.5 pr-3 text-black">{r.inputs?.internal_marks}</td>
                       <td className="py-2.5 pr-3 text-black">{r.inputs?.assignment_score}</td>
