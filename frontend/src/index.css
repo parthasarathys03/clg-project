@@ -26,7 +26,7 @@
   }
 
   .card-dark {
-   relative p-6 rounded-2xl overflow-hidden;
+    @apply relative p-6 rounded-2xl overflow-hidden;
     background: rgba(15,12,41,0.85);
     border: 1px solid rgba(99,102,241,0.2);
     box-shadow: 0 4px 24px rgba(0,0,0,0.3);
