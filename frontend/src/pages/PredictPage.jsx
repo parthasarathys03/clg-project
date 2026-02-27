@@ -381,15 +381,47 @@ const CAT_ICONS = {
 const PRIORITY_COLORS = ['#f43f5e', '#f59e0b', '#6366f1', '#10b981']
 
 const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
-const DAY_ABBR = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+const DAY_ABBR = ['MON','TUE','WED','THU','FRI','SAT','SUN']
+const DAY_COLORS = [
+  { bg: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', accent: '#60a5fa' },
+  { bg: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', accent: '#a78bfa' },
+  { bg: 'linear-gradient(135deg, #ec4899, #be185d)', accent: '#f472b6' },
+  { bg: 'linear-gradient(135deg, #f59e0b, #d97706)', accent: '#fbbf24' },
+  { bg: 'linear-gradient(135deg, #10b981, #059669)', accent: '#34d399' },
+  { bg: 'linear-gradient(135deg, #6366f1, #4f46e5)', accent: '#818cf8' },
+  { bg: 'linear-gradient(135deg, #f43f5e, #e11d48)', accent: '#fb7185' },
+]
 
 function AIIntelligencePanels({ result, theme }) {
   const [weekOpen, setWeekOpen] = useState(false)
+  const scrollRef = useRef(null)
+  const [isHovered, setIsHovered] = useState(false)
   const rfs  = result.risk_factors || []
   const recs = result.recommendations || []
   const strengths = result.strengths || []
   const plan = result.weekly_plan || {}
   const hasWeeklyPlan = Object.keys(plan).length > 0
+
+  // Auto-scroll effect for weekly plan
+  useEffect(() => {
+    if (!weekOpen || !scrollRef.current || isHovered) return
+    const container = scrollRef.current
+    let scrollAmount = 0
+    const cardWidth = 220 + 16 // card width + gap
+    const totalWidth = container.scrollWidth - container.clientWidth
+    
+    const interval = setInterval(() => {
+      scrollAmount += 1
+      if (scrollAmount >= totalWidth) {
+        scrollAmount = 0
+        container.scrollTo({ left: 0, behavior: 'smooth' })
+      } else {
+        container.scrollLeft = scrollAmount
+      }
+    }, 30)
+    
+    return () => clearInterval(interval)
+  }, [weekOpen, isHovered])
 
   // Flatten rec text for display
   const recText = (r) => typeof r === 'string' ? r : (r.action || r)
@@ -401,15 +433,15 @@ function AIIntelligencePanels({ result, theme }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         {/* ── AI Explanation ── */}
-        <div className="card space-y-4" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: '3px solid #818cf8' }}>
+        <div className="card space-y-5" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: '4px solid #818cf8' }}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                  style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(168,85,247,0.1))', border: '1px solid rgba(99,102,241,0.2)' }}>
-              <BrainCircuit size={14} className="text-indigo-600" />
+              <BrainCircuit size={18} className="text-indigo-600" />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-gray-900 text-sm">AI Explanation</p>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+              <p className="font-bold text-gray-900 text-lg">AI Explanation</p>
+              <span className="text-xs font-bold px-2 py-1 rounded-full"
                     style={{
                       background: result.fallback_used ? 'rgba(245,158,11,0.1)'
                         : result.ai_provider === 'ollama' ? 'rgba(16,185,129,0.1)'
@@ -425,18 +457,18 @@ function AIIntelligencePanels({ result, theme }) {
             </div>
           </div>
 
-          <p className="text-gray-900 text-sm leading-relaxed">{result.explanation}</p>
+          <p className="text-gray-800 text-base leading-relaxed">{result.explanation}</p>
 
           {/* Strengths */}
           {strengths.length > 0 && (
-            <div className="rounded-xl p-3 space-y-1.5"
+            <div className="rounded-xl p-4 space-y-2"
                  style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.15)' }}>
-              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1">
-                <Star size={9} /> Strengths
+              <p className="text-xs font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
+                <Star size={12} /> Strengths
               </p>
               {strengths.map((s, i) => (
-                <div key={i} className="flex items-start gap-2 text-xs text-emerald-900">
-                  <CheckCircle size={10} className="mt-0.5 flex-shrink-0 text-emerald-500" />
+                <div key={i} className="flex items-start gap-2 text-sm text-emerald-900">
+                  <CheckCircle size={14} className="mt-0.5 flex-shrink-0 text-emerald-500" />
                   {s}
                 </div>
               ))}
@@ -445,52 +477,52 @@ function AIIntelligencePanels({ result, theme }) {
 
           {/* Report summary */}
           {result.report_summary && (
-            <div className="rounded-xl p-3"
+            <div className="rounded-xl p-4"
                  style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.1)' }}>
-              <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest flex items-center gap-1 mb-1.5">
-                <FileText size={9} /> Executive Summary
+              <p className="text-xs font-black text-indigo-500 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+                <FileText size={12} /> Executive Summary
               </p>
-              <p className="text-xs text-gray-900 leading-relaxed">{result.report_summary}</p>
+              <p className="text-sm text-gray-800 leading-relaxed">{result.report_summary}</p>
             </div>
           )}
         </div>
 
         {/* ── Risk Factor Breakdown ── */}
-        <div className="card space-y-4" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: `3px solid ${theme?.accent || '#818cf8'}` }}>
+        <div className="card space-y-5" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: `4px solid ${theme?.accent || '#818cf8'}` }}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                  style={{ background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)' }}>
-              <Shield size={14} className="text-rose-500" />
+              <Shield size={18} className="text-rose-500" />
             </div>
-            <p className="font-bold text-gray-900 text-sm">Risk Factor Analysis</p>
+            <p className="font-bold text-gray-900 text-lg">Risk Factor Analysis</p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {rfs.map((rf, i) => {
               const cfg = SEV_CONFIG[rf.severity] || SEV_CONFIG.good
               const pct = Math.min(100, (rf.value / (rf.threshold * 1.4)) * 100)
               return (
-                <div key={rf.key || i} className="rounded-xl p-3 animate-fade-up"
+                <div key={rf.key || i} className="rounded-xl p-4 animate-fade-up"
                      style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, animationDelay: `${i * 0.06}s` }}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <cfg.icon size={11} style={{ color: cfg.color }} />
-                      <span className="font-bold text-gray-900 text-xs">{rf.name}</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <cfg.icon size={14} style={{ color: cfg.color }} />
+                      <span className="font-bold text-gray-900 text-sm">{rf.name}</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-black text-sm" style={{ color: cfg.color }}>{rf.value}</span>
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-lg" style={{ color: cfg.color }}>{rf.value}</span>
+                      <span className="text-xs font-bold px-2 py-1 rounded-full"
                             style={{ background: cfg.color + '20', color: cfg.color }}>
                         {cfg.label}
                       </span>
                     </div>
                   </div>
-                  <div className="h-1.5 rounded-full mb-1" style={{ background: 'rgba(0,0,0,0.08)' }}>
+                  <div className="h-2 rounded-full mb-2" style={{ background: 'rgba(0,0,0,0.08)' }}>
                     <div className="h-full rounded-full transition-all duration-700"
                          style={{ width: `${pct}%`, background: cfg.color,
                                   boxShadow: `0 0 6px ${cfg.color}66` }} />
                   </div>
-                  <p className="text-[10px]" style={{ color: cfg.color + 'cc' }}>{rf.message}</p>
+                  <p className="text-sm font-medium" style={{ color: cfg.color }}>{rf.message}</p>
                 </div>
               )
             })}
@@ -499,17 +531,17 @@ function AIIntelligencePanels({ result, theme }) {
       </div>
 
       {/* Row 2: Priority Recommendations */}
-      <div className="card space-y-4" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: '3px solid #10b981' }}>
+      <div className="card space-y-5" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: '4px solid #10b981' }}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                style={{ background: 'linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.1))', border: '1px solid rgba(16,185,129,0.2)' }}>
-            <Lightbulb size={14} className="text-emerald-600" />
+            <Lightbulb size={18} className="text-emerald-600" />
           </div>
-          <p className="font-bold text-gray-900 text-sm">Priority Action Plan</p>
-          <span className="ml-auto text-[10px] text-gray-700 font-semibold">Ordered by urgency</span>
+          <p className="font-bold text-gray-900 text-lg">Priority Action Plan</p>
+          <span className="ml-auto text-sm text-gray-700 font-semibold">Ordered by urgency</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {recs.map((rec, i) => {
             const isObj    = typeof rec === 'object'
             const action   = isObj ? rec.action   : rec
@@ -519,33 +551,33 @@ function AIIntelligencePanels({ result, theme }) {
             const CatIcon  = CAT_ICONS[cat] || Lightbulb
             const pColor   = PRIORITY_COLORS[i] || '#818cf8'
             return (
-              <div key={i} className="rounded-xl p-3.5 animate-fade-up flex flex-col gap-2"
+              <div key={i} className="rounded-xl p-4 animate-fade-up flex flex-col gap-3"
                    style={{ background: pColor + '08', border: `1px solid ${pColor}25`,
                             animationDelay: `${i * 0.07}s` }}>
                 {/* Header */}
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black text-white flex-shrink-0"
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black text-white flex-shrink-0"
                        style={{ background: pColor }}>
                     {i + 1}
                   </div>
-                  <div className="flex items-center gap-1 flex-1 min-w-0">
-                    <CatIcon size={11} style={{ color: pColor }} className="flex-shrink-0" />
-                    <span className="text-[10px] font-bold truncate" style={{ color: pColor }}>{cat}</span>
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                    <CatIcon size={14} style={{ color: pColor }} className="flex-shrink-0" />
+                    <span className="text-sm font-bold truncate" style={{ color: pColor }}>{cat}</span>
                   </div>
                   {tf && (
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                    <span className="text-xs font-bold px-2 py-1 rounded-full flex-shrink-0"
                           style={{ background: pColor + '15', color: pColor }}>
                       {tf}
                     </span>
                   )}
                 </div>
                 {/* Action */}
-                <p className="text-xs text-gray-900 leading-relaxed">{action}</p>
+                <p className="text-sm text-gray-800 leading-relaxed">{action}</p>
                 {/* Impact */}
                 {impact && (
-                  <div className="flex items-start gap-1 mt-auto pt-1 border-t border-black/[0.04]">
-                    <TrendingUp size={9} className="mt-0.5 flex-shrink-0" style={{ color: pColor }} />
-                    <p className="text-[10px] leading-snug" style={{ color: pColor + 'bb' }}>{impact}</p>
+                  <div className="flex items-start gap-1.5 mt-auto pt-2 border-t border-black/[0.04]">
+                    <TrendingUp size={14} className="mt-0.5 flex-shrink-0" style={{ color: pColor }} />
+                    <p className="text-sm font-semibold leading-snug" style={{ color: pColor }}>{impact}</p>
                   </div>
                 )}
               </div>
@@ -556,36 +588,62 @@ function AIIntelligencePanels({ result, theme }) {
 
       {/* Row 3: 7-Day Study Plan (collapsible) */}
       {hasWeeklyPlan && (
-        <div className="card card-dark space-y-3" style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.94),rgba(30,27,75,0.90))', border: '1px solid rgba(99,102,241,0.2)' }}>
+        <div className="card card-dark space-y-4" style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.94),rgba(30,27,75,0.90))', border: '1px solid rgba(99,102,241,0.2)' }}>
           <button onClick={() => setWeekOpen(o => !o)}
                   className="w-full flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                    style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)' }}>
-                <Calendar size={14} className="text-white" />
+                <Calendar size={18} className="text-white" />
               </div>
-              <p className="font-bold text-white text-sm">7-Day Personalised Study Plan</p>
+              <div>
+                <p className="font-bold text-white text-lg text-left">7-Day Personalised Study Plan</p>
+                <p className="text-xs text-white/50 text-left">Swipe or wait for auto-scroll</p>
+              </div>
             </div>
             {weekOpen
-              ? <ChevronUp size={14} className="text-white" />
-              : <ChevronDown size={14} className="text-white" />
+              ? <ChevronUp size={18} className="text-white" />
+              : <ChevronDown size={18} className="text-white" />
             }
           </button>
 
           {weekOpen && (
-            <div className="grid grid-cols-1 sm:grid-cols-7 gap-2 animate-fade-up">
+            <div 
+              ref={scrollRef}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              className="flex gap-4 overflow-x-auto pb-4 pt-2 px-1 scroll-smooth animate-fade-up carousel-scroll"
+              style={{ 
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(99,102,241,0.5) transparent',
+                WebkitOverflowScrolling: 'touch'
+              }}>
               {DAYS.map((day, i) => {
                 const task = plan[day] || plan[day.toLowerCase()] || '—'
-                const isWeekend = i >= 5
                 return (
-                  <div key={day} className="rounded-xl p-2.5"
-                       style={{ background: isWeekend ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.05)',
-                                border: isWeekend ? '1px solid rgba(99,102,241,0.25)' : '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-[9px] font-black uppercase tracking-widest mb-1.5"
-                       style={{ color: isWeekend ? '#818cf8' : '#ffffff' }}>
-                      {DAY_ABBR[i]}
-                    </p>
-                    <p className="text-[10px] text-white leading-snug">{task}</p>
+                  <div key={day} 
+                       className="flex-shrink-0 w-[220px] rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 hover:-translate-y-2"
+                       style={{ 
+                         background: 'rgba(255,255,255,0.05)',
+                         border: '1px solid rgba(255,255,255,0.1)',
+                         boxShadow: `0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px ${DAY_COLORS[i].accent}22`
+                       }}>
+                    {/* Day header with gradient */}
+                    <div className="px-4 py-4 text-center relative overflow-hidden"
+                         style={{ background: DAY_COLORS[i].bg }}>
+                      <div className="absolute inset-0 opacity-30"
+                           style={{ background: 'radial-gradient(circle at 30% 50%, rgba(255,255,255,0.3), transparent 60%)' }} />
+                      <p className="text-white font-black text-lg tracking-wider relative z-10">
+                        {DAY_ABBR[i]}
+                      </p>
+                      <p className="text-white/70 text-xs mt-1 relative z-10">{DAYS[i]}</p>
+                    </div>
+                    {/* Task content */}
+                    <div className="p-4 min-h-[140px]">
+                      <p className="text-sm text-white/90 leading-relaxed">{task}</p>
+                    </div>
+                    {/* Bottom accent */}
+                    <div className="h-1.5 w-full" style={{ background: DAY_COLORS[i].bg }} />
                   </div>
                 )
               })}
