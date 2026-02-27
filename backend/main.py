@@ -74,22 +74,64 @@ app.add_middleware(
 @app.on_event("startup")
 def startup():
     db.init_db()
+    import threading
+
     # Auto-seed demo data if database is empty (first launch)
     if db.get_prediction_count() == 0:
-        import threading
         def _background_seed():
             try:
                 _auto_train()
                 from demo_seed import seed_demo_data
                 seed_demo_data()
                 cluster_svc.invalidate_cache()
+                _backfill_training_cv()
                 print("[STARTUP] Demo data seeded: 25 students ready")
             except Exception as e:
                 print(f"[STARTUP] Auto-seed failed: {e}")
         threading.Thread(target=_background_seed, daemon=True).start()
+    elif predictor.is_model_ready() and db.has_null_cv_scores():
+        # Backfill cv_score for older training records in the background
+        threading.Thread(target=_backfill_training_cv, daemon=True).start()
 
 
 # ─── shared helpers ───────────────────────────────────────────────────────────
+
+def _backfill_training_cv():
+    """
+    Compute 5-fold CV score from the saved model + dataset and backfill any
+    training_history rows that have cv_score = NULL (created by older code).
+    Runs in a background thread — safe to call at startup.
+    """
+    if not db.has_null_cv_scores():
+        return
+    try:
+        import pickle
+        import numpy as np
+        from sklearn.model_selection import cross_val_score
+        from sklearn.preprocessing import LabelEncoder
+        from ml_model.train import DATASET_PATH, FEATURE_COLS, TARGET_COL, MODEL_PATH
+        import pandas as pd
+
+        if not os.path.exists(MODEL_PATH) or not os.path.exists(DATASET_PATH):
+            return
+
+        with open(MODEL_PATH, "rb") as f:
+            payload = pickle.load(f)
+        clf = payload["model"]
+
+        df = pd.read_csv(DATASET_PATH)
+        X  = df[FEATURE_COLS].values
+        y  = df[TARGET_COL].values
+        le = LabelEncoder()
+        y_enc = le.fit_transform(y)
+
+        cv_scores = cross_val_score(clf, X, y_enc, cv=5, scoring="accuracy")
+        cv_mean   = round(float(cv_scores.mean()), 4)
+        db.backfill_cv_scores(cv_mean)
+        print(f"[STARTUP] CV scores backfilled: {cv_mean:.4f} for older training records")
+    except Exception as e:
+        print(f"[STARTUP] CV backfill failed: {e}")
+
 
 def _auto_train():
     """Train and reload model if not ready."""
@@ -208,12 +250,16 @@ def train_model():
     try:
         result = trainer.train_model()
         predictor.reload_model()
+        cv_mean = result.get("cv_mean")
         db.insert_training_history(
             accuracy=result["accuracy"],
-            cv_score=result.get("cv_mean"),   # train.py returns "cv_mean"
+            cv_score=cv_mean,
             dataset_rows=result["dataset_rows"],
             feature_importances=result["feature_importances"],
         )
+        # Backfill any older training records that were saved without cv_score
+        if cv_mean is not None:
+            db.backfill_cv_scores(cv_mean)
         return TrainResponse(
             message="Model trained successfully",
             accuracy=result["accuracy"],

@@ -385,6 +385,27 @@ def insert_training_history(accuracy: float, cv_score: float,
     conn.close()
 
 
+def has_null_cv_scores() -> bool:
+    """Return True if any training_history rows have NULL cv_score."""
+    conn = _get_conn()
+    count = conn.execute(
+        "SELECT COUNT(*) FROM training_history WHERE cv_score IS NULL"
+    ).fetchone()[0]
+    conn.close()
+    return count > 0
+
+
+def backfill_cv_scores(cv_score: float):
+    """Set cv_score for all training_history rows where it is currently NULL."""
+    conn = _get_conn()
+    conn.execute(
+        "UPDATE training_history SET cv_score = ? WHERE cv_score IS NULL",
+        (cv_score,)
+    )
+    conn.commit()
+    conn.close()
+
+
 def get_training_history() -> list:
     conn = _get_conn()
     rows = conn.execute(

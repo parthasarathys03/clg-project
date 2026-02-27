@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Search, ChevronDown, ChevronUp, BrainCircuit, Lightbulb, ChevronRight, ClipboardList, Trash2 } from 'lucide-react'
 import RiskBadge from '../components/RiskBadge'
 import ImprovementDelta from '../components/ImprovementDelta'
+import { useModal } from '../components/ConfirmModal'
 import { getPredictions, deletePrediction } from '../api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
@@ -23,6 +24,7 @@ export default function StudentHistory() {
   const [expanded, setExpand] = useState(null)
   const [deleting, setDeleting] = useState(null)
   const [selected, setSelected] = useState(new Set())
+  const { confirm, alert: showAlert } = useModal()
   const PER = 15
 
   const load = async () => {
@@ -53,7 +55,14 @@ export default function StudentHistory() {
 
   const handleDelete = async (e, id) => {
     e.stopPropagation()
-    if (!window.confirm('Delete this prediction permanently? This cannot be undone.')) return
+    const confirmed = await confirm({
+      title: 'Delete Prediction',
+      message: 'Delete this prediction permanently? This cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'danger'
+    })
+    if (!confirmed) return
     setDeleting(id)
     try {
       await deletePrediction(id)
@@ -62,7 +71,11 @@ export default function StudentHistory() {
       window.dispatchEvent(new CustomEvent('predictionDeleted'))
     } catch (err) {
       console.error(err)
-      alert('Failed to delete. Please try again.')
+      await showAlert({
+        title: 'Error',
+        message: 'Failed to delete. Please try again.',
+        type: 'error'
+      })
     }
     setDeleting(null)
   }
@@ -90,7 +103,14 @@ export default function StudentHistory() {
 
   const handleBatchDelete = async () => {
     if (selected.size === 0) return
-    if (!window.confirm(`Delete ${selected.size} predictions permanently? This cannot be undone.`)) return
+    const confirmed = await confirm({
+      title: 'Batch Delete',
+      message: `Delete ${selected.size} predictions permanently? This cannot be undone.`,
+      confirmText: 'Delete All',
+      cancelText: 'Cancel',
+      type: 'danger'
+    })
+    if (!confirmed) return
     
     const idsToDelete = Array.from(selected)
     let deletedCount = 0
@@ -110,7 +130,11 @@ export default function StudentHistory() {
     window.dispatchEvent(new CustomEvent('predictionDeleted'))
     
     if (deletedCount < idsToDelete.length) {
-      alert(`Deleted ${deletedCount} of ${idsToDelete.length} predictions. Some deletions failed.`)
+      await showAlert({
+        title: 'Partial Deletion',
+        message: `Deleted ${deletedCount} of ${idsToDelete.length} predictions. Some deletions failed.`,
+        type: 'warning'
+      })
     }
   }
 

@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import { ToastProvider } from './components/Toast'
+import { ModalProvider } from './components/ConfirmModal'
 import Dashboard from './pages/Dashboard'
 import PredictPage from './pages/PredictPage'
 import TeacherDashboard from './pages/TeacherDashboard'
@@ -16,21 +17,23 @@ import StudentClusters from './pages/StudentClusters'
 export default function App() {
   return (
     <ToastProvider>
-      <Layout>
-        <Routes>
-          <Route path="/"                   element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard"          element={<Dashboard />} />
-          <Route path="/predict"            element={<PredictPage />} />
-          <Route path="/teacher"            element={<TeacherDashboard />} />
-          <Route path="/history"            element={<StudentHistory />} />
-          <Route path="/about"              element={<AboutPage />} />
-          <Route path="/batch"              element={<BatchUploadPage />} />
-          <Route path="/analytics"          element={<AnalyticsPage />} />
-          <Route path="/student/:studentId" element={<StudentProgressPage />} />
-          <Route path="/insights"           element={<ModelInsightsPage />} />
-          <Route path="/clusters"           element={<StudentClusters />} />
-        </Routes>
-      </Layout>
+      <ModalProvider>
+        <Layout>
+          <Routes>
+            <Route path="/"                   element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard"          element={<Dashboard />} />
+            <Route path="/predict"            element={<PredictPage />} />
+            <Route path="/teacher"            element={<TeacherDashboard />} />
+            <Route path="/history"            element={<StudentHistory />} />
+            <Route path="/about"              element={<AboutPage />} />
+            <Route path="/batch"              element={<BatchUploadPage />} />
+            <Route path="/analytics"          element={<AnalyticsPage />} />
+            <Route path="/student/:studentId" element={<StudentProgressPage />} />
+            <Route path="/insights"           element={<ModelInsightsPage />} />
+            <Route path="/clusters"           element={<StudentClusters />} />
+          </Routes>
+        </Layout>
+      </ModalProvider>
     </ToastProvider>
   )
 }

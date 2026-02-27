@@ -7,9 +7,9 @@ import {
 } from 'recharts'
 import {
   Network, RefreshCw, Users, AlertTriangle, BookOpen,
-  TrendingDown, Award, Info,
+  TrendingDown, Award, Info, CheckCircle,
 } from 'lucide-react'
-import { getStudentClusters } from '../api'
+import { useClusterCache } from '../hooks/useClusterCache'
 
 // ── Cluster colour palette (supports up to 8 clusters) ───────────────────────
 const CLUSTER_COLORS = [
@@ -318,23 +318,14 @@ function ClusterCard({ cluster, color }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function StudentClusters() {
-  const [data, setData]       = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState(null)
+  const { data, loading, error, refresh, isReady } = useClusterCache()
 
-  const load = async (refresh = false) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await getStudentClusters(refresh)
-      setData(res.data)
-    } catch (e) {
-      setError(e?.response?.data?.detail ?? 'Failed to load clustering data.')
+  // Load data on mount if not already cached
+  useEffect(() => {
+    if (!isReady && !loading) {
+      refresh()
     }
-    setLoading(false)
-  }
-
-  useEffect(() => { load() }, [])
+  }, [isReady, loading, refresh])
 
   // Dynamic cluster IDs from response
   const clusterIds = data?.clusters?.map(c => c.cluster_id) ?? []
@@ -380,7 +371,7 @@ export default function StudentClusters() {
           </div>
         </div>
         <button
-          onClick={() => load(true)}
+          onClick={() => refresh()}
           disabled={loading}
           className="btn-secondary flex items-center gap-2 text-xs disabled:opacity-50"
         >
@@ -432,7 +423,7 @@ export default function StudentClusters() {
           <AlertTriangle size={36} className="mx-auto mb-3" style={{ color: 'rgba(245,158,11,0.5)' }} />
           <p className="text-gray-500 font-semibold text-sm">Clustering unavailable</p>
           <p className="text-gray-400 text-xs mt-1 max-w-md mx-auto">{error}</p>
-          <button onClick={() => load()} className="mt-4 btn-secondary text-xs">
+          <button onClick={() => refresh()} className="mt-4 btn-secondary text-xs">
             Retry
           </button>
         </div>

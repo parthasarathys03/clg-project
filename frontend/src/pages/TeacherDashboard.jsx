@@ -12,6 +12,7 @@ import {
 import StatCard from '../components/StatCard'
 import RiskBadge from '../components/RiskBadge'
 import ExportButton from '../components/ExportButton'
+import { useModal } from '../components/ConfirmModal'
 import { getDashboard, getPredictions, getDatasetInfo, deletePrediction } from '../api'
 
 const PIE_COLORS = { Good: '#10b981', Average: '#f59e0b', 'At Risk': '#f43f5e' }
@@ -27,6 +28,7 @@ export default function TeacherDashboard() {
   const [filterSection, setSection] = useState('')
   const [page, setPage]             = useState(1)
   const [deleting, setDeleting]     = useState(null)
+  const { confirm, alert: showAlert } = useModal()
   const PER = 10
 
   const load = async () => {
@@ -48,7 +50,14 @@ export default function TeacherDashboard() {
   useEffect(() => { load() }, [page, filterRisk, filterSection, search])
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this prediction permanently? This cannot be undone.')) return
+    const confirmed = await confirm({
+      title: 'Delete Prediction',
+      message: 'Delete this prediction permanently? This cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'danger'
+    })
+    if (!confirmed) return
     setDeleting(id)
     try {
       await deletePrediction(id)
@@ -56,7 +65,11 @@ export default function TeacherDashboard() {
       await load()
     } catch (err) {
       console.error(err)
-      alert('Failed to delete. Please try again.')
+      await showAlert({
+        title: 'Error',
+        message: 'Failed to delete. Please try again.',
+        type: 'error'
+      })
     }
     setDeleting(null)
   }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, BrainCircuit, GraduationCap,
@@ -7,6 +7,17 @@ import {
   Upload, Trophy, Cpu, Network,
 } from 'lucide-react'
 import NotificationPanel from './NotificationPanel'
+
+// Global cache check for cluster ready state
+let globalClusterReady = false
+
+export function setClusterReady(ready) {
+  globalClusterReady = ready
+}
+
+export function isClusterReady() {
+  return globalClusterReady
+}
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard',         icon: LayoutDashboard, color: '#818cf8' },
@@ -25,8 +36,17 @@ const navItemsExtra = [
 
 export default function Layout({ children }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [clusterReady, setClusterReadyState] = useState(globalClusterReady)
   const location = useLocation()
   const currentPage = [...navItems, ...navItemsExtra].find(n => location.pathname.startsWith(n.to))
+
+  // Poll for cluster ready state
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setClusterReadyState(globalClusterReady)
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="flex h-screen overflow-hidden">

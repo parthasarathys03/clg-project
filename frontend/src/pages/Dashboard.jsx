@@ -10,6 +10,8 @@ import {
 } from 'recharts'
 import StatCard from '../components/StatCard'
 import RiskBadge from '../components/RiskBadge'
+import { useModal } from '../components/ConfirmModal'
+import { useClusterPrecompute } from '../hooks/useClusterCache'
 import { getDashboard, getHealth, trainModel, resetDemoData } from '../api'
 
 const PIE_COLORS   = { Good: '#10b981', Average: '#f59e0b', 'At Risk': '#f43f5e' }
@@ -48,6 +50,10 @@ export default function Dashboard() {
   const [training, setTraining] = useState(false)
   const [resetting, setResetting] = useState(false)
   const [trainMsg, setTrainMsg] = useState(null)
+  const { confirm } = useModal()
+  
+  // Pre-compute clusters in background so they're ready when user clicks Behaviour Clusters
+  useClusterPrecompute()
 
   const load = async () => {
     setLoading(true)
@@ -85,7 +91,14 @@ export default function Dashboard() {
   }
 
   const handleReset = async () => {
-    if (!window.confirm('Reset all predictions and re-seed 25 demo students?\nThis will clear all existing data.')) return
+    const confirmed = await confirm({
+      title: 'Reset Demo Data',
+      message: 'Reset all predictions and re-seed 25 demo students? This will clear all existing data.',
+      confirmText: 'Reset',
+      cancelText: 'Cancel',
+      type: 'danger'
+    })
+    if (!confirmed) return
     setResetting(true)
     setTrainMsg(null)
     try {
