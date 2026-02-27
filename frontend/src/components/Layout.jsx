@@ -57,6 +57,10 @@ export default function Layout({ children }) {
           {!collapsed && (
             <div className="overflow-hidden">
               <p className="font-extrabold text-white text-sm tracking-tight leading-none">
+                <span style={{ color: '#f472b6' }}>S</span>
+                <span style={{ color: '#818cf8' }}>K</span>
+                <span style={{ color: '#34d399' }}>P</span>
+                <span className="text-white"> </span>
                 Academi<span style={{
                   background: 'linear-gradient(135deg,#818cf8,#c084fc)',
                   WebkitBackgroundClip: 'text',

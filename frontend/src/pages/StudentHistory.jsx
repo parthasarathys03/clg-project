@@ -22,6 +22,7 @@ export default function StudentHistory() {
   const [page, setPage]       = useState(1)
   const [expanded, setExpand] = useState(null)
   const [deleting, setDeleting] = useState(null)
+  const [selected, setSelected] = useState(new Set())
   const PER = 15
 
   const load = async () => {
@@ -66,6 +67,53 @@ export default function StudentHistory() {
     setDeleting(null)
   }
 
+  const toggleSelect = (e, id) => {
+    e.stopPropagation()
+    setSelected(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }
+
+  const selectAll = () => {
+    if (selected.size === items.length) {
+      setSelected(new Set())
+    } else {
+      setSelected(new Set(items.map(r => r.id)))
+    }
+  }
+
+  const handleBatchDelete = async () => {
+    if (selected.size === 0) return
+    if (!window.confirm(`Delete ${selected.size} predictions permanently? This cannot be undone.`)) return
+    
+    const idsToDelete = Array.from(selected)
+    let deletedCount = 0
+    
+    for (const id of idsToDelete) {
+      try {
+        await deletePrediction(id)
+        deletedCount++
+      } catch (err) {
+        console.error('Failed to delete:', id, err)
+      }
+    }
+    
+    setItems(prev => prev.filter(r => !selected.has(r.id)))
+    setTotal(prev => prev - deletedCount)
+    setSelected(new Set())
+    window.dispatchEvent(new CustomEvent('predictionDeleted'))
+    
+    if (deletedCount < idsToDelete.length) {
+      alert(`Deleted ${deletedCount} of ${idsToDelete.length} predictions. Some deletions failed.`)
+    }
+  }
+
   return (
     <div className="space-y-5 max-w-5xl mx-auto">
 
@@ -82,25 +130,47 @@ export default function StudentHistory() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 animate-fade-up s1">
-        <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
-                 placeholder="Search name or ID…" className="input-field pl-9 w-52 text-sm" />
+      <div className="flex flex-wrap gap-3 animate-fade-up s1 items-center justify-between">
+        <div className="flex gap-3">
+          <div className="relative">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
+                   placeholder="Search name or ID…" className="input-field pl-9 w-52 text-sm" />
+          </div>
+          <div className="flex gap-2">
+            {['', 'Good', 'Average', 'At Risk'].map(l => (
+              <button key={l}
+                      onClick={() => { setFilter(l); setPage(1) }}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 border
+                        ${filter === l
+                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg'
+                          : 'bg-white/90 text-gray-500 border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
+                        }`}>
+                {l || 'All'}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-2">
-          {['', 'Good', 'Average', 'At Risk'].map(l => (
-            <button key={l}
-                    onClick={() => { setFilter(l); setPage(1) }}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 border
-                      ${filter === l
-                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg'
-                        : 'bg-white/90 text-gray-500 border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
-                      }`}>
-              {l || 'All'}
+        
+        {/* Batch Delete Controls */}
+        {items.length > 0 && (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={selectAll}
+              className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+            >
+              {selected.size === items.length ? 'Deselect All' : 'Select All'}
             </button>
-          ))}
-        </div>
+            {selected.size > 0 && (
+              <button
+                onClick={handleBatchDelete}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500 text-white text-xs font-bold hover:bg-rose-600 transition-colors"
+              >
+                <Trash2 size={12} /> Delete ({selected.size})
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* List */}
@@ -138,6 +208,15 @@ export default function StudentHistory() {
                 {/* Row */}
                 <button onClick={() => toggle(r.id)}
                         className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-black/[0.02] transition-colors text-left">
+                  {/* Checkbox */}
+                  <div className="flex-shrink-0" onClick={e => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selected.has(r.id)}
+                      onChange={e => toggleSelect(e, r.id)}
+                      className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                    />
+                  </div>
                   <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3 items-center">
                     <div>
                       <Link to={`/student/${r.student_id}`} className="hover:text-indigo-600 transition-colors" onClick={e => e.stopPropagation()}>

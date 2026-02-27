@@ -98,7 +98,7 @@ export default function AnalyticsPage() {
              style={{ background: 'rgba(99,102,241,0.04)', border: '1px dashed rgba(99,102,241,0.2)' }}>
           <Users size={36} style={{ color: 'rgba(99,102,241,0.3)', margin: '0 auto 12px' }} />
           <p className="text-gray-700 text-sm font-medium">No predictions yet</p>
-          <p className="text-gray-300 text-xs mt-1">Predict some students first to see rankings</p>
+          <p className="text-gray-600 text-xs mt-1 font-medium">Predict some students first to see rankings</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 animate-fade-up s1">
