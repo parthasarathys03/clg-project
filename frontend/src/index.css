@@ -197,22 +197,23 @@
 
 /* ── Modern Global Table Styles ───────────────────────────────────────────── */
 /* Table wrapper for proper overflow handling */
-.overflow-x-auto {
+.table-wrapper {
   overflow-x: auto;
   border-radius: 16px;
+  padding: 6px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
 }
 
-/* Light background tables - modern styling with curved edges */
+/* Light background tables - modern styling with double border */
 table {
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
   width: 100%;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 8px 32px rgba(99,102,241,0.06);
   background: #ffffff;
   animation: tableFadeIn 0.5s ease-out;
-  border: 3px solid #6366f1;
+  border: 2px solid #e5e7eb;
+  outline: 2px solid #6366f1;
+  outline-offset: 0;
+  border-radius: 6px;
 }
 
 @keyframes tableFadeIn {
@@ -245,31 +246,10 @@ table thead th:last-child {
 /* Table cells - modern styling */
 table tbody td {
   color: #1f2937;
-  padding: 16px 20px;
+  padding: 14px 16px;
   text-align: left;
-  border-bottom: 1px solid rgba(229,231,235,0.6);
-  font-size: 13px;
-  transition: all 0.2s ease;
-}
-
-/* Last row no border */
-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-/* Column separation with borders */
-table th:not(:last-child),
-table td:not(:last-child) {
-  border-right: 1px solid rgba(99,102,241,0.15);
-}
-
-/* Enhanced cell styling */
-table tbody td {
-  color: #1f2937;
-  padding: 14px 14px;
-  text-align: left;
-  border-bottom: 1px solid rgba(99,102,241,0.12);
-  border-right: 1px solid rgba(99,102,241,0.1);
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #f3f4f6;
   font-size: 13px;
   vertical-align: middle;
 }
