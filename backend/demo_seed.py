@@ -1,7 +1,7 @@
 """
 Demo Seed Module
 ================
-Seeds 25 Tamil-named IT students across sections IT-A, IT-B, IT-C
+Seeds 25 Tamil-named IT students across sections IT-A   
 for SKP Engineering College demo with realistic academic distribution:
   8 High Performing  ·  10 Average  ·  7 At-Risk
 
