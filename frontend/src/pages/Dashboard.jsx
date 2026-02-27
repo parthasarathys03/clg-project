@@ -15,14 +15,16 @@ import { getDashboard, getHealth, trainModel } from '../api'
 const PIE_COLORS   = { Good: '#10b981', Average: '#f59e0b', 'At Risk': '#f43f5e' }
 const PIE_GLOW     = { Good: 'rgba(16,185,129,0.6)', Average: 'rgba(245,158,11,0.6)', 'At Risk': 'rgba(244,63,94,0.6)' }
 
-const CustomPieLabel = ({ cx, cy, midAngle, outerRadius, name, percent }) => {
+const CustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, percent }) => {
   if (percent < 0.05) return null
   const RAD  = Math.PI / 180
-  const x    = cx + (outerRadius + 24) * Math.cos(-midAngle * RAD)
-  const y    = cy + (outerRadius + 24) * Math.sin(-midAngle * RAD)
+  // Position label in the middle of the donut slice (between inner and outer radius)
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5
+  const x    = cx + radius * Math.cos(-midAngle * RAD)
+  const y    = cy + radius * Math.sin(-midAngle * RAD)
   return (
-    <text x={x} y={y} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central"
-          fill="rgba(255,255,255,0.7)" fontSize={11} fontWeight={600}>
+    <text x={x} y={y} textAnchor="middle" dominantBaseline="central"
+          fill="#ffffff" fontSize={12} fontWeight={700}>
       {`${(percent * 100).toFixed(0)}%`}
     </text>
   )
