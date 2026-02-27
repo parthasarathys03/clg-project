@@ -111,27 +111,27 @@ export default function AnalyticsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-gray-100">
+                  <tr className="border-b-2 border-gray-200">
                     {['Rank','Student','Risk','Score','Attendance','Marks','Assign.','Study'].map(h => (
-                      <th key={h} className="text-left text-[10px] font-bold text-gray-300 uppercase tracking-wider pb-3 pr-3">{h}</th>
+                      <th key={h} className="text-left text-[10px] font-bold text-black uppercase tracking-wider pb-3 pr-3">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {rankings.map(r => (
-                    <tr key={r.student_id} className="tr-hover border-b border-gray-50">
+                    <tr key={r.student_id} className="tr-hover border-b border-gray-200">
                       <td className="py-2.5 pr-3">
                         <span className="text-base" title={`Rank ${r.rank}`}>
                           {r.rank <= 3 ? MEDAL[r.rank - 1] : (
-                            <span className="font-bold text-gray-400">#{r.rank}</span>
+                            <span className="font-bold text-gray-500">#{r.rank}</span>
                           )}
                         </span>
                       </td>
                       <td className="py-2.5 pr-3">
                         <button onClick={() => navigate(`/student/${r.student_id}`)}
-                                className="text-left hover:text-indigo-600 transition-colors">
-                          <p className="font-semibold text-gray-800">{r.student_name}</p>
-                          <p className="text-gray-300 font-mono text-[10px]">{r.student_id}</p>
+                                className="text-left hover:text-indigo-700 transition-colors">
+                          <p className="font-semibold text-black">{r.student_name}</p>
+                          <p className="text-gray-600 font-mono text-[10px]">{r.student_id}</p>
                         </button>
                       </td>
                       <td className="py-2.5 pr-3"><RiskBadge level={r.risk_level} /></td>
@@ -140,10 +140,10 @@ export default function AnalyticsPage() {
                           {r.composite_score.toFixed(1)}
                         </span>
                       </td>
-                      <td className="py-2.5 pr-3 text-gray-500">{r.inputs?.attendance_percentage}%</td>
-                      <td className="py-2.5 pr-3 text-gray-500">{r.inputs?.internal_marks}</td>
-                      <td className="py-2.5 pr-3 text-gray-500">{r.inputs?.assignment_score}</td>
-                      <td className="py-2.5 pr-3 text-gray-500">{r.inputs?.study_hours_per_day}h</td>
+                      <td className="py-2.5 pr-3 text-black">{r.inputs?.attendance_percentage}%</td>
+                      <td className="py-2.5 pr-3 text-black">{r.inputs?.internal_marks}</td>
+                      <td className="py-2.5 pr-3 text-black">{r.inputs?.assignment_score}</td>
+                      <td className="py-2.5 pr-3 text-black">{r.inputs?.study_hours_per_day}h</td>
                     </tr>
                   ))}
                 </tbody>
@@ -152,16 +152,16 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Score distribution chart */}
-          <div className="card"
+          <div className="card card-dark"
                style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))', border: '1px solid rgba(99,102,241,0.15)' }}>
-            <p className="section-title text-white/40 flex items-center gap-2 mb-4">
+            <p className="section-title text-white flex items-center gap-2 mb-4">
               <TrendingUp size={11} /> Score Distribution
             </p>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={histogram} margin={{ left: -20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis dataKey="range" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
-                <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
+                <XAxis dataKey="range" tick={{ fill: '#ffffff', fontSize: 9 }} />
+                <YAxis tick={{ fill: '#ffffff', fontSize: 9 }} />
                 <Tooltip
                   contentStyle={{ background: 'rgba(15,12,41,0.95)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 10, color: 'white', fontSize: 11 }}
                 />
@@ -177,15 +177,15 @@ export default function AnalyticsPage() {
 
             {/* Top 3 */}
             {rankings.slice(0, 3).length > 0 && (
-              <div className="mt-4 pt-4 border-t border-white/[0.06] space-y-2">
-                <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest">Top Performers</p>
+              <div className="mt-4 pt-4 border-t border-white/[0.2] space-y-2">
+                <p className="text-white text-[9px] font-bold uppercase tracking-widest">Top Performers</p>
                 {rankings.slice(0, 3).map((r, i) => (
                   <div key={r.student_id} className="flex items-center gap-2">
                     <span className="text-sm">{MEDAL[i]}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white/70 text-xs font-semibold truncate">{r.student_name}</p>
+                      <p className="text-white text-xs font-semibold truncate">{r.student_name}</p>
                     </div>
-                    <span className="text-white/50 text-xs font-bold">{r.composite_score.toFixed(1)}</span>
+                    <span className="text-white text-xs font-bold">{r.composite_score.toFixed(1)}</span>
                   </div>
                 ))}
               </div>

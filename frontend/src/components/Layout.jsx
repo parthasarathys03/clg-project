@@ -36,12 +36,12 @@ export default function Layout({ children }) {
         className={`${collapsed ? 'w-[72px]' : 'w-64'} flex-shrink-0 sidebar-bg
                     transition-all duration-300 ease-in-out flex flex-col relative z-20`}
       >
-        {/* Decorative orbs */}
+        {/* Subtle gradient overlays — no circles */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-20 -left-10 w-56 h-56 rounded-full opacity-20"
-               style={{ background: 'radial-gradient(circle, #6366f1, transparent)' }} />
-          <div className="absolute -bottom-10 -right-10 w-44 h-44 rounded-full opacity-15"
-               style={{ background: 'radial-gradient(circle, #a855f7, transparent)' }} />
+          <div className="absolute inset-0 opacity-40"
+               style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.12) 0%, transparent 55%)' }} />
+          <div className="absolute bottom-0 left-0 right-0 h-40 opacity-30"
+               style={{ background: 'linear-gradient(0deg, rgba(168,85,247,0.18), transparent)' }} />
         </div>
 
         {/* Logo */}
@@ -63,7 +63,7 @@ export default function Layout({ children }) {
                   WebkitTextFillColor: 'transparent'
                 }}>Q</span>
               </p>
-              <p className="text-white/35 text-[10px] mt-0.5 font-medium tracking-wider uppercase">
+              <p className="text-white/60 text-[10px] mt-0.5 font-medium tracking-wider uppercase">
                 AI Advisory System
               </p>
             </div>
@@ -73,7 +73,7 @@ export default function Layout({ children }) {
         {/* Navigation */}
         <nav className="flex-1 py-5 px-2.5 space-y-1 overflow-y-auto">
           {!collapsed && (
-            <p className="text-white/20 text-[9px] font-bold uppercase tracking-[0.2em] px-3 mb-3 select-none">
+            <p className="text-white/50 text-[9px] font-bold uppercase tracking-[0.2em] px-3 mb-3 select-none">
               Main Menu
             </p>
           )}
@@ -88,7 +88,7 @@ export default function Layout({ children }) {
                  ${collapsed ? 'justify-center' : ''}
                  ${isActive
                    ? 'nav-link-active text-white'
-                   : 'text-white/40 hover:text-white/80 hover:bg-white/[0.06]'
+                   : 'text-white/70 hover:text-white hover:bg-white/[0.08]'
                  }`
               }
             >
@@ -106,7 +106,7 @@ export default function Layout({ children }) {
                   {!collapsed && (
                     <>
                       <span className="text-sm font-medium flex-1 truncate">{label}</span>
-                      {isActive && <ChevronRight size={12} className="text-white/30" />}
+                      {isActive && <ChevronRight size={12} className="text-white/50" />}
                     </>
                   )}
                 </>
@@ -116,11 +116,11 @@ export default function Layout({ children }) {
 
           {/* Divider */}
           <div className={`py-2 ${collapsed ? 'px-1' : 'px-3'}`}>
-            <div className="border-t border-white/[0.06]" />
+            <div className="border-t border-white/[0.08]" />
           </div>
 
           {!collapsed && (
-            <p className="text-white/20 text-[9px] font-bold uppercase tracking-[0.2em] px-3 mb-2 select-none">
+            <p className="text-white/50 text-[9px] font-bold uppercase tracking-[0.2em] px-3 mb-2 select-none">
               SaaS Features
             </p>
           )}
@@ -135,7 +135,7 @@ export default function Layout({ children }) {
                  ${collapsed ? 'justify-center' : ''}
                  ${isActive
                    ? 'nav-link-active text-white'
-                   : 'text-white/40 hover:text-white/80 hover:bg-white/[0.06]'
+                   : 'text-white/70 hover:text-white hover:bg-white/[0.08]'
                  }`
               }
             >
@@ -153,7 +153,7 @@ export default function Layout({ children }) {
                   {!collapsed && (
                     <>
                       <span className="text-sm font-medium flex-1 truncate">{label}</span>
-                      {isActive && <ChevronRight size={12} className="text-white/30" />}
+                      {isActive && <ChevronRight size={12} className="text-white/50" />}
                     </>
                   )}
                 </>
@@ -166,9 +166,9 @@ export default function Layout({ children }) {
         {!collapsed && (
           <div className="px-3 pb-4">
             <div className="rounded-xl p-3"
-                 style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.18)' }}>
-              <p className="text-white/35 text-[9px] font-bold uppercase tracking-wider">Final Year Project</p>
-              <p className="text-indigo-300 text-xs font-semibold mt-0.5">IEEE Enhanced System</p>
+                 style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)' }}>
+              <p className="text-white/55 text-[9px] font-bold uppercase tracking-wider">Final Year Project</p>
+              <p className="text-indigo-200 text-xs font-semibold mt-0.5">IEEE Enhanced System</p>
             </div>
           </div>
         )}
@@ -183,7 +183,7 @@ export default function Layout({ children }) {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700
                          hover:bg-indigo-50 hover:text-indigo-600 transition-all duration-200"
             >
               {collapsed ? <Menu size={18} /> : <X size={18} />}
@@ -192,7 +192,7 @@ export default function Layout({ children }) {
               <h1 className="font-bold text-gray-800 text-[15px] leading-tight">
                 {currentPage?.label ?? 'AcademiQ'}
               </h1>
-              <p className="text-gray-400 text-[11px]">
+              <p className="text-gray-700 text-[11px]">
                 AI-Based Student Performance Advisory System
               </p>
             </div>
@@ -215,8 +215,8 @@ export default function Layout({ children }) {
                 <User size={13} />
               </div>
               <div className="hidden sm:block">
-                <p className="text-xs font-bold text-gray-700 leading-none">Instructor</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Admin</p>
+                <p className="text-xs font-bold text-gray-900 leading-none">Instructor</p>
+                <p className="text-[10px] text-gray-700 mt-0.5">Admin</p>
               </div>
             </div>
           </div>

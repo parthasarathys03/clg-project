@@ -72,20 +72,13 @@ export default function AboutPage() {
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <div className="relative rounded-2xl p-7 overflow-hidden animate-fade-up"
            style={{ background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)' }}>
-        <div className="absolute top-0 left-0 right-0 h-0.5 animated-gradient"
-             style={{ background: 'linear-gradient(90deg, #6366f1, #a855f7, #ec4899, #6366f1)', backgroundSize: '200% 100%' }} />
-        <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full opacity-10"
-             style={{ background: 'radial-gradient(circle, #a855f7, transparent)' }} />
-        <div className="absolute -left-8 -bottom-8 w-36 h-36 rounded-full opacity-8"
-             style={{ background: 'radial-gradient(circle, #6366f1, transparent)' }} />
-
         <div className="flex items-start gap-5 relative">
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-               style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)', boxShadow: '0 0 30px rgba(99,102,241,0.5)' }}>
+               style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)' }}>
             <Sparkles size={24} className="text-white" />
           </div>
           <div>
-            <p className="text-white/30 text-xs font-bold uppercase tracking-widest mb-1">
+            <p className="text-white text-xs font-bold uppercase tracking-widest mb-1">
               Final Year AI Project  •  IEEE Enhanced System  •  2025
             </p>
             <h2 className="text-2xl font-extrabold text-white leading-tight">
@@ -94,7 +87,7 @@ export default function AboutPage() {
                 Decision-Support Platform
               </span>
             </h2>
-            <p className="text-white/60 text-sm mt-3 leading-relaxed max-w-xl">
+            <p className="text-white text-sm mt-3 leading-relaxed max-w-xl">
               This system extends an IEEE student performance prediction model into a full
               <strong className="text-indigo-300"> AI-driven academic decision-support platform</strong> capable
               of continuous monitoring, risk detection, and personalised intervention recommendations.
@@ -109,11 +102,11 @@ export default function AboutPage() {
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
                style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.2),rgba(168,85,247,0.15))', border: '1px solid rgba(99,102,241,0.3)' }}>
-            <Zap size={14} className="text-indigo-400" />
+            <Zap size={14} className="text-indigo-600" />
           </div>
           <div>
             <p className="font-bold text-indigo-700 text-xs uppercase tracking-widest mb-1.5">Platform Positioning</p>
-            <p className="text-gray-700 text-sm leading-relaxed">
+            <p className="text-gray-900 text-sm leading-relaxed">
               <em>
                 "This system extends an IEEE student performance prediction model into a full AI-driven
                 academic decision-support platform capable of continuous monitoring, risk detection,
@@ -131,16 +124,16 @@ export default function AboutPage() {
                style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.12),rgba(168,85,247,0.08))', border: '1px solid rgba(99,102,241,0.2)' }}>
             <BookOpen size={14} className="text-indigo-600" />
           </div>
-          <p className="font-bold text-gray-800 text-sm">IEEE Paper Reference (Baseline)</p>
+          <p className="font-bold text-black text-sm">IEEE Paper Reference (Baseline)</p>
         </div>
-        <div className="rounded-xl p-4 text-sm text-gray-600"
+        <div className="rounded-xl p-4 text-sm text-gray-700"
              style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.1)' }}>
-          <p><strong className="text-gray-800">Title:</strong> Early Predicting of Students Performance in Higher Education</p>
-          <p className="mt-1"><strong className="text-gray-800">Source:</strong> IEEE (2023)</p>
-          <p className="mt-2 leading-relaxed text-gray-500">
+          <p><strong className="text-black">Title:</strong> Early Predicting of Students Performance in Higher Education</p>
+          <p className="mt-1"><strong className="text-black">Source:</strong> IEEE (2023)</p>
+          <p className="mt-2 leading-relaxed text-gray-700">
             The paper applies ML models (RandomForest, SVM) to predict student outcomes from early academic signals.
             This project takes the IEEE prediction core as its baseline and
-            <strong className="text-indigo-600"> elevates it to an institutional AI platform</strong> — adding
+            <strong className="text-indigo-700"> elevates it to an institutional AI platform</strong> — adding
             explainability, personalised advisory, persistent monitoring, batch operations, and a full analytics suite.
           </p>
         </div>
@@ -149,15 +142,15 @@ export default function AboutPage() {
       {/* ── Existing vs Proposed ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-fade-up s2">
         <div className="card" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: '3px solid #f43f5e' }}>
-          <p className="font-bold text-gray-700 text-sm mb-4 flex items-center gap-2">
+          <p className="font-bold text-black text-sm mb-4 flex items-center gap-2">
             <X size={14} className="text-rose-500" /> IEEE Baseline (Existing)
           </p>
           <ul className="space-y-2.5">
             {existing.map((item, i) => (
-              <li key={i} className="flex items-start gap-2.5 text-sm text-gray-500">
+              <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
                 <span className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                       style={{ background: 'rgba(244,63,94,0.1)' }}>
-                  <X size={9} className="text-rose-400" />
+                  <X size={9} className="text-rose-500" />
                 </span>
                 {item}
               </li>
@@ -165,12 +158,12 @@ export default function AboutPage() {
           </ul>
         </div>
         <div className="card" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: '3px solid #10b981' }}>
-          <p className="font-bold text-gray-700 text-sm mb-4 flex items-center gap-2">
+          <p className="font-bold text-black text-sm mb-4 flex items-center gap-2">
             <CheckCircle size={14} className="text-emerald-500" /> This Platform (Proposed)
           </p>
           <ul className="space-y-2.5">
             {proposed.map((item, i) => (
-              <li key={i} className="flex items-start gap-2.5 text-sm text-gray-600">
+              <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
                 <CheckCircle size={13} className="text-emerald-500 mt-0.5 flex-shrink-0" />
                 {item}
               </li>
@@ -181,7 +174,7 @@ export default function AboutPage() {
 
       {/* ── Workflow ─────────────────────────────────────────────────────── */}
       <div className="card animate-fade-up s3" style={{ background: 'rgba(255,255,255,0.97)' }}>
-        <p className="font-bold text-gray-800 text-sm mb-5 flex items-center gap-2">
+        <p className="font-bold text-black text-sm mb-5 flex items-center gap-2">
           <ArrowRight size={14} className="text-indigo-500" /> Decision-Support Pipeline: Predict → Explain → Advise → Monitor
         </p>
         <div className="space-y-0">
@@ -189,7 +182,7 @@ export default function AboutPage() {
             <div key={w.n} className="flex gap-4">
               <div className="flex flex-col items-center">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-black flex-shrink-0"
-                     style={{ background: `linear-gradient(135deg, ${w.color}, ${w.color}88)`, boxShadow: `0 0 12px ${w.color}55` }}>
+                     style={{ background: `linear-gradient(135deg, ${w.color}, ${w.color}88)` }}>
                   {w.n}
                 </div>
                 {i < workflow.length - 1 && (
@@ -198,8 +191,8 @@ export default function AboutPage() {
                 )}
               </div>
               <div className="pb-5">
-                <p className="font-bold text-gray-700 text-sm">{w.title}</p>
-                <p className="text-sm text-gray-400 mt-0.5 leading-relaxed">{w.desc}</p>
+                <p className="font-bold text-black text-sm">{w.title}</p>
+                <p className="text-sm text-gray-600 mt-0.5 leading-relaxed">{w.desc}</p>
               </div>
             </div>
           ))}
@@ -207,11 +200,11 @@ export default function AboutPage() {
       </div>
 
       {/* ── AI Core — not a CRUD app ──────────────────────────────────────── */}
-      <div className="rounded-2xl p-5 animate-fade-up s3"
+      <div className="rounded-2xl p-5 animate-fade-up s3 card-dark"
            style={{ background: 'linear-gradient(135deg,rgba(15,12,41,0.94),rgba(30,27,75,0.90))', border: '1px solid rgba(99,102,241,0.2)' }}>
         <div className="flex items-center gap-2 mb-4">
           <BrainCircuit size={14} className="text-indigo-400" />
-          <p className="font-bold text-white/70 text-sm">Why This Is an AI Platform — Not School Management Software</p>
+          <p className="font-bold text-white text-sm">Why This Is an AI Platform — Not School Management Software</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
           {[
@@ -225,8 +218,8 @@ export default function AboutPage() {
                    style={{ background: c.color + '22' }}>
                 <c.icon size={13} style={{ color: c.color }} />
               </div>
-              <p className="font-bold text-white/70 mb-1">{c.label}</p>
-              <p className="text-white/35 leading-relaxed">{c.desc}</p>
+              <p className="font-bold text-white mb-1">{c.label}</p>
+              <p className="text-white leading-relaxed">{c.desc}</p>
             </div>
           ))}
         </div>
@@ -234,15 +227,15 @@ export default function AboutPage() {
 
       {/* ── Tech Stack ───────────────────────────────────────────────────── */}
       <div className="card animate-fade-up s4" style={{ background: 'rgba(255,255,255,0.97)' }}>
-        <p className="font-bold text-gray-800 text-sm mb-4 flex items-center gap-2">
+        <p className="font-bold text-black text-sm mb-4 flex items-center gap-2">
           <Lightbulb size={14} className="text-amber-500" /> Technology Stack
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {tech.map(t => (
             <div key={t.l} className="flex gap-3 rounded-xl px-4 py-3"
                  style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.1)' }}>
-              <span className="font-bold text-indigo-600 text-sm w-24 flex-shrink-0">{t.l}</span>
-              <span className="text-sm text-gray-500">{t.t}</span>
+              <span className="font-bold text-indigo-700 text-sm w-24 flex-shrink-0">{t.l}</span>
+              <span className="text-sm text-gray-700">{t.t}</span>
             </div>
           ))}
         </div>

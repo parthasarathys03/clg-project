@@ -182,30 +182,30 @@ export default function BatchUploadPage() {
 
           {/* Results table */}
           <div className="card" style={{ background: 'rgba(255,255,255,0.97)' }}>
-            <p className="font-bold text-gray-800 text-sm mb-4 flex items-center gap-2">
+            <p className="font-bold text-black text-sm mb-4 flex items-center gap-2">
               <ClipboardList size={14} className="text-indigo-500" /> Prediction Results
             </p>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-gray-100">
+                  <tr className="border-b-2 border-gray-200">
                     {['#','Name','ID','Attendance','Int. Marks','Assignments','Study Hrs','Risk','Confidence'].map(h => (
-                      <th key={h} className="text-left text-[10px] font-bold text-gray-300 uppercase tracking-wider pb-3 pr-3">{h}</th>
+                      <th key={h} className="text-left text-[10px] font-bold text-black uppercase tracking-wider pb-3 pr-3">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {result.results.map((r, i) => (
-                    <tr key={r.id} className="tr-hover border-b border-gray-50">
-                      <td className="py-2.5 pr-3 text-gray-300">{i + 1}</td>
-                      <td className="py-2.5 pr-3 font-semibold text-gray-800">{r.student_name}</td>
-                      <td className="py-2.5 pr-3 font-mono text-gray-400 text-[10px]">{r.student_id}</td>
-                      <td className="py-2.5 pr-3 text-gray-500">{r.inputs?.attendance_percentage}%</td>
-                      <td className="py-2.5 pr-3 text-gray-500">{r.inputs?.internal_marks}</td>
-                      <td className="py-2.5 pr-3 text-gray-500">{r.inputs?.assignment_score}</td>
-                      <td className="py-2.5 pr-3 text-gray-500">{r.inputs?.study_hours_per_day}h</td>
+                    <tr key={r.id} className="tr-hover border-b border-gray-200">
+                      <td className="py-2.5 pr-3 text-gray-600">{i + 1}</td>
+                      <td className="py-2.5 pr-3 font-semibold text-black">{r.student_name}</td>
+                      <td className="py-2.5 pr-3 font-mono text-gray-600 text-[10px]">{r.student_id}</td>
+                      <td className="py-2.5 pr-3 text-black">{r.inputs?.attendance_percentage}%</td>
+                      <td className="py-2.5 pr-3 text-black">{r.inputs?.internal_marks}</td>
+                      <td className="py-2.5 pr-3 text-black">{r.inputs?.assignment_score}</td>
+                      <td className="py-2.5 pr-3 text-black">{r.inputs?.study_hours_per_day}h</td>
                       <td className="py-2.5 pr-3"><RiskBadge level={r.risk_level} /></td>
-                      <td className="py-2.5 pr-3 font-bold" style={{ color: riskTheme[r.risk_level]?.accent || '#6366f1' }}>
+                      <td className="py-2.5 pr-3 font-bold text-black">
                         {(r.confidence * 100).toFixed(0)}%
                       </td>
                     </tr>

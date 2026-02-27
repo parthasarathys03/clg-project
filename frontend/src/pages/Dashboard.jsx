@@ -99,9 +99,9 @@ export default function Dashboard() {
       {/* ── Hero system bar ──────────────────────────────────────────────── */}
       <div className="relative rounded-2xl p-5 overflow-hidden animate-fade-up"
            style={{
-             background: 'linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.1) 100%)',
-             border: '1px solid rgba(99,102,241,0.2)',
-             backdropFilter: 'blur(12px)',
+             background: 'linear-gradient(135deg, #1e1b4b 0%, #2d1b69 55%, #1a1040 100%)',
+             border: '1px solid rgba(99,102,241,0.35)',
+             boxShadow: '0 4px 32px rgba(99,102,241,0.2)',
            }}>
         {/* Animated gradient strip */}
         <div className="absolute top-0 left-0 right-0 h-0.5 animated-gradient"
@@ -200,9 +200,9 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 animate-fade-up s3">
 
               {/* Pie — 2 cols */}
-              <div className="lg:col-span-2 card"
+              <div className="lg:col-span-2 card card-dark"
                    style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))', border: '1px solid rgba(99,102,241,0.15)' }}>
-                <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                <p className="text-white text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
                   <Activity size={12} className="text-indigo-400" /> Risk Distribution
                 </p>
                 <ResponsiveContainer width="100%" height={220}>
@@ -220,15 +220,15 @@ export default function Dashboard() {
                       formatter={(v, n) => [v, n]}
                     />
                     <Legend iconType="circle" iconSize={8}
-                      formatter={(v) => <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11 }}>{v}</span>} />
+                      formatter={(v) => <span style={{ color: '#ffffff', fontSize: 11 }}>{v}</span>} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
 
               {/* Averages — 3 cols */}
-              <div className="lg:col-span-3 card"
+              <div className="lg:col-span-3 card card-dark"
                    style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))', border: '1px solid rgba(99,102,241,0.15)' }}>
-                <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-5 flex items-center gap-2">
+                <p className="text-white text-xs font-bold uppercase tracking-widest mb-5 flex items-center gap-2">
                   <TrendingUp size={12} className="text-purple-400" /> Cohort Averages
                 </p>
                 <div className="space-y-4">
@@ -240,8 +240,8 @@ export default function Dashboard() {
                   ].map(m => (
                     <div key={m.label}>
                       <div className="flex justify-between mb-1.5">
-                        <span className="text-white/55 text-xs font-semibold">{m.label}</span>
-                        <span className="text-white/80 text-xs font-bold">
+                        <span className="text-white text-xs font-semibold">{m.label}</span>
+                        <span className="text-white text-xs font-bold">
                           {m.label.includes('×10') ? (m.value / 10).toFixed(1) + ' hrs' : m.value + (m.label.includes('Attendance') ? '%' : '/100')}
                         </span>
                       </div>
@@ -273,9 +273,9 @@ export default function Dashboard() {
 
           {/* ── Trend area chart (if ≥ 3 predictions) ──────────────────── */}
           {trendData.length >= 3 && (
-            <div className="card animate-fade-up s4"
+            <div className="card card-dark animate-fade-up s4"
                  style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))', border: '1px solid rgba(99,102,241,0.15)' }}>
-              <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-4">
+              <p className="text-white text-xs font-bold uppercase tracking-widest mb-4">
                 Session Prediction Trend
               </p>
               <ResponsiveContainer width="100%" height={150}>
@@ -294,9 +294,9 @@ export default function Dashboard() {
                       <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="n" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-                  <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} allowDecimals={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis dataKey="n" tick={{ fill: '#ffffff', fontSize: 10 }} />
+                  <YAxis tick={{ fill: '#ffffff', fontSize: 10 }} allowDecimals={false} />
                   <Tooltip contentStyle={{ background: 'rgba(15,12,41,0.95)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '12px', color: 'white' }} />
                   <Area type="monotone" dataKey="Good"    stroke="#10b981" fill="url(#cGood)" strokeWidth={2} />
                   <Area type="monotone" dataKey="Average" stroke="#f59e0b" fill="url(#cAvg)"  strokeWidth={2} />
@@ -311,38 +311,38 @@ export default function Dashboard() {
             <div className="card animate-fade-up s5"
                  style={{ background: 'rgba(255,255,255,0.97)', border: '1px solid rgba(229,231,235,0.6)' }}>
               <div className="flex items-center justify-between mb-5">
-                <p className="font-bold text-gray-800 text-sm flex items-center gap-2">
+                <p className="font-bold text-black text-sm flex items-center gap-2">
                   <Activity size={15} className="text-indigo-500" /> Recent Predictions
                 </p>
                 <Link to="/history"
-                      className="text-xs font-bold text-indigo-500 hover:text-indigo-700 flex items-center gap-1 transition-colors">
+                      className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
                   View all <ArrowRight size={12} />
                 </Link>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-100">
+                    <tr className="border-b-2 border-gray-200">
                       {['Student', 'Attendance', 'Marks', 'Assignments', 'Study Hrs', 'Risk Level', 'Confidence'].map(h => (
-                        <th key={h} className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider pb-3 pr-5">{h}</th>
+                        <th key={h} className="text-left text-[10px] font-bold text-black uppercase tracking-wider pb-3 pr-5">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {stats.recent_predictions.map((r, idx) => (
-                      <tr key={r.id} className="tr-hover border-b border-gray-50/80"
+                      <tr key={r.id} className="tr-hover border-b border-gray-200"
                           style={{ animationDelay: `${idx * 0.04}s` }}>
                         <td className="py-3 pr-5">
-                          <p className="font-semibold text-gray-800 text-xs">{r.student_name}</p>
-                          <p className="font-mono text-gray-400 text-[10px]">{r.student_id}</p>
+                          <p className="font-semibold text-black text-xs">{r.student_name}</p>
+                          <p className="font-mono text-gray-600 text-[10px]">{r.student_id}</p>
                         </td>
-                        <td className="py-3 pr-5 text-gray-600 text-xs">{r.inputs?.attendance_percentage}%</td>
-                        <td className="py-3 pr-5 text-gray-600 text-xs">{r.inputs?.internal_marks}</td>
-                        <td className="py-3 pr-5 text-gray-600 text-xs">{r.inputs?.assignment_score}</td>
-                        <td className="py-3 pr-5 text-gray-600 text-xs">{r.inputs?.study_hours_per_day}h</td>
+                        <td className="py-3 pr-5 text-black text-xs">{r.inputs?.attendance_percentage}%</td>
+                        <td className="py-3 pr-5 text-black text-xs">{r.inputs?.internal_marks}</td>
+                        <td className="py-3 pr-5 text-black text-xs">{r.inputs?.assignment_score}</td>
+                        <td className="py-3 pr-5 text-black text-xs">{r.inputs?.study_hours_per_day}h</td>
                         <td className="py-3 pr-5"><RiskBadge level={r.risk_level} /></td>
                         <td className="py-3 pr-5">
-                          <span className="text-xs font-bold text-gray-700">{(r.confidence * 100).toFixed(1)}%</span>
+                          <span className="text-xs font-bold text-black">{(r.confidence * 100).toFixed(1)}%</span>
                         </td>
                       </tr>
                     ))}

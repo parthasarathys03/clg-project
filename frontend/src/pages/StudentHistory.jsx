@@ -76,15 +76,15 @@ export default function StudentHistory() {
           <ClipboardList size={22} className="text-white" />
         </div>
         <div>
-          <h2 className="font-extrabold text-gray-800 text-xl">Prediction History</h2>
-          <p className="text-gray-400 text-sm">{total} prediction{total !== 1 ? 's' : ''} — all AI explanations stored</p>
+          <h2 className="font-extrabold text-gray-900 text-xl">Prediction History</h2>
+          <p className="text-gray-700 text-sm">{total} prediction{total !== 1 ? 's' : ''} — all AI explanations stored</p>
         </div>
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 animate-fade-up s1">
         <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
                  placeholder="Search name or ID…" className="input-field pl-9 w-52 text-sm" />
         </div>
@@ -141,18 +141,18 @@ export default function StudentHistory() {
                   <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3 items-center">
                     <div>
                       <Link to={`/student/${r.student_id}`} className="hover:text-indigo-600 transition-colors" onClick={e => e.stopPropagation()}>
-                        <p className="font-bold text-gray-800 text-sm leading-tight">{r.student_name}</p>
-                        <p className="font-mono text-gray-400 text-[10px]">{r.student_id}</p>
+                        <p className="font-bold text-gray-900 text-sm leading-tight">{r.student_name}</p>
+                        <p className="font-mono text-gray-700 text-[10px]">{r.student_id}</p>
                       </Link>
                     </div>
                     <div className="flex items-center gap-2">
                       <RiskBadge level={r.risk_level} />
                       <ImprovementDelta prev={items[idx + 1]} curr={r} />
                     </div>
-                    <div className="text-sm text-gray-500 hidden sm:block">
-                      Confidence: <span className="font-bold text-gray-700">{(r.confidence*100).toFixed(1)}%</span>
+                    <div className="text-sm text-gray-800 hidden sm:block">
+                      Confidence: <span className="font-bold text-gray-900">{(r.confidence*100).toFixed(1)}%</span>
                     </div>
-                    <p className="text-gray-300 text-xs hidden sm:block">
+                    <p className="text-gray-500 text-xs hidden sm:block">
                       {new Date(r.timestamp).toLocaleString()}
                     </p>
                   </div>
@@ -163,7 +163,7 @@ export default function StudentHistory() {
                       className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-rose-50 transition-colors group"
                       title="Delete prediction"
                     >
-                      <Trash2 size={12} className={deleting === r.id ? 'text-gray-300' : 'text-gray-300 group-hover:text-rose-500 transition-colors'} />
+                      <Trash2 size={12} className={deleting === r.id ? 'text-gray-400' : 'text-gray-500 group-hover:text-rose-600 transition-colors'} />
                     </button>
                     <div className="w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200"
                          style={{ background: isOpen ? theme.bg : 'rgba(99,102,241,0.06)' }}>
@@ -182,7 +182,7 @@ export default function StudentHistory() {
 
                     {/* Bar chart */}
                     <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Input Profile</p>
+                      <p className="text-[10px] font-bold text-gray-800 uppercase tracking-widest mb-3">Input Profile</p>
                       <ResponsiveContainer width="100%" height={140}>
                         <BarChart data={bars} margin={{ left: -28 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" />
@@ -203,12 +203,12 @@ export default function StudentHistory() {
 
                     {/* Explanation */}
                     <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1">
-                        <BrainCircuit size={10} className="text-indigo-400" /> AI Explanation
+                      <p className="text-[10px] font-bold text-gray-800 uppercase tracking-widest mb-3 flex items-center gap-1">
+                        <BrainCircuit size={10} className="text-indigo-500" /> AI Explanation
                       </p>
-                      <p className="text-sm text-gray-600 leading-relaxed">{r.explanation}</p>
+                      <p className="text-sm text-gray-900 leading-relaxed">{r.explanation}</p>
                       {r.key_factors?.slice(0,2).map((f, i) => (
-                        <div key={i} className="flex items-start gap-1.5 mt-2 text-xs text-gray-500">
+                        <div key={i} className="flex items-start gap-1.5 mt-2 text-xs text-gray-700">
                           <ChevronRight size={10} className="text-indigo-400 mt-0.5 flex-shrink-0" />{f}
                         </div>
                       ))}
@@ -216,12 +216,12 @@ export default function StudentHistory() {
 
                     {/* Recommendations */}
                     <div>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1">
-                        <Lightbulb size={10} className="text-emerald-400" /> Advisory
+                      <p className="text-[10px] font-bold text-gray-800 uppercase tracking-widest mb-3 flex items-center gap-1">
+                        <Lightbulb size={10} className="text-emerald-500" /> Advisory
                       </p>
                       <ul className="space-y-2">
                         {(r.recommendations || []).map((rec, i) => (
-                          <li key={i} className="flex items-start gap-2 rounded-lg px-2.5 py-2 text-xs text-gray-600"
+                          <li key={i} className="flex items-start gap-2 rounded-lg px-2.5 py-2 text-xs text-gray-800"
                               style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.12)' }}>
                             <span className="text-emerald-500 mt-0.5 flex-shrink-0">✓</span>
                             {typeof rec === 'object' ? (rec.action || rec.category || '') : rec}
@@ -240,11 +240,11 @@ export default function StudentHistory() {
       {/* Pagination */}
       {!loading && totalPages > 1 && (
         <div className="flex items-center justify-between animate-fade-up">
-          <span className="text-xs text-gray-400">{(page-1)*PER+1}–{Math.min(page*PER,total)} of {total}</span>
+          <span className="text-xs text-gray-700">{(page-1)*PER+1}–{Math.min(page*PER,total)} of {total}</span>
           <div className="flex gap-2">
             <button onClick={() => setPage(p => Math.max(1,p-1))} disabled={page===1}
                     className="btn-secondary text-xs px-3 py-1.5">← Prev</button>
-            <span className="text-xs text-gray-400 flex items-center px-2">{page}/{totalPages}</span>
+            <span className="text-xs text-gray-700 flex items-center px-2">{page}/{totalPages}</span>
             <button onClick={() => setPage(p => Math.min(totalPages,p+1))} disabled={page===totalPages}
                     className="btn-secondary text-xs px-3 py-1.5">Next →</button>
           </div>

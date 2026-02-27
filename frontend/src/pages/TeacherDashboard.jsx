@@ -93,8 +93,8 @@ export default function TeacherDashboard() {
             <GraduationCap size={22} className="text-white" />
           </div>
           <div>
-            <h2 className="font-extrabold text-gray-800 text-xl">Teacher Analytics</h2>
-            <p className="text-gray-400 text-sm">Live cohort performance overview</p>
+            <h2 className="font-extrabold text-gray-900 text-xl">Teacher Analytics</h2>
+            <p className="text-gray-700 text-sm">Live cohort performance overview</p>
           </div>
         </div>
         <button onClick={load} className="btn-secondary">
@@ -114,14 +114,14 @@ export default function TeacherDashboard() {
       {(stats?.total_students || 0) > 0 && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-up s2">
           {[
-            { label: 'Avg Attendance',   value: `${stats.average_attendance}%`,        color: '#818cf8' },
-            { label: 'Avg Int. Marks',   value: `${stats.average_internal_marks}/100`, color: '#a78bfa' },
-            { label: 'Avg Assignments',  value: `${stats.average_assignment_score}/100`,color: '#c084fc' },
-            { label: 'Avg Study Hours',  value: `${stats.average_study_hours} hrs/day`, color: '#f472b6' },
+            { label: 'Avg Attendance',   value: `${stats.average_attendance}%`,        color: '#4f46e5' },
+            { label: 'Avg Int. Marks',   value: `${stats.average_internal_marks}/100`, color: '#7c3aed' },
+            { label: 'Avg Assignments',  value: `${stats.average_assignment_score}/100`,color: '#9333ea' },
+            { label: 'Avg Study Hours',  value: `${stats.average_study_hours} hrs/day`, color: '#db2777' },
           ].map((m, i) => (
             <div key={m.label} className="card text-center"
                  style={{ background: 'rgba(255,255,255,0.97)', border: '1px solid rgba(229,231,235,0.7)', animationDelay: `${i*0.05}s` }}>
-              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">{m.label}</p>
+              <p className="text-gray-800 text-[10px] font-bold uppercase tracking-widest">{m.label}</p>
               <p className="text-2xl font-black mt-1.5 leading-none" style={{ color: m.color }}>{m.value}</p>
             </div>
           ))}
@@ -133,9 +133,9 @@ export default function TeacherDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 animate-fade-up s3">
 
           {/* Donut pie */}
-          <div className="card"
+          <div className="card card-dark"
                style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))', border: '1px solid rgba(99,102,241,0.15)' }}>
-            <p className="section-title text-white/40 flex items-center gap-2">
+            <p className="section-title text-white flex items-center gap-2">
               <BarChart2 size={11} /> Risk Distribution
             </p>
             <ResponsiveContainer width="100%" height={200}>
@@ -149,20 +149,20 @@ export default function TeacherDashboard() {
                 </Pie>
                 <Tooltip contentStyle={{ background: 'rgba(15,12,41,0.95)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '12px', color: 'white' }} />
                 <Legend iconType="circle" iconSize={8}
-                  formatter={v => <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11 }}>{v}</span>} />
+                  formatter={v => <span style={{ color: '#ffffff', fontSize: 11 }}>{v}</span>} />
               </PieChart>
             </ResponsiveContainer>
           </div>
 
           {/* Bar chart */}
-          <div className="card"
+          <div className="card card-dark"
                style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))', border: '1px solid rgba(99,102,241,0.15)' }}>
-            <p className="section-title text-white/40">Count by Category</p>
+            <p className="section-title text-white">Count by Category</p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={pieData} margin={{ left: -25, right: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} />
-                <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }} />
+                <XAxis dataKey="name" tick={{ fill: '#ffffff', fontSize: 10 }} />
+                <YAxis tick={{ fill: '#ffffff', fontSize: 10 }} />
                 <Tooltip contentStyle={{ background: 'rgba(15,12,41,0.95)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '12px', color: 'white' }} />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                   {pieData.map(e => (
@@ -176,19 +176,19 @@ export default function TeacherDashboard() {
 
           {/* Dataset info */}
           {dataset?.available && (
-            <div className="card"
+            <div className="card card-dark"
                  style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))', border: '1px solid rgba(99,102,241,0.15)' }}>
-              <p className="section-title text-white/40">Training Dataset</p>
+              <p className="section-title text-white">Training Dataset</p>
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-white/40 font-medium">Total rows</span>
-                  <span className="text-indigo-300 font-bold">{(dataset.total_rows || 0).toLocaleString()}</span>
+                  <span className="text-white font-medium">Total rows</span>
+                  <span className="text-white font-bold">{(dataset.total_rows || 0).toLocaleString()}</span>
                 </div>
                 {Object.entries(dataset.label_distribution || {}).map(([k, v]) => (
                   <div key={k}>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-white/40">{k}</span>
-                      <span className="text-white/70 font-bold">{v}</span>
+                      <span className="text-white">{k}</span>
+                      <span className="text-white font-bold">{v}</span>
                     </div>
                     <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
                       <div className="animated-bar h-full rounded-full"
@@ -198,12 +198,12 @@ export default function TeacherDashboard() {
                   </div>
                 ))}
 
-                <div className="border-t border-white/[0.06] pt-3 space-y-1.5">
-                  <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest">Feature Averages</p>
+                <div className="border-t border-white/[0.2] pt-3 space-y-1.5">
+                  <p className="text-white text-[9px] font-bold uppercase tracking-widest">Feature Averages</p>
                   {Object.entries(dataset.feature_stats || {}).map(([k, v]) => (
                     <div key={k} className="flex justify-between text-[10px]">
-                      <span className="text-white/35 capitalize">{k.replace(/_/g, ' ')}</span>
-                      <span className="text-white/60 font-bold">{v.mean}</span>
+                      <span className="text-white capitalize">{k.replace(/_/g, ' ')}</span>
+                      <span className="text-white font-bold">{v.mean}</span>
                     </div>
                   ))}
                 </div>
@@ -241,35 +241,35 @@ export default function TeacherDashboard() {
         {predictions.length === 0 ? (
           <div className="text-center py-12 rounded-xl"
                style={{ background: 'rgba(99,102,241,0.03)', border: '1px dashed rgba(99,102,241,0.15)' }}>
-            <p className="text-gray-400 text-sm">No predictions match the filter.</p>
+            <p className="text-gray-800 text-sm">No predictions match the filter.</p>
           </div>
         ) : (
           <>
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-gray-100">
+                <tr className="border-b-2 border-gray-200">
                   {['#', 'Student', 'Att.', 'Marks', 'Assign.', 'Hrs', 'Risk', 'Conf.', 'Time', ''].map(h => (
-                    <th key={h} className="text-left text-[10px] font-bold text-gray-300 uppercase tracking-wider pb-3 pr-4">{h}</th>
+                    <th key={h} className="text-left text-[10px] font-bold text-black uppercase tracking-wider pb-3 pr-4">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {predictions.map((r, i) => (
-                  <tr key={r.id} className="tr-hover border-b border-gray-50">
-                    <td className="py-3 pr-4 text-gray-300">{(page-1)*PER + i + 1}</td>
+                  <tr key={r.id} className="tr-hover border-b border-gray-200">
+                    <td className="py-3 pr-4 text-gray-600">{(page-1)*PER + i + 1}</td>
                     <td className="py-3 pr-4">
-                      <Link to={`/student/${r.student_id}`} className="hover:text-indigo-600 transition-colors">
-                        <p className="font-semibold text-gray-800">{r.student_name}</p>
-                        <p className="text-gray-300 font-mono text-[10px]">{r.student_id}</p>
+                      <Link to={`/student/${r.student_id}`} className="hover:text-indigo-700 transition-colors">
+                        <p className="font-semibold text-black">{r.student_name}</p>
+                        <p className="text-gray-600 font-mono text-[10px]">{r.student_id}</p>
                       </Link>
                     </td>
-                    <td className="py-3 pr-4 text-gray-500">{r.inputs?.attendance_percentage}%</td>
-                    <td className="py-3 pr-4 text-gray-500">{r.inputs?.internal_marks}</td>
-                    <td className="py-3 pr-4 text-gray-500">{r.inputs?.assignment_score}</td>
-                    <td className="py-3 pr-4 text-gray-500">{r.inputs?.study_hours_per_day}h</td>
+                    <td className="py-3 pr-4 text-black">{r.inputs?.attendance_percentage}%</td>
+                    <td className="py-3 pr-4 text-black">{r.inputs?.internal_marks}</td>
+                    <td className="py-3 pr-4 text-black">{r.inputs?.assignment_score}</td>
+                    <td className="py-3 pr-4 text-black">{r.inputs?.study_hours_per_day}h</td>
                     <td className="py-3 pr-4"><RiskBadge level={r.risk_level} /></td>
-                    <td className="py-3 pr-4 font-bold text-gray-700">{(r.confidence*100).toFixed(0)}%</td>
-                    <td className="py-3 pr-4 text-gray-300">{new Date(r.timestamp).toLocaleTimeString()}</td>
+                    <td className="py-3 pr-4 font-bold text-black">{(r.confidence*100).toFixed(0)}%</td>
+                    <td className="py-3 pr-4 text-gray-600">{new Date(r.timestamp).toLocaleTimeString()}</td>
                     <td className="py-3">
                       <button
                         onClick={() => handleDelete(r.id)}
@@ -277,7 +277,7 @@ export default function TeacherDashboard() {
                         className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-rose-50 transition-colors group"
                         title="Delete"
                       >
-                        <Trash2 size={12} className={deleting === r.id ? 'text-gray-200' : 'text-gray-300 group-hover:text-rose-500 transition-colors'} />
+                        <Trash2 size={12} className={deleting === r.id ? 'text-gray-400' : 'text-gray-500 group-hover:text-rose-600 transition-colors'} />
                       </button>
                     </td>
                   </tr>
@@ -287,13 +287,13 @@ export default function TeacherDashboard() {
 
             {totalPages > 1 && (
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                <span className="text-[11px] text-gray-400">
+                <span className="text-[11px] text-gray-700">
                   {(page-1)*PER+1}–{Math.min(page*PER,total)} of {total}
                 </span>
                 <div className="flex items-center gap-2">
                   <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page===1}
                           className="btn-secondary text-[11px] py-1.5 px-3">← Prev</button>
-                  <span className="text-[11px] text-gray-400 px-2">{page} / {totalPages}</span>
+                  <span className="text-[11px] text-gray-700 px-2">{page} / {totalPages}</span>
                   <button onClick={() => setPage(p => Math.min(totalPages,p+1))} disabled={page===totalPages}
                           className="btn-secondary text-[11px] py-1.5 px-3">Next →</button>
                 </div>

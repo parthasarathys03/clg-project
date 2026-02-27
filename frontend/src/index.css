@@ -5,11 +5,7 @@
 @layer base {
   body {
     @apply font-sans antialiased text-gray-800;
-    background: #0f0e17;
-    background-image:
-      radial-gradient(ellipse 80% 60% at 20% -10%, rgba(99,102,241,0.18) 0%, transparent 55%),
-      radial-gradient(ellipse 60% 50% at 80% 100%, rgba(168,85,247,0.14) 0%, transparent 50%),
-      radial-gradient(ellipse 40% 40% at 60% 50%, rgba(59,130,246,0.06) 0%, transparent 60%);
+    background: #07091a;
     min-height: 100vh;
   }
 }
@@ -69,8 +65,8 @@
     @apply font-medium px-5 py-2.5 rounded-xl border text-sm flex items-center gap-2
            transition-all duration-200;
     background: rgba(255,255,255,0.9);
-    border-color: rgba(229,231,235,0.8);
-    color: #6b7280;
+    border-color: rgba(209,213,219,1);
+    color: #1f2937;
   }
   .btn-secondary:hover {
     background: rgba(238,242,255,0.9);
@@ -89,8 +85,8 @@
 
   /* ── Inputs ────────────────────────────────────────────────────────── */
   .input-field {
-    @apply w-full px-4 py-3 rounded-xl text-sm text-gray-700
-           transition-all duration-200 placeholder-gray-300;
+    @apply w-full px-4 py-3 rounded-xl text-sm text-gray-900
+           transition-all duration-200 placeholder-gray-500;
     background: rgba(255,255,255,0.9);
     border: 1.5px solid rgba(229,231,235,0.8);
     outline: none;
@@ -103,7 +99,7 @@
   .input-field:hover:not(:focus) { border-color: rgba(99,102,241,0.3); }
 
   .label {
-    @apply block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5;
+    @apply block text-xs font-bold text-gray-700 uppercase tracking-widest mb-1.5;
   }
 
   /* ── Risk badges ───────────────────────────────────────────────────── */
@@ -128,22 +124,29 @@
 
   /* ── Section header ────────────────────────────────────────────────── */
   .section-title {
-    @apply text-xs font-bold uppercase tracking-widest text-gray-400 mb-4;
+    @apply text-xs font-bold uppercase tracking-widest text-gray-800 mb-4;
   }
 }
 
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
 .sidebar-bg {
-  background: linear-gradient(170deg, #0f0c29 0%, #1a1642 40%, #0d1b3e 100%);
-  border-right: 1px solid rgba(255,255,255,0.05);
+  background: linear-gradient(170deg, #0a0820 0%, #150f3a 40%, #0b1630 100%);
+  border-right: 1px solid rgba(99,102,241,0.15);
 }
 
-/* ── Main content bg ─────────────────────────────────────────────────────── */
+/* ── Animated gradient strip (used in hero bar) ──────────────────────────── */
+.animated-gradient {
+  background-size: 200% 100%;
+  animation: gradientShift 3s linear infinite;
+}
+
+/* ── Main content bg (grid pattern, no circles) ──────────────────────────── */
 .main-content-bg {
-  background: #f4f6ff;
+  background-color: #f0f2ff;
   background-image:
-    radial-gradient(ellipse 50% 40% at 80% 0%, rgba(99,102,241,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 10% 100%, rgba(168,85,247,0.05) 0%, transparent 60%);
+    linear-gradient(rgba(99,102,241,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
 /* ── Nav active state ────────────────────────────────────────────────────── */
@@ -189,7 +192,211 @@
   cursor: default;
 }
 .tr-hover:hover {
-  background: linear-gradient(90deg, rgba(99,102,241,0.04) 0%, rgba(168,85,247,0.03) 100%);
+  background: rgba(99,102,241,0.06);
+}
+
+/* ── Modern Global Table Styles ───────────────────────────────────────────── */
+/* Table wrapper for proper overflow handling */
+.overflow-x-auto {
+  overflow-x: auto;
+  border-radius: 16px;
+}
+
+/* Light background tables - modern styling with curved edges */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 8px 32px rgba(99,102,241,0.06);
+  background: #ffffff;
+  animation: tableFadeIn 0.5s ease-out;
+  border: 2px solid rgba(99,102,241,0.2);
+}
+
+@keyframes tableFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Table headers - modern gradient background */
+table thead {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+}
+
+table thead th {
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 16px 14px;
+  text-align: left;
+  border: none;
+  border-right: 1px solid rgba(255,255,255,0.2);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+table thead th:last-child {
+  border-right: none;
+}
+
+/* Table cells - modern styling */
+table tbody td {
+  color: #1f2937;
+  padding: 16px 20px;
+  text-align: left;
+  border-bottom: 1px solid rgba(229,231,235,0.6);
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+/* Last row no border */
+table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Column separation with borders */
+table th:not(:last-child),
+table td:not(:last-child) {
+  border-right: 1px solid rgba(99,102,241,0.15);
+}
+
+/* Enhanced cell styling */
+table tbody td {
+  color: #1f2937;
+  padding: 14px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(99,102,241,0.12);
+  border-right: 1px solid rgba(99,102,241,0.1);
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+table tbody td:last-child {
+  border-right: none;
+}
+
+table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Modern row hover effect */
+table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(99,102,241,0.06) 0%, rgba(168,85,247,0.04) 100%);
+}
+
+/* Row entrance animation */
+@keyframes rowFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+table tbody tr {
+  animation: rowFadeIn 0.3s ease-out backwards;
+}
+
+/* Action icons - modern styling */
+table .action-icon,
+table button svg,
+table .delete-icon {
+  color: #4b5563 !important;
+}
+
+table .action-icon:hover,
+table button:hover svg,
+table .delete-icon:hover {
+  color: #dc2626 !important;
+}
+
+/* Dark background tables - modern styling */
+.card-dark table,
+table.dark {
+  background: rgba(15,12,41,0.8);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  border: 2px solid rgba(99,102,241,0.3);
+}
+
+.card-dark table thead,
+table.dark thead {
+  background: linear-gradient(135deg, rgba(99,102,241,0.5) 0%, rgba(168,85,247,0.4) 100%);
+}
+
+.card-dark table thead th,
+table.dark thead th {
+  color: #ffffff !important;
+  border-right-color: rgba(255,255,255,0.15);
+}
+
+.card-dark table tbody td,
+table.dark tbody td {
+  color: #e5e7eb;
+  border-bottom-color: rgba(255,255,255,0.1);
+  border-right-color: rgba(255,255,255,0.08);
+}
+
+.card-dark table tbody tr:hover,
+table.dark tbody tr:hover {
+  background: rgba(99,102,241,0.15);
+}
+
+/* Ensure all text on white/light cards is black/dark */
+.card p,
+.card span,
+.card div {
+  color: inherit;
+}
+
+/* Force black text for important labels on light backgrounds */
+.text-label {
+  color: #111827;
+}
+
+/* Icon visibility fix - dark icons on light backgrounds */
+.icon-dark {
+  color: #374151;
+}
+
+.icon-dark:hover {
+  color: #dc2626;
+}
+
+/* ── Dark Card Typography (Force white text) ─────────────────────────────── */
+.card-dark,
+.card-dark h1,
+.card-dark h2,
+.card-dark h3,
+.card-dark h4,
+.card-dark p,
+.card-dark span,
+.card-dark label,
+.card-dark .section-title,
+.card-dark .stat-value,
+.card-dark .stat-label {
+  color: #ffffff !important;
+}
+
+/* Dark card chart labels */
+.card-dark .recharts-text,
+.card-dark .recharts-cartesian-axis-tick-value,
+.card-dark .recharts-legend-item-text {
+  fill: #ffffff !important;
+}
+
+/* ── Light Card Typography (Force black text) ─────────────────────────────── */
+.card:not(.card-dark) h1,
+.card:not(.card-dark) h2,
+.card:not(.card-dark) h3,
+.card:not(.card-dark) h4,
+.card:not(.card-dark) p,
+.card:not(.card-dark) span:not(.risk-badge):not(.badge-good):not(.badge-average):not(.badge-risk),
+.card:not(.card-dark) label,
+.card:not(.card-dark) .section-title {
+  color: #111827;
 }
 
 /* ── Scrollbar ───────────────────────────────────────────────────────────── */

@@ -53,7 +53,7 @@ function ClusterCard({ cluster, color }) {
   ]
 
   return (
-    <div className="card animate-fade-up"
+    <div className="card card-dark animate-fade-up"
          style={{
            background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))',
            border: `1px solid ${color}28`,
@@ -69,12 +69,12 @@ function ClusterCard({ cluster, color }) {
           <p className="text-white font-bold text-sm leading-tight truncate">
             {cluster.interpretation}
           </p>
-          <p className="text-white/30 text-[10px] mt-0.5 font-medium uppercase tracking-wider">
+          <p className="text-white text-[10px] mt-0.5 font-medium uppercase tracking-wider">
             Cluster {cluster.cluster_id} · {cluster.student_count.toLocaleString()} students
           </p>
         </div>
         <div className="w-3 h-3 rounded-full flex-shrink-0 mt-1"
-             style={{ background: color, boxShadow: `0 0 8px ${color}88` }} />
+             style={{ background: color }} />
       </div>
 
       {/* Metric grid */}
@@ -82,7 +82,7 @@ function ClusterCard({ cluster, color }) {
         {metrics.map(m => (
           <div key={m.label} className="rounded-lg px-3 py-2"
                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <p className="text-white/25 text-[9px] font-bold uppercase tracking-wider mb-0.5">{m.label}</p>
+            <p className="text-white text-[9px] font-bold uppercase tracking-wider mb-0.5">{m.label}</p>
             <p className="text-white font-black text-sm">{m.value}</p>
           </div>
         ))}
@@ -143,19 +143,18 @@ export default function StudentClusters() {
           <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
                style={{
                  background: 'linear-gradient(135deg,#6366f1,#a855f7)',
-                 boxShadow: '0 0 24px rgba(99,102,241,0.45)',
                }}>
             <Network size={22} className="text-white" />
           </div>
           <div>
-            <h2 className="font-extrabold text-gray-800 text-xl">
+            <h2 className="font-extrabold text-black text-xl">
               Student Behaviour Analysis
-              <span className="ml-2 text-[10px] font-bold text-indigo-400 bg-indigo-50
-                               border border-indigo-100 rounded-full px-2 py-0.5 align-middle">
+              <span className="ml-2 text-[10px] font-bold text-indigo-600 bg-indigo-50
+                               border border-indigo-200 rounded-full px-2 py-0.5 align-middle">
                 IEEE Clustering
               </span>
             </h2>
-            <p className="text-gray-400 text-sm">t-SNE dimensionality reduction · KMeans (k=3) · Unsupervised learning</p>
+            <p className="text-gray-600 text-sm">t-SNE dimensionality reduction · KMeans (k=3) · Unsupervised learning</p>
           </div>
         </div>
         <button
@@ -171,16 +170,16 @@ export default function StudentClusters() {
       {/* ── IEEE explanation banner ──────────────────────────────────────────── */}
       <div className="rounded-2xl p-5 animate-fade-up s1"
            style={{
-             background: 'linear-gradient(135deg,rgba(99,102,241,0.07),rgba(168,85,247,0.05))',
-             border: '1px solid rgba(99,102,241,0.15)',
+             background: 'linear-gradient(135deg,rgba(99,102,241,0.08),rgba(168,85,247,0.06))',
+             border: '1px solid rgba(99,102,241,0.2)',
            }}>
         <div className="flex gap-3">
-          <BookOpen size={15} className="text-indigo-400 flex-shrink-0 mt-0.5" />
+          <BookOpen size={15} className="text-indigo-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-indigo-300 font-bold text-xs mb-1 uppercase tracking-wider">IEEE Educational Data Mining</p>
-            <p className="text-gray-500 text-xs leading-relaxed">
-              This module applies <strong className="text-gray-400">t-SNE dimensionality reduction</strong> and{' '}
-              <strong className="text-gray-400">KMeans clustering</strong> to discover hidden student
+            <p className="text-indigo-700 font-bold text-xs mb-1 uppercase tracking-wider">IEEE Educational Data Mining</p>
+            <p className="text-gray-700 text-xs leading-relaxed">
+              This module applies <strong className="text-gray-900">t-SNE dimensionality reduction</strong> and{' '}
+              <strong className="text-gray-900">KMeans clustering</strong> to discover hidden student
               learning behaviour patterns, aligning with Educational Data Mining techniques proposed in
               IEEE research. Cluster interpretations are derived automatically from per-cluster
               feature averages — no labels are hardcoded.
@@ -226,13 +225,13 @@ export default function StudentClusters() {
               { label: 'Algorithm', value: 't-SNE + KMeans', color: '#10b981' },
               { label: 'Dimensions',  value: '4 → 2D',       color: '#f59e0b' },
             ].map((s, i) => (
-              <div key={s.label} className="card"
+              <div key={s.label} className="card card-dark"
                    style={{
                      background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))',
                      border: '1px solid rgba(99,102,241,0.15)',
                      animationDelay: `${i * 0.05}s`,
                    }}>
-                <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest mb-2">
+                <p className="text-white text-[9px] font-bold uppercase tracking-widest mb-2">
                   {s.label}
                 </p>
                 <p className="text-2xl font-black" style={{ color: s.color }}>{s.value}</p>
@@ -241,17 +240,17 @@ export default function StudentClusters() {
           </div>
 
           {/* Scatter plot */}
-          <div className="card animate-fade-up s2"
+          <div className="card card-dark animate-fade-up s2"
                style={{
                  background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))',
                  border: '1px solid rgba(99,102,241,0.15)',
                }}>
             <div className="flex items-center justify-between mb-5">
               <div>
-                <p className="section-title text-white/40 flex items-center gap-2">
+                <p className="section-title text-white flex items-center gap-2">
                   <Network size={11} /> t-SNE 2D Scatter Plot
                 </p>
-                <p className="text-white/20 text-[10px] mt-1">
+                <p className="text-white text-[10px] mt-1">
                   Each point represents one student. Colour indicates behaviour cluster.
                 </p>
               </div>
@@ -260,7 +259,7 @@ export default function StudentClusters() {
                   <div key={cid} className="flex items-center gap-1.5">
                     <div className="w-2.5 h-2.5 rounded-full"
                          style={{ background: CLUSTER_COLORS[cid] }} />
-                    <span className="text-white/30 text-[10px]">
+                    <span className="text-white text-[10px]">
                       {clusterNameForId(cid).split(' ')[0]}
                     </span>
                   </div>
@@ -275,17 +274,17 @@ export default function StudentClusters() {
                   type="number"
                   dataKey="x"
                   name="t-SNE X"
-                  tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 10 }}
+                  tick={{ fill: '#ffffff', fontSize: 10 }}
                   label={{ value: 't-SNE X', position: 'insideBottom', offset: -2,
-                           fill: 'rgba(255,255,255,0.2)', fontSize: 10 }}
+                           fill: '#ffffff', fontSize: 10 }}
                 />
                 <YAxis
                   type="number"
                   dataKey="y"
                   name="t-SNE Y"
-                  tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 10 }}
+                  tick={{ fill: '#ffffff', fontSize: 10 }}
                   label={{ value: 't-SNE Y', angle: -90, position: 'insideLeft',
-                           fill: 'rgba(255,255,255,0.2)', fontSize: 10 }}
+                           fill: '#ffffff', fontSize: 10 }}
                 />
                 <Tooltip content={<ClusterTooltip />} />
                 <Legend
@@ -307,7 +306,7 @@ export default function StudentClusters() {
 
           {/* Cluster summary cards */}
           <div>
-            <p className="section-title text-gray-400 flex items-center gap-2 mb-4 animate-fade-up s3">
+            <p className="section-title text-black flex items-center gap-2 mb-4 animate-fade-up s3">
               <Users size={11} /> Cluster Summaries
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -323,15 +322,15 @@ export default function StudentClusters() {
 
           {/* Average metrics comparison table */}
           <div className="card animate-fade-up s4" style={{ background: 'rgba(255,255,255,0.97)' }}>
-            <p className="font-bold text-gray-800 text-sm mb-4 flex items-center gap-2">
+            <p className="font-bold text-black text-sm mb-4 flex items-center gap-2">
               <Network size={14} className="text-indigo-500" /> Cluster Average Comparison
             </p>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-gray-100">
+                  <tr className="border-b-2 border-gray-200">
                     {['Cluster', 'Interpretation', 'Students', 'Avg Attendance', 'Avg Marks', 'Avg Assignments', 'Avg Study Hrs'].map(h => (
-                      <th key={h} className="text-left text-[10px] font-bold text-gray-300 uppercase tracking-wider pb-3 pr-4">
+                      <th key={h} className="text-left text-[10px] font-bold text-black uppercase tracking-wider pb-3 pr-4">
                         {h}
                       </th>
                     ))}
@@ -339,20 +338,20 @@ export default function StudentClusters() {
                 </thead>
                 <tbody>
                   {data.clusters.map((c, i) => (
-                    <tr key={c.cluster_id} className="tr-hover border-b border-gray-50">
+                    <tr key={c.cluster_id} className="tr-hover border-b border-gray-200">
                       <td className="py-3 pr-4">
                         <span className="inline-flex items-center gap-1.5">
                           <span className="w-2.5 h-2.5 rounded-full inline-block"
                                 style={{ background: CLUSTER_COLORS[c.cluster_id % CLUSTER_COLORS.length] }} />
-                          <span className="text-gray-400 font-bold">#{c.cluster_id}</span>
+                          <span className="text-gray-600 font-bold">#{c.cluster_id}</span>
                         </span>
                       </td>
-                      <td className="py-3 pr-4 font-semibold text-gray-700">{c.interpretation}</td>
-                      <td className="py-3 pr-4 text-gray-500">{c.student_count.toLocaleString()}</td>
-                      <td className="py-3 pr-4 font-bold text-indigo-600">{c.avg_attendance}%</td>
-                      <td className="py-3 pr-4 text-gray-600">{c.avg_marks}%</td>
-                      <td className="py-3 pr-4 text-gray-600">{c.avg_assignments}%</td>
-                      <td className="py-3 pr-4 text-gray-600">{c.avg_study_hours} h</td>
+                      <td className="py-3 pr-4 font-semibold text-black">{c.interpretation}</td>
+                      <td className="py-3 pr-4 text-black">{c.student_count.toLocaleString()}</td>
+                      <td className="py-3 pr-4 font-bold text-indigo-700">{c.avg_attendance}%</td>
+                      <td className="py-3 pr-4 text-black">{c.avg_marks}%</td>
+                      <td className="py-3 pr-4 text-black">{c.avg_assignments}%</td>
+                      <td className="py-3 pr-4 text-black">{c.avg_study_hours} h</td>
                     </tr>
                   ))}
                 </tbody>

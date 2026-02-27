@@ -136,8 +136,8 @@ export default function PredictPage() {
           <BrainCircuit size={22} className="text-white" />
         </div>
         <div>
-          <h2 className="font-extrabold text-gray-800 text-xl">Performance Predictor</h2>
-          <p className="text-gray-400 text-sm">RandomForest ML + AI Explanation + Personalised Advisory</p>
+          <h2 className="font-extrabold text-gray-900 text-xl">Performance Predictor</h2>
+          <p className="text-gray-700 text-sm">RandomForest ML + AI Explanation + Personalised Advisory</p>
         </div>
       </div>
 
@@ -153,7 +153,7 @@ export default function PredictPage() {
                  style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.12),rgba(168,85,247,0.08))', border: '1px solid rgba(99,102,241,0.2)' }}>
               <User size={14} className="text-indigo-600" />
             </div>
-            <p className="font-bold text-gray-700 text-sm">Student Academic Data</p>
+            <p className="font-bold text-gray-900 text-sm">Student Academic Data</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -188,7 +188,7 @@ export default function PredictPage() {
                     placeholder={placeholder} step="0.1"
                     className={`input-field ${errors[key] ? 'border-rose-400' : ''}`}
                   />
-                  <p className="text-[10px] text-gray-300 mt-0.5">{hint}</p>
+                  <p className="text-[10px] text-gray-700 mt-0.5">{hint}</p>
                   {errors[key] && (
                     <p className="text-[11px] text-rose-500 mt-0.5 flex items-center gap-1">
                       <XCircle size={10} /> {errors[key]}
@@ -231,7 +231,7 @@ export default function PredictPage() {
         {/* ── Result panel ────────────────────────────────────────────── */}
         <div ref={resultRef}>
           {loading && (
-            <div className="card flex flex-col items-center justify-center py-20 animate-fade-in"
+            <div className="card card-dark flex flex-col items-center justify-center py-20 animate-fade-in"
                  style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.9),rgba(30,27,75,0.85))', border: '1px solid rgba(99,102,241,0.2)', minHeight: '320px' }}>
               <div className="relative w-20 h-20 mb-6">
                 <div className="absolute inset-0 rounded-full border-4 border-indigo-900" />
@@ -239,22 +239,22 @@ export default function PredictPage() {
                 <div className="absolute inset-2 rounded-full border-2 border-t-purple-400 animate-spin"
                      style={{ animationDirection: 'reverse', animationDuration: '0.8s' }} />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <BrainCircuit size={22} className="text-indigo-300 animate-pulse" />
+                  <BrainCircuit size={22} className="text-white animate-pulse" />
                 </div>
               </div>
-              <p className="text-white/70 font-bold text-sm">Running ML Pipeline…</p>
-              <p className="text-white/35 text-xs mt-1">Prediction · Explanation · Advisory</p>
+              <p className="text-white font-bold text-sm">Running ML Pipeline…</p>
+              <p className="text-white text-xs mt-1">Prediction · Explanation · Advisory</p>
             </div>
           )}
 
           {!loading && !result && (
-            <div className="card flex flex-col items-center justify-center py-20"
+            <div className="card card-dark flex flex-col items-center justify-center py-20"
                  style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.8),rgba(30,27,75,0.75))', border: '1px dashed rgba(99,102,241,0.25)', minHeight: '320px' }}>
               <div className="animate-float">
-                <BrainCircuit size={52} style={{ color: 'rgba(129,140,248,0.35)' }} />
+                <BrainCircuit size={52} style={{ color: 'rgba(129,140,248,0.6)' }} />
               </div>
-              <p className="text-white/35 font-semibold text-sm mt-5">Result appears here</p>
-              <p className="text-white/20 text-xs mt-1">Fill form and click Predict</p>
+              <p className="text-white font-semibold text-sm mt-5">Result appears here</p>
+              <p className="text-white text-xs mt-1">Fill form and click Predict</p>
             </div>
           )}
 
@@ -310,7 +310,7 @@ export default function PredictPage() {
 
                 {/* Radar chart */}
                 <div className="rounded-xl p-4" style={{ background: 'rgba(0,0,0,0.2)' }}>
-                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1">
+                  <p className="text-white text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1">
                     <BarChart2 size={10} /> Performance Profile
                   </p>
                   <ResponsiveContainer width="100%" height={160}>
@@ -328,7 +328,7 @@ export default function PredictPage() {
 
                 {/* AI tag */}
                 <div className="flex items-center justify-between">
-                  <p className="text-white/35 text-[10px] font-semibold">
+                  <p className="text-white text-[10px] font-semibold">
                     {new Date(result.timestamp).toLocaleString()}
                   </p>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
@@ -408,7 +408,7 @@ function AIIntelligencePanels({ result, theme }) {
               <BrainCircuit size={14} className="text-indigo-600" />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-gray-800 text-sm">AI Explanation</p>
+              <p className="font-bold text-gray-900 text-sm">AI Explanation</p>
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                     style={{
                       background: result.fallback_used ? 'rgba(245,158,11,0.1)'
@@ -425,7 +425,7 @@ function AIIntelligencePanels({ result, theme }) {
             </div>
           </div>
 
-          <p className="text-gray-600 text-sm leading-relaxed">{result.explanation}</p>
+          <p className="text-gray-900 text-sm leading-relaxed">{result.explanation}</p>
 
           {/* Strengths */}
           {strengths.length > 0 && (
@@ -435,7 +435,7 @@ function AIIntelligencePanels({ result, theme }) {
                 <Star size={9} /> Strengths
               </p>
               {strengths.map((s, i) => (
-                <div key={i} className="flex items-start gap-2 text-xs text-emerald-700">
+                <div key={i} className="flex items-start gap-2 text-xs text-emerald-900">
                   <CheckCircle size={10} className="mt-0.5 flex-shrink-0 text-emerald-500" />
                   {s}
                 </div>
@@ -450,7 +450,7 @@ function AIIntelligencePanels({ result, theme }) {
               <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest flex items-center gap-1 mb-1.5">
                 <FileText size={9} /> Executive Summary
               </p>
-              <p className="text-xs text-gray-500 leading-relaxed">{result.report_summary}</p>
+              <p className="text-xs text-gray-900 leading-relaxed">{result.report_summary}</p>
             </div>
           )}
         </div>
@@ -462,7 +462,7 @@ function AIIntelligencePanels({ result, theme }) {
                  style={{ background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)' }}>
               <Shield size={14} className="text-rose-500" />
             </div>
-            <p className="font-bold text-gray-800 text-sm">Risk Factor Analysis</p>
+            <p className="font-bold text-gray-900 text-sm">Risk Factor Analysis</p>
           </div>
 
           <div className="space-y-3">
@@ -475,7 +475,7 @@ function AIIntelligencePanels({ result, theme }) {
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-1.5">
                       <cfg.icon size={11} style={{ color: cfg.color }} />
-                      <span className="font-bold text-gray-700 text-xs">{rf.name}</span>
+                      <span className="font-bold text-gray-900 text-xs">{rf.name}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="font-black text-sm" style={{ color: cfg.color }}>{rf.value}</span>
@@ -505,8 +505,8 @@ function AIIntelligencePanels({ result, theme }) {
                style={{ background: 'linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.1))', border: '1px solid rgba(16,185,129,0.2)' }}>
             <Lightbulb size={14} className="text-emerald-600" />
           </div>
-          <p className="font-bold text-gray-800 text-sm">Priority Action Plan</p>
-          <span className="ml-auto text-[10px] text-gray-400 font-semibold">Ordered by urgency</span>
+          <p className="font-bold text-gray-900 text-sm">Priority Action Plan</p>
+          <span className="ml-auto text-[10px] text-gray-700 font-semibold">Ordered by urgency</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -540,7 +540,7 @@ function AIIntelligencePanels({ result, theme }) {
                   )}
                 </div>
                 {/* Action */}
-                <p className="text-xs text-gray-700 leading-relaxed">{action}</p>
+                <p className="text-xs text-gray-900 leading-relaxed">{action}</p>
                 {/* Impact */}
                 {impact && (
                   <div className="flex items-start gap-1 mt-auto pt-1 border-t border-black/[0.04]">
@@ -556,19 +556,19 @@ function AIIntelligencePanels({ result, theme }) {
 
       {/* Row 3: 7-Day Study Plan (collapsible) */}
       {hasWeeklyPlan && (
-        <div className="card space-y-3" style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.94),rgba(30,27,75,0.90))', border: '1px solid rgba(99,102,241,0.2)' }}>
+        <div className="card card-dark space-y-3" style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.94),rgba(30,27,75,0.90))', border: '1px solid rgba(99,102,241,0.2)' }}>
           <button onClick={() => setWeekOpen(o => !o)}
                   className="w-full flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center"
                    style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)' }}>
-                <Calendar size={14} className="text-indigo-300" />
+                <Calendar size={14} className="text-white" />
               </div>
-              <p className="font-bold text-white/80 text-sm">7-Day Personalised Study Plan</p>
+              <p className="font-bold text-white text-sm">7-Day Personalised Study Plan</p>
             </div>
             {weekOpen
-              ? <ChevronUp size={14} className="text-white/40" />
-              : <ChevronDown size={14} className="text-white/40" />
+              ? <ChevronUp size={14} className="text-white" />
+              : <ChevronDown size={14} className="text-white" />
             }
           </button>
 
@@ -582,10 +582,10 @@ function AIIntelligencePanels({ result, theme }) {
                        style={{ background: isWeekend ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.05)',
                                 border: isWeekend ? '1px solid rgba(99,102,241,0.25)' : '1px solid rgba(255,255,255,0.06)' }}>
                     <p className="text-[9px] font-black uppercase tracking-widest mb-1.5"
-                       style={{ color: isWeekend ? '#818cf8' : 'rgba(255,255,255,0.35)' }}>
+                       style={{ color: isWeekend ? '#818cf8' : '#ffffff' }}>
                       {DAY_ABBR[i]}
                     </p>
-                    <p className="text-[10px] text-white/55 leading-snug">{task}</p>
+                    <p className="text-[10px] text-white leading-snug">{task}</p>
                   </div>
                 )
               })}

@@ -117,9 +117,9 @@ export default function StudentProgressPage() {
 
       {/* Score trend chart */}
       {chartData.length > 1 && (
-        <div className="card animate-fade-up s1"
+        <div className="card card-dark animate-fade-up s1"
              style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))', border: '1px solid rgba(99,102,241,0.15)' }}>
-          <p className="section-title text-white/40 flex items-center gap-2 mb-4">
+          <p className="section-title text-white flex items-center gap-2 mb-4">
             <TrendingUp size={11} /> Score Trend
           </p>
           <ResponsiveContainer width="100%" height={200}>
@@ -130,9 +130,9 @@ export default function StudentProgressPage() {
                   <stop offset="95%" stopColor="#6366f1" stopOpacity={0}   />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis dataKey="label" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
-              <YAxis domain={[0, 100]} tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              <XAxis dataKey="label" tick={{ fill: '#ffffff', fontSize: 10 }} />
+              <YAxis domain={[0, 100]} tick={{ fill: '#ffffff', fontSize: 10 }} />
               <Tooltip
                 contentStyle={{ background: 'rgba(15,12,41,0.95)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 10, color: 'white', fontSize: 11 }}
                 formatter={(v, _, p) => [`${v} (${p.payload.risk})`, 'Score']}

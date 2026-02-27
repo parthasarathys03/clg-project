@@ -88,11 +88,11 @@ export default function ModelInsightsPage() {
                 icon: BarChart2, color: '#f472b6',
               },
             ].map((m, i) => (
-              <div key={m.label} className="card"
+              <div key={m.label} className="card card-dark"
                    style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))', border: '1px solid rgba(99,102,241,0.15)', animationDelay: `${i*0.05}s` }}>
                 <div className="flex items-center gap-2 mb-2">
                   <m.icon size={12} style={{ color: m.color }} />
-                  <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest">{m.label}</p>
+                  <p className="text-white text-[10px] font-bold uppercase tracking-widest">{m.label}</p>
                 </div>
                 <p className="text-2xl font-black" style={{ color: m.color }}>{m.value}</p>
               </div>
@@ -101,18 +101,18 @@ export default function ModelInsightsPage() {
 
           {/* Feature importance chart */}
           {fiData.length > 0 && (
-            <div className="card animate-fade-up s2"
+            <div className="card card-dark animate-fade-up s2"
                  style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))', border: '1px solid rgba(99,102,241,0.15)' }}>
-              <p className="section-title text-white/40 mb-5 flex items-center gap-2">
+              <p className="section-title text-white mb-5 flex items-center gap-2">
                 <BarChart2 size={11} /> Feature Importance
               </p>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={fiData} layout="vertical" margin={{ left: 10, right: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                   <XAxis type="number" domain={[0, 0.5]} tickFormatter={v => `${(v*100).toFixed(0)}%`}
-                         tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} />
+                         tick={{ fill: '#ffffff', fontSize: 10 }} />
                   <YAxis type="category" dataKey="name" width={130}
-                         tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }} />
+                         tick={{ fill: '#ffffff', fontSize: 11 }} />
                   <Tooltip
                     contentStyle={{ background: 'rgba(15,12,41,0.95)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 10, color: 'white', fontSize: 11 }}
                     formatter={v => [`${(v*100).toFixed(1)}%`, 'Importance']}
@@ -130,8 +130,8 @@ export default function ModelInsightsPage() {
                 {fiData.map(d => (
                   <div key={d.name}>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-white/50">{d.name}</span>
-                      <span className="text-white/80 font-bold">{(d.value * 100).toFixed(1)}%</span>
+                      <span className="text-white">{d.name}</span>
+                      <span className="text-white font-bold">{(d.value * 100).toFixed(1)}%</span>
                     </div>
                     <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
                       <div className="h-full rounded-full animated-bar"
@@ -147,26 +147,26 @@ export default function ModelInsightsPage() {
           {/* Training history */}
           {data?.training_history?.length > 0 && (
             <div className="card animate-fade-up s3" style={{ background: 'rgba(255,255,255,0.97)' }}>
-              <p className="font-bold text-gray-800 text-sm mb-4 flex items-center gap-2">
+              <p className="font-bold text-black text-sm mb-4 flex items-center gap-2">
                 <Database size={14} className="text-indigo-500" /> Training History
               </p>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b border-gray-100">
+                    <tr className="border-b-2 border-gray-200">
                       {['Run','Accuracy','CV Score','Dataset Rows','Trained At'].map(h => (
-                        <th key={h} className="text-left text-[10px] font-bold text-gray-300 uppercase tracking-wider pb-3 pr-4">{h}</th>
+                        <th key={h} className="text-left text-[10px] font-bold text-black uppercase tracking-wider pb-3 pr-4">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {data.training_history.map((h, i) => (
-                      <tr key={h.id} className="tr-hover border-b border-gray-50">
-                        <td className="py-3 pr-4 text-gray-300">#{h.id}</td>
-                        <td className="py-3 pr-4 font-black text-indigo-600">{(h.accuracy * 100).toFixed(2)}%</td>
-                        <td className="py-3 pr-4 text-gray-500">{h.cv_score ? `${(h.cv_score * 100).toFixed(2)}%` : '—'}</td>
-                        <td className="py-3 pr-4 text-gray-500">{h.dataset_rows?.toLocaleString() || '—'}</td>
-                        <td className="py-3 pr-4 text-gray-400">{new Date(h.trained_at).toLocaleString()}</td>
+                      <tr key={h.id} className="tr-hover border-b border-gray-200">
+                        <td className="py-3 pr-4 text-gray-600">#{h.id}</td>
+                        <td className="py-3 pr-4 font-black text-indigo-700">{(h.accuracy * 100).toFixed(2)}%</td>
+                        <td className="py-3 pr-4 text-black">{h.cv_score ? `${(h.cv_score * 100).toFixed(2)}%` : '—'}</td>
+                        <td className="py-3 pr-4 text-black">{h.dataset_rows?.toLocaleString() || '—'}</td>
+                        <td className="py-3 pr-4 text-gray-600">{new Date(h.trained_at).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
