@@ -17,15 +17,16 @@ import { getDashboard, getPredictions, getDatasetInfo, deletePrediction } from '
 const PIE_COLORS = { Good: '#10b981', Average: '#f59e0b', 'At Risk': '#f43f5e' }
 
 export default function TeacherDashboard() {
-  const [stats, setStats]       = useState(null)
-  const [dataset, setDataset]   = useState(null)
-  const [predictions, setPreds] = useState([])
-  const [total, setTotal]       = useState(0)
-  const [loading, setLoading]   = useState(true)
-  const [search, setSearch]     = useState('')
-  const [filterRisk, setFilter] = useState('')
-  const [page, setPage]         = useState(1)
-  const [deleting, setDeleting] = useState(null)
+  const [stats, setStats]           = useState(null)
+  const [dataset, setDataset]       = useState(null)
+  const [predictions, setPreds]     = useState([])
+  const [total, setTotal]           = useState(0)
+  const [loading, setLoading]       = useState(true)
+  const [search, setSearch]         = useState('')
+  const [filterRisk, setFilter]     = useState('')
+  const [filterSection, setSection] = useState('')
+  const [page, setPage]             = useState(1)
+  const [deleting, setDeleting]     = useState(null)
   const PER = 10
 
   const load = async () => {
@@ -33,7 +34,7 @@ export default function TeacherDashboard() {
     try {
       const [d, p, ds] = await Promise.all([
         getDashboard(),
-        getPredictions({ page, limit: PER, risk_level: filterRisk || undefined, search: search || undefined }),
+        getPredictions({ page, limit: PER, risk_level: filterRisk || undefined, search: search || undefined, section: filterSection || undefined }),
         getDatasetInfo(),
       ])
       setStats(d.data)
@@ -44,7 +45,7 @@ export default function TeacherDashboard() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [page, filterRisk, search])
+  useEffect(() => { load() }, [page, filterRisk, filterSection, search])
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this prediction permanently? This cannot be undone.')) return
@@ -81,6 +82,19 @@ export default function TeacherDashboard() {
     fill: PIE_COLORS[p.name],
     max: stats?.total_students || 1,
   }))
+
+  // Section and year analytics
+  const sectionStats    = stats?.section_stats || {}
+  const yearStats       = stats?.year_stats    || {}
+  const sectionChartData = Object.entries(sectionStats)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, dist]) => ({
+      name,
+      Good:      dist.Good     || 0,
+      Average:   dist.Average  || 0,
+      'At Risk': dist['At Risk'] || 0,
+    }))
+  const darkTooltipStyle = { background: 'rgba(15,12,41,0.95)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '12px', color: 'white' }
 
   return (
     <div className="space-y-6">
@@ -174,6 +188,28 @@ export default function TeacherDashboard() {
             </ResponsiveContainer>
           </div>
 
+          {/* Section-wise risk breakdown */}
+          {sectionChartData.length > 0 && (
+            <div className="card card-dark"
+                 style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))', border: '1px solid rgba(99,102,241,0.15)' }}>
+              <p className="section-title text-white flex items-center gap-2">
+                <BarChart2 size={11} /> Section-wise Breakdown
+              </p>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={sectionChartData} margin={{ left: -25, right: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="name" tick={{ fill: '#ffffff', fontSize: 10 }} />
+                  <YAxis tick={{ fill: '#ffffff', fontSize: 10 }} />
+                  <Tooltip contentStyle={darkTooltipStyle} />
+                  <Legend formatter={v => <span style={{ color: '#fff', fontSize: 11 }}>{v}</span>} />
+                  <Bar dataKey="Good"     fill="#10b981" radius={[4,4,0,0]} style={{ filter: 'drop-shadow(0 0 4px #10b98188)' }} />
+                  <Bar dataKey="Average"  fill="#f59e0b" radius={[4,4,0,0]} style={{ filter: 'drop-shadow(0 0 4px #f59e0b88)' }} />
+                  <Bar dataKey="At Risk"  fill="#f43f5e" radius={[4,4,0,0]} style={{ filter: 'drop-shadow(0 0 4px #f43f5e88)' }} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
           {/* Dataset info */}
           {dataset?.available && (
             <div className="card card-dark"
@@ -213,6 +249,26 @@ export default function TeacherDashboard() {
         </div>
       )}
 
+      {/* ── Academic Year Distribution ───────────────────────────────────── */}
+      {Object.keys(yearStats).length > 0 && (
+        <div className="card animate-fade-up"
+             style={{ background: 'rgba(255,255,255,0.97)', border: '1px solid rgba(229,231,235,0.7)' }}>
+          <p className="font-bold text-gray-800 text-sm mb-3 flex items-center gap-2">
+            <GraduationCap size={14} className="text-indigo-500" /> Academic Year Distribution
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {Object.entries(yearStats).sort(([a],[b]) => b-a).map(([yr, cnt]) => (
+              <div key={yr} className="flex flex-col items-center px-6 py-3 rounded-xl"
+                   style={{ background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.15)' }}>
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Year {yr}</span>
+                <span className="text-2xl font-black text-indigo-600 leading-none mt-1">{cnt}</span>
+                <span className="text-[10px] text-gray-400 mt-0.5">students</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Predictions table ─────────────────────────────────────────────── */}
       <div className="card animate-fade-up s4"
            style={{ background: 'rgba(255,255,255,0.97)', border: '1px solid rgba(229,231,235,0.7)' }}>
@@ -235,6 +291,13 @@ export default function TeacherDashboard() {
               <option>Average</option>
               <option>At Risk</option>
             </select>
+            <select value={filterSection} onChange={e => { setSection(e.target.value); setPage(1) }}
+                    className="input-field text-xs w-28 py-2">
+              <option value="">All Sections</option>
+              <option>IT-A</option>
+              <option>IT-B</option>
+              <option>IT-C</option>
+            </select>
           </div>
         </div>
 
@@ -248,7 +311,7 @@ export default function TeacherDashboard() {
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b-2 border-gray-200">
-                  {['#', 'Student', 'Att.', 'Marks', 'Assign.', 'Hrs', 'Risk', 'Conf.', 'Time', ''].map(h => (
+                  {['#', 'Student', 'Section', 'Year', 'Att.', 'Marks', 'Assign.', 'Hrs', 'Risk', 'Conf.', 'Time', ''].map(h => (
                     <th key={h} className="text-left text-[10px] font-bold text-black uppercase tracking-wider pb-3 pr-4">{h}</th>
                   ))}
                 </tr>
@@ -263,6 +326,13 @@ export default function TeacherDashboard() {
                         <p className="text-gray-600 font-mono text-[10px]">{r.student_id}</p>
                       </Link>
                     </td>
+                    <td className="py-3 pr-4">
+                      {r.section
+                        ? <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md"
+                                style={{ background: 'rgba(99,102,241,0.08)', color: '#4f46e5' }}>{r.section}</span>
+                        : <span className="text-gray-400">—</span>}
+                    </td>
+                    <td className="py-3 pr-4 text-black font-mono text-[10px]">{r.current_year ? `Yr ${r.current_year}` : '—'}</td>
                     <td className="py-3 pr-4 text-black">{r.inputs?.attendance_percentage}%</td>
                     <td className="py-3 pr-4 text-black">{r.inputs?.internal_marks}</td>
                     <td className="py-3 pr-4 text-black">{r.inputs?.assignment_score}</td>

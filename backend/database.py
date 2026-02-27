@@ -28,7 +28,10 @@ def init_db():
             key_factors TEXT,
             timestamp   TEXT NOT NULL,
             batch_id    TEXT,
-            ai_data     TEXT
+            ai_data     TEXT,
+            section     TEXT,
+            department  TEXT,
+            current_year INTEGER
         );
 
         CREATE TABLE IF NOT EXISTS batch_jobs (
@@ -50,12 +53,18 @@ def init_db():
         );
     """)
     conn.commit()
-    # Migration: add ai_data column to existing databases that predate v2
-    try:
-        conn.execute("ALTER TABLE predictions ADD COLUMN ai_data TEXT")
-        conn.commit()
-    except Exception:
-        pass  # column already exists
+    # Migrations: add columns to existing databases
+    for ddl in [
+        "ALTER TABLE predictions ADD COLUMN ai_data TEXT",
+        "ALTER TABLE predictions ADD COLUMN section TEXT",
+        "ALTER TABLE predictions ADD COLUMN department TEXT",
+        "ALTER TABLE predictions ADD COLUMN current_year INTEGER",
+    ]:
+        try:
+            conn.execute(ddl)
+            conn.commit()
+        except Exception:
+            pass  # column already exists
     conn.close()
 
 
@@ -99,8 +108,9 @@ def insert_prediction(record: dict, batch_id: str = None):
     conn.execute("""
         INSERT INTO predictions
           (id, student_id, student_name, risk_level, confidence,
-           inputs, explanation, recommendations, key_factors, timestamp, batch_id, ai_data)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+           inputs, explanation, recommendations, key_factors, timestamp, batch_id, ai_data,
+           section, department, current_year)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     """, (
         record["id"],
         record["student_id"],
@@ -114,13 +124,17 @@ def insert_prediction(record: dict, batch_id: str = None):
         record["timestamp"],
         batch_id,
         ai_data,
+        record.get("section"),
+        record.get("department"),
+        record.get("current_year"),
     ))
     conn.commit()
     conn.close()
 
 
 def get_predictions(page: int = 1, limit: int = 15,
-                    risk_level: str = None, search: str = None) -> dict:
+                    risk_level: str = None, search: str = None,
+                    section: str = None) -> dict:
     conn = _get_conn()
     where, params = [], []
     if risk_level:
@@ -130,6 +144,9 @@ def get_predictions(page: int = 1, limit: int = 15,
         where.append("(LOWER(student_name) LIKE ? OR LOWER(student_id) LIKE ?)")
         q = f"%{search.lower()}%"
         params.extend([q, q])
+    if section:
+        where.append("section = ?")
+        params.append(section)
     clause = ("WHERE " + " AND ".join(where)) if where else ""
     total = conn.execute(f"SELECT COUNT(*) FROM predictions {clause}", params).fetchone()[0]
     rows  = conn.execute(
@@ -181,6 +198,29 @@ def get_dashboard_stats() -> dict:
             ROUND(AVG(json_extract(inputs,'$.study_hours_per_day')),1)     AS hours
         FROM predictions
     """).fetchone()
+
+    # Section-wise risk breakdown
+    sec_rows = conn.execute("""
+        SELECT section, risk_level, COUNT(*) as cnt
+        FROM predictions WHERE section IS NOT NULL
+        GROUP BY section, risk_level
+    """).fetchall()
+    section_stats = {}
+    for r in sec_rows:
+        s = r["section"]
+        if s not in section_stats:
+            section_stats[s] = {"Good": 0, "Average": 0, "At Risk": 0, "total": 0}
+        section_stats[s][r["risk_level"]] = r["cnt"]
+        section_stats[s]["total"] += r["cnt"]
+
+    # Year distribution
+    yr_rows = conn.execute("""
+        SELECT current_year, COUNT(DISTINCT student_id) as cnt
+        FROM predictions WHERE current_year IS NOT NULL
+        GROUP BY current_year ORDER BY current_year
+    """).fetchall()
+    year_stats = {str(r["current_year"]): r["cnt"] for r in yr_rows}
+
     conn.close()
     return {
         "total_students": total,
@@ -193,6 +233,8 @@ def get_dashboard_stats() -> dict:
         "average_internal_marks":  avg_row["marks"]  or 0,
         "average_assignment_score":avg_row["assign"] or 0,
         "average_study_hours":     avg_row["hours"]  or 0,
+        "section_stats":           section_stats,
+        "year_stats":              year_stats,
     }
 
 

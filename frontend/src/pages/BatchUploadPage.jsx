@@ -4,18 +4,19 @@ import RiskBadge from '../components/RiskBadge'
 import { batchUpload } from '../api'
 import { useToast } from '../components/Toast'
 
-const SAMPLE_CSV = `student_name,student_id,attendance_percentage,internal_marks,assignment_score,study_hours_per_day
-Alice Johnson,S001,88,72,80,4
-Bob Smith,S002,55,40,50,1.5
-Carol Davis,S003,75,65,70,3
-David Lee,S004,92,85,88,5
-Emma Wilson,S005,48,35,42,1`
+const SAMPLE_CSV = `student_id,student_name,department,current_year,section,attendance,CA_1_internal_marks,assignments,study_hours
+SKP-IT-A01,Aravind Kumar,Information Technology,4,IT-A,92,88,90,5.5
+SKP-IT-A02,Priya Dharshini,Information Technology,4,IT-A,95,91,93,6.0
+SKP-IT-B01,Karthikeyan R,Information Technology,4,IT-B,74,58,65,2.5
+SKP-IT-B02,Tamilselvi M,Information Technology,4,IT-B,77,63,67,3.0
+SKP-IT-C01,Manikandan R,Information Technology,4,IT-C,45,28,35,0.5
+SKP-IT-C02,Vikram S,Information Technology,4,IT-C,50,35,40,1.0`
 
 function downloadSample() {
   const blob = new Blob([SAMPLE_CSV], { type: 'text/csv' })
   const url  = URL.createObjectURL(blob)
   const a    = document.createElement('a')
-  a.href = url; a.download = 'batch_template.csv'
+  a.href = url; a.download = 'SKP_IT_Section_Template.csv'
   document.body.appendChild(a); a.click(); a.remove()
   URL.revokeObjectURL(url)
 }
@@ -122,7 +123,7 @@ export default function BatchUploadPage() {
               <Upload size={22} className="text-indigo-400" />
             </div>
             <p className="font-bold text-black text-sm">Drop your CSV here or click to browse</p>
-            <p className="text-gray-600 text-xs">Required columns: student_name, student_id, attendance_percentage, internal_marks, assignment_score, study_hours_per_day</p>
+            <p className="text-gray-600 text-xs">Required: student_id, student_name, department, current_year, section, attendance, CA_1_internal_marks, assignments, study_hours</p>
           </>
         )}
       </div>
@@ -190,7 +191,7 @@ export default function BatchUploadPage() {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b-2 border-gray-200">
-                    {['#','Name','ID','Attendance','Int. Marks','Assignments','Study Hrs','Risk','Confidence'].map(h => (
+                    {['#','Name','ID','Section','Year','Attendance','Int. Marks','Assignments','Study Hrs','Risk','Confidence'].map(h => (
                       <th key={h} className="text-left text-[10px] font-bold text-black uppercase tracking-wider pb-3 pr-3">{h}</th>
                     ))}
                   </tr>
@@ -201,6 +202,8 @@ export default function BatchUploadPage() {
                       <td className="py-2.5 pr-3 text-gray-700">{i + 1}</td>
                       <td className="py-2.5 pr-3 font-semibold text-black">{r.student_name}</td>
                       <td className="py-2.5 pr-3 font-mono text-gray-700 text-[10px]">{r.student_id}</td>
+                      <td className="py-2.5 pr-3 text-black font-mono">{r.section || '—'}</td>
+                      <td className="py-2.5 pr-3 text-black">{r.current_year ? `Yr ${r.current_year}` : '—'}</td>
                       <td className="py-2.5 pr-3 text-black">{r.inputs?.attendance_percentage}%</td>
                       <td className="py-2.5 pr-3 text-black">{r.inputs?.internal_marks}</td>
                       <td className="py-2.5 pr-3 text-black">{r.inputs?.assignment_score}</td>

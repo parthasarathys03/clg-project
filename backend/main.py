@@ -170,7 +170,10 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
             "assignment_score":      student.assignment_score,
             "study_hours_per_day":   student.study_hours_per_day,
         },
-        "timestamp": datetime.now().isoformat(),
+        "timestamp":    datetime.now().isoformat(),
+        "section":      student.section,
+        "department":   student.department,
+        "current_year": student.current_year,
     }
     db.insert_prediction(record, batch_id=batch_id)
     return record
@@ -267,8 +270,9 @@ def get_predictions(
     limit: int = Query(20, ge=1, le=100),
     risk_level: Optional[str] = Query(None),
     search: Optional[str] = None,
+    section: Optional[str] = Query(None),
 ):
-    return db.get_predictions(page=page, limit=limit, risk_level=risk_level, search=search)
+    return db.get_predictions(page=page, limit=limit, risk_level=risk_level, search=search, section=section)
 
 
 @app.delete("/api/predictions/{pred_id}")
@@ -314,9 +318,8 @@ def dataset_info():
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 
 BATCH_REQUIRED_COLS = {
-    "student_name", "student_id",
-    "attendance_percentage", "internal_marks",
-    "assignment_score", "study_hours_per_day",
+    "student_id", "student_name", "department", "current_year",
+    "section", "attendance", "CA_1_internal_marks", "assignments", "study_hours",
 }
 
 @app.post("/api/batch-upload")
@@ -358,10 +361,13 @@ async def batch_upload(file: UploadFile = File(...)):
             student = StudentInput(
                 student_id=str(row["student_id"]).strip(),
                 student_name=str(row["student_name"]).strip(),
-                attendance_percentage=float(row["attendance_percentage"]),
-                internal_marks=float(row["internal_marks"]),
-                assignment_score=float(row["assignment_score"]),
-                study_hours_per_day=float(row["study_hours_per_day"]),
+                attendance_percentage=float(row["attendance"]),
+                internal_marks=float(row["CA_1_internal_marks"]),
+                assignment_score=float(row["assignments"]),
+                study_hours_per_day=float(row["study_hours"]),
+                section=str(row["section"]).strip(),
+                department=str(row["department"]).strip(),
+                current_year=int(float(row["current_year"])),
             )
             record = _run_prediction(student, batch_id=batch_id)
             results.append(record)

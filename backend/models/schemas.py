@@ -10,6 +10,9 @@ class StudentInput(BaseModel):
     internal_marks: float = Field(..., ge=0, le=100)
     assignment_score: float = Field(..., ge=0, le=100)
     study_hours_per_day: float = Field(..., ge=0, le=12)
+    section:      Optional[str] = None
+    department:   Optional[str] = None
+    current_year: Optional[int] = Field(None, ge=1, le=4)
 
     @validator("student_id")
     def student_id_alphanumeric(cls, v):
@@ -24,6 +27,12 @@ class StudentInput(BaseModel):
         if not any(c.isalpha() for c in stripped):
             raise ValueError("student_name must contain at least one letter")
         return stripped
+
+    @validator("section")
+    def section_valid(cls, v):
+        if v is not None and v not in ("IT-A", "IT-B", "IT-C"):
+            raise ValueError("section must be IT-A, IT-B, or IT-C")
+        return v
 
 
 class PredictionResult(BaseModel):

@@ -66,6 +66,9 @@ def get_demo_students() -> list:
             "internal_marks":        float(marks),
             "assignment_score":      float(assign),
             "study_hours_per_day":   float(hours),
+            "section":               _section,
+            "department":            "Information Technology",
+            "current_year":          4,
         }
         for sid, name, _section, att, marks, assign, hours in DEMO_STUDENTS
     ]
