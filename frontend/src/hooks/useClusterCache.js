@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getStudentClusters } from '../api'
+import { setClusterReady } from '../components/Layout'
 
 // Global cache for cluster data (persists across navigation)
 let globalClusterCache = null
@@ -35,6 +36,7 @@ export function useClusterCache() {
         globalCacheTimestamp = Date.now()
         setData(res.data)
         setLoading(false)
+        setClusterReady(true)
       }
       return res.data
     } catch (e) {

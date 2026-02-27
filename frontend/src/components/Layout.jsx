@@ -177,6 +177,9 @@ export default function Layout({ children }) {
                   {!collapsed && (
                     <>
                       <span className="text-sm font-medium flex-1 truncate">{label}</span>
+                      {to === '/clusters' && clusterReady && !isActive && (
+                        <span className="w-2 h-2 rounded-full bg-emerald-400" title="Ready" />
+                      )}
                       {isActive && <ChevronRight size={12} className="text-white/50" />}
                     </>
                   )}
