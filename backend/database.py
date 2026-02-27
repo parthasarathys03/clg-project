@@ -264,6 +264,32 @@ def get_rankings() -> list:
     return ranked
 
 
+# ─── demo management ────────────────────────────────────────────────────────
+
+def get_prediction_count() -> int:
+    """Return total number of predictions in the database."""
+    conn = _get_conn()
+    count = conn.execute("SELECT COUNT(*) FROM predictions").fetchone()[0]
+    conn.close()
+    return count
+
+
+def clear_predictions():
+    """Delete all rows from the predictions table."""
+    conn = _get_conn()
+    conn.execute("DELETE FROM predictions")
+    conn.commit()
+    conn.close()
+
+
+def clear_batch_jobs():
+    """Delete all rows from the batch_jobs table."""
+    conn = _get_conn()
+    conn.execute("DELETE FROM batch_jobs")
+    conn.commit()
+    conn.close()
+
+
 # ─── batch jobs ──────────────────────────────────────────────────────────────
 
 def insert_batch_job(job_id: str, filename: str, total_rows: int):

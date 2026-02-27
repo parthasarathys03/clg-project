@@ -68,7 +68,7 @@ export default function Layout({ children }) {
                 }}>Q</span>
               </p>
               <p className="text-white/60 text-[10px] mt-0.5 font-medium tracking-wider uppercase">
-                AI Advisory System
+                IT Dept · SKP Engg. College
               </p>
             </div>
           )}

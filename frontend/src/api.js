@@ -22,6 +22,9 @@ export const getModelInsights   = ()        => api.get('/model/insights')
 export const deletePrediction   = (id)      => api.delete(`/predictions/${id}`)
 export const getTrainingHistory = ()        => api.get('/training-history')
 
+// ── Demo management ─────────────────────────────────────────────────────────
+export const resetDemoData     = ()        => api.post('/demo/reset')
+
 // ── IEEE Clustering endpoint ─────────────────────────────────────────────────
 export const getStudentClusters = (refresh = false) =>
   api.get('/student-clusters', { params: refresh ? { refresh: true } : {} })

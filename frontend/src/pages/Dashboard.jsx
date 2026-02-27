@@ -10,7 +10,7 @@ import {
 } from 'recharts'
 import StatCard from '../components/StatCard'
 import RiskBadge from '../components/RiskBadge'
-import { getDashboard, getHealth, trainModel } from '../api'
+import { getDashboard, getHealth, trainModel, resetDemoData } from '../api'
 
 const PIE_COLORS   = { Good: '#10b981', Average: '#f59e0b', 'At Risk': '#f43f5e' }
 const PIE_GLOW     = { Good: 'rgba(16,185,129,0.6)', Average: 'rgba(245,158,11,0.6)', 'At Risk': 'rgba(244,63,94,0.6)' }
@@ -46,6 +46,7 @@ export default function Dashboard() {
   const [health, setHealth]     = useState(null)
   const [loading, setLoading]   = useState(true)
   const [training, setTraining] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const [trainMsg, setTrainMsg] = useState(null)
 
   const load = async () => {
@@ -81,6 +82,20 @@ export default function Dashboard() {
       setTrainMsg({ ok: false, text: e.response?.data?.detail || e.message })
     }
     setTraining(false)
+  }
+
+  const handleReset = async () => {
+    if (!window.confirm('Reset all predictions and re-seed 25 demo students?\nThis will clear all existing data.')) return
+    setResetting(true)
+    setTrainMsg(null)
+    try {
+      const res = await resetDemoData()
+      setTrainMsg({ ok: true, text: `Demo reset complete — ${res.data.students_seeded} students seeded` })
+      load()
+    } catch (e) {
+      setTrainMsg({ ok: false, text: e.response?.data?.detail || 'Reset failed' })
+    }
+    setResetting(false)
   }
 
   const dist    = stats?.risk_distribution || { Good: 0, Average: 0, 'At Risk': 0 }
@@ -155,6 +170,14 @@ export default function Dashboard() {
             </button>
             <button onClick={load} className="btn-secondary text-sm">
               <RefreshCw size={14} /> Refresh
+            </button>
+            <button onClick={handleReset} disabled={resetting}
+                    className="btn-secondary text-sm flex items-center gap-1.5"
+                    style={{ borderColor: 'rgba(244,63,94,0.4)', color: '#fda4af' }}>
+              {resetting
+                ? <><RefreshCw size={14} className="animate-spin" /> Resetting…</>
+                : <><RefreshCw size={14} /> Reset Demo</>
+              }
             </button>
           </div>
         </div>

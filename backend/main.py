@@ -74,6 +74,19 @@ app.add_middleware(
 @app.on_event("startup")
 def startup():
     db.init_db()
+    # Auto-seed demo data if database is empty (first launch)
+    if db.get_prediction_count() == 0:
+        import threading
+        def _background_seed():
+            try:
+                _auto_train()
+                from demo_seed import seed_demo_data
+                seed_demo_data()
+                cluster_svc.invalidate_cache()
+                print("[STARTUP] Demo data seeded: 25 students ready")
+            except Exception as e:
+                print(f"[STARTUP] Auto-seed failed: {e}")
+        threading.Thread(target=_background_seed, daemon=True).start()
 
 
 # ─── shared helpers ───────────────────────────────────────────────────────────
@@ -210,6 +223,21 @@ def train_model():
 
 
 # ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  DEMO RESET                                                                  ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+@app.post("/api/demo/reset")
+def reset_demo():
+    """Clear all predictions and batch jobs, re-seed 25 demo students."""
+    try:
+        from demo_seed import reset_demo_data
+        result = reset_demo_data()
+        return result
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Demo reset failed: {exc}")
+
+
+# ╔══════════════════════════════════════════════════════════════════════════════╗
 # ║  SINGLE PREDICTION                                                           ║
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -341,6 +369,7 @@ async def batch_upload(file: UploadFile = File(...)):
             errors.append({"row": i + 2, "error": str(exc)})
 
     db.update_batch_job(batch_id, len(results), "done")
+    cluster_svc.invalidate_cache()
 
     return {
         "batch_id":  batch_id,

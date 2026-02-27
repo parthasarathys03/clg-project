@@ -59,6 +59,7 @@ export default function BatchUploadPage() {
       clearInterval(tick); setProgress(100)
       setResult(res.data)
       toast(`Processed ${res.data.processed} of ${res.data.total} students`, 'success')
+      window.dispatchEvent(new CustomEvent('predictionSaved'))
     } catch (e) {
       setProgress(0)
       toast(e.response?.data?.detail || 'Upload failed', 'error')
