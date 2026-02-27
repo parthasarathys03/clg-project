@@ -210,7 +210,7 @@ def train_model():
         predictor.reload_model()
         db.insert_training_history(
             accuracy=result["accuracy"],
-            cv_score=result.get("cv_score"),
+            cv_score=result.get("cv_mean"),   # train.py returns "cv_mean"
             dataset_rows=result["dataset_rows"],
             feature_importances=result["feature_importances"],
         )

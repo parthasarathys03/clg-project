@@ -65,6 +65,23 @@ def init_db():
             conn.commit()
         except Exception:
             pass  # column already exists
+    # Backfill section/department/current_year for existing SKP demo students
+    conn.execute("""
+        UPDATE predictions SET
+            section = CASE
+                WHEN student_id LIKE 'SKP-IT-A%' THEN 'IT-A'
+                WHEN student_id LIKE 'SKP-IT-B%' THEN 'IT-B'
+                WHEN student_id LIKE 'SKP-IT-C%' THEN 'IT-C'
+                ELSE section
+            END,
+            department   = 'Information Technology',
+            current_year = 4
+        WHERE section IS NULL
+          AND (student_id LIKE 'SKP-IT-A%'
+            OR student_id LIKE 'SKP-IT-B%'
+            OR student_id LIKE 'SKP-IT-C%')
+    """)
+    conn.commit()
     conn.close()
 
 
