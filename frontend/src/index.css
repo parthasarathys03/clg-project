@@ -204,14 +204,15 @@
 
 /* Light background tables - modern styling with curved edges */
 table {
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   width: 100%;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 8px 32px rgba(99,102,241,0.06);
   background: #ffffff;
   animation: tableFadeIn 0.5s ease-out;
-  border: 2px solid rgba(99,102,241,0.2);
+  border: 3px solid #6366f1;
 }
 
 @keyframes tableFadeIn {
