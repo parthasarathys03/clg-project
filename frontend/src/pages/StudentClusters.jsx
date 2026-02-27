@@ -2,24 +2,39 @@ import React, { useEffect, useState } from 'react'
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend,
+  LineChart, Line, BarChart, Bar, Cell,
+  ReferenceLine,
 } from 'recharts'
-import { Network, RefreshCw, Users, AlertTriangle, BookOpen } from 'lucide-react'
+import {
+  Network, RefreshCw, Users, AlertTriangle, BookOpen,
+  TrendingDown, Award, Info,
+} from 'lucide-react'
 import { getStudentClusters } from '../api'
 
-// ── Cluster colour palette ────────────────────────────────────────────────────
-const CLUSTER_COLORS = ['#6366f1', '#10b981', '#f59e0b']
+// ── Cluster colour palette (supports up to 8 clusters) ───────────────────────
+const CLUSTER_COLORS = [
+  '#6366f1', '#10b981', '#f59e0b',
+  '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16',
+]
 
-const CLUSTER_ICONS = {
-  'High Performing Group':    { icon: '🏆', bg: 'rgba(16,185,129,0.12)',  border: 'rgba(16,185,129,0.25)',  text: '#10b981' },
-  'Average Learners Group':   { icon: '📘', bg: 'rgba(99,102,241,0.12)',  border: 'rgba(99,102,241,0.25)',  text: '#818cf8' },
-  'At-Risk Behaviour Group':  { icon: '⚠️', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)',  text: '#f59e0b' },
+// ── Dynamic cluster style based on interpretation text ────────────────────────
+function getClusterStyle(interpretation) {
+  if (interpretation?.includes('High Performing'))
+    return { icon: '🏆', bg: 'rgba(16,185,129,0.12)',  border: 'rgba(16,185,129,0.25)',  text: '#10b981' }
+  if (interpretation?.includes('At-Risk'))
+    return { icon: '⚠️', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)',  text: '#f59e0b' }
+  if (interpretation?.includes('Above Average'))
+    return { icon: '📗', bg: 'rgba(6,182,212,0.12)',   border: 'rgba(6,182,212,0.25)',   text: '#06b6d4' }
+  if (interpretation?.includes('Below Average'))
+    return { icon: '📙', bg: 'rgba(239,68,68,0.12)',   border: 'rgba(239,68,68,0.25)',   text: '#ef4444' }
+  return   { icon: '📘', bg: 'rgba(99,102,241,0.12)',  border: 'rgba(99,102,241,0.25)',  text: '#818cf8' }
 }
 
 // ── Custom scatter tooltip ─────────────────────────────────────────────────────
 function ClusterTooltip({ active, payload }) {
   if (!active || !payload?.length) return null
-  const d = payload[0].payload
-  const color = CLUSTER_COLORS[d.cluster]
+  const d     = payload[0].payload
+  const color = CLUSTER_COLORS[d.cluster % CLUSTER_COLORS.length]
   return (
     <div style={{
       background: 'rgba(15,12,41,0.96)',
@@ -36,20 +51,205 @@ function ClusterTooltip({ active, payload }) {
   )
 }
 
+// ── Elbow / silhouette chart tooltips ─────────────────────────────────────────
+function ElbowTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null
+  return (
+    <div style={{
+      background: 'rgba(15,12,41,0.96)',
+      border: '1px solid rgba(99,102,241,0.3)',
+      borderRadius: 8,
+      padding: '8px 12px',
+      fontSize: 11,
+      color: '#fff',
+    }}>
+      <p style={{ color: '#818cf8', fontWeight: 700, marginBottom: 2 }}>k = {label}</p>
+      <p>Inertia: <span style={{ color: '#fff' }}>{payload[0].value?.toLocaleString()}</span></p>
+    </div>
+  )
+}
+
+function SilhouetteTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null
+  return (
+    <div style={{
+      background: 'rgba(15,12,41,0.96)',
+      border: '1px solid rgba(16,185,129,0.3)',
+      borderRadius: 8,
+      padding: '8px 12px',
+      fontSize: 11,
+      color: '#fff',
+    }}>
+      <p style={{ color: '#10b981', fontWeight: 700, marginBottom: 2 }}>k = {label}</p>
+      <p>Silhouette: <span style={{ color: '#fff' }}>{payload[0].value?.toFixed(4)}</span></p>
+    </div>
+  )
+}
+
+// ── Cluster Validation Panel ───────────────────────────────────────────────────
+function ValidationPanel({ validation }) {
+  if (!validation) return null
+
+  const elbowData = validation.k_values.map((k, i) => ({
+    k,
+    inertia: validation.inertias[i],
+  }))
+
+  const silhouetteData = validation.k_values.map((k, i) => ({
+    k,
+    score: validation.silhouette_scores[i],
+  }))
+
+  return (
+    <div className="rounded-2xl p-5 animate-fade-up s3"
+         style={{
+           background: 'linear-gradient(145deg,rgba(15,12,41,0.92),rgba(30,27,75,0.88))',
+           border: '1px solid rgba(99,102,241,0.2)',
+         }}>
+
+      {/* Panel header */}
+      <div className="flex items-center gap-3 mb-5">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+             style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)' }}>
+          <Award size={16} className="text-indigo-400" />
+        </div>
+        <div>
+          <p className="text-white font-bold text-sm">Cluster Validation</p>
+          <p className="text-white text-[10px] mt-0.5">
+            Elbow Method · Silhouette Score · Auto k-Selection
+          </p>
+        </div>
+        <span className="ml-auto text-[9px] font-bold px-2 py-1 rounded-full uppercase tracking-wider"
+              style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1px solid rgba(16,185,129,0.25)' }}>
+          IEEE Validated
+        </span>
+      </div>
+
+      {/* Optimal k + silhouette score metrics */}
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="rounded-xl px-4 py-3"
+             style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}>
+          <p className="text-white text-[9px] font-bold uppercase tracking-widest mb-1">
+            Optimal Cluster Count
+          </p>
+          <p className="text-3xl font-black" style={{ color: '#818cf8' }}>
+            k = {validation.optimal_k}
+          </p>
+          <p className="text-white text-[9px] mt-1">Auto-selected via silhouette score</p>
+        </div>
+
+        <div className="rounded-xl px-4 py-3"
+             style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+          <p className="text-white text-[9px] font-bold uppercase tracking-widest mb-1">
+            Best Silhouette Score
+          </p>
+          <p className="text-3xl font-black" style={{ color: '#10b981' }}>
+            {validation.optimal_silhouette?.toFixed(3)}
+          </p>
+          <p className="text-white text-[9px] mt-1">Range: 0 (poor) → 1 (perfect)</p>
+        </div>
+      </div>
+
+      {/* Charts: Elbow Curve + Silhouette Bars */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+        {/* Elbow Curve */}
+        <div>
+          <p className="text-white text-[10px] font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <TrendingDown size={11} className="text-indigo-400" /> Elbow Curve (Inertia vs k)
+          </p>
+          <ResponsiveContainer width="100%" height={160}>
+            <LineChart data={elbowData} margin={{ top: 4, right: 10, bottom: 4, left: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis
+                dataKey="k"
+                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }}
+                label={{ value: 'k (clusters)', position: 'insideBottom', offset: -2, fill: 'rgba(255,255,255,0.4)', fontSize: 9 }}
+              />
+              <YAxis
+                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }}
+                width={40}
+              />
+              <Tooltip content={<ElbowTooltip />} />
+              <ReferenceLine
+                x={validation.optimal_k}
+                stroke="rgba(129,140,248,0.6)"
+                strokeDasharray="4 3"
+                label={{ value: `k=${validation.optimal_k}`, fill: '#818cf8', fontSize: 9, position: 'top' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="inertia"
+                stroke="#6366f1"
+                strokeWidth={2}
+                dot={{ fill: '#6366f1', r: 3 }}
+                activeDot={{ r: 5, fill: '#818cf8' }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+          <p className="text-white text-[9px] mt-1 text-center">
+            The elbow point indicates where adding more clusters yields diminishing returns.
+          </p>
+        </div>
+
+        {/* Silhouette Score Bar Chart */}
+        <div>
+          <p className="text-white text-[10px] font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <Award size={11} className="text-emerald-400" /> Silhouette Score per k
+          </p>
+          <ResponsiveContainer width="100%" height={160}>
+            <BarChart data={silhouetteData} margin={{ top: 4, right: 10, bottom: 4, left: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis
+                dataKey="k"
+                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }}
+                label={{ value: 'k (clusters)', position: 'insideBottom', offset: -2, fill: 'rgba(255,255,255,0.4)', fontSize: 9 }}
+              />
+              <YAxis
+                domain={[0, 1]}
+                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 9 }}
+                width={30}
+              />
+              <Tooltip content={<SilhouetteTooltip />} />
+              <Bar dataKey="score" radius={[4, 4, 0, 0]}>
+                {silhouetteData.map((entry) => (
+                  <Cell
+                    key={`sil-${entry.k}`}
+                    fill={entry.k === validation.optimal_k
+                      ? '#10b981'
+                      : 'rgba(99,102,241,0.45)'}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          <p className="text-white text-[9px] mt-1 text-center">
+            Highlighted bar (green) = optimal k with highest silhouette score.
+          </p>
+        </div>
+      </div>
+
+      {/* Selection explanation note */}
+      <div className="flex gap-2.5 rounded-xl px-4 py-3"
+           style={{ background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.15)' }}>
+        <Info size={13} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+        <p className="text-white text-[11px] leading-relaxed">
+          {validation.selection_method}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 // ── Cluster summary card ───────────────────────────────────────────────────────
 function ClusterCard({ cluster, color }) {
-  const style = CLUSTER_ICONS[cluster.interpretation] ?? {
-    icon: '📊',
-    bg: 'rgba(99,102,241,0.1)',
-    border: 'rgba(99,102,241,0.2)',
-    text: '#818cf8',
-  }
+  const style = getClusterStyle(cluster.interpretation)
 
   const metrics = [
-    { label: 'Attendance',    value: `${cluster.avg_attendance}%`    },
-    { label: 'Internal Marks',value: `${cluster.avg_marks}%`         },
-    { label: 'Assignments',   value: `${cluster.avg_assignments}%`   },
-    { label: 'Study Hours',   value: `${cluster.avg_study_hours} h`  },
+    { label: 'Attendance',     value: `${cluster.avg_attendance}%`   },
+    { label: 'Internal Marks', value: `${cluster.avg_marks}%`        },
+    { label: 'Assignments',    value: `${cluster.avg_assignments}%`  },
+    { label: 'Study Hours',    value: `${cluster.avg_study_hours} h` },
   ]
 
   return (
@@ -78,7 +278,7 @@ function ClusterCard({ cluster, color }) {
       </div>
 
       {/* Metric grid */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 mb-4">
         {metrics.map(m => (
           <div key={m.label} className="rounded-lg px-3 py-2"
                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -88,8 +288,22 @@ function ClusterCard({ cluster, color }) {
         ))}
       </div>
 
+      {/* Cluster insight */}
+      {cluster.insight && (
+        <div className="rounded-xl px-3 py-2.5 mb-3"
+             style={{ background: `${color}0d`, border: `1px solid ${color}20` }}>
+          <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5"
+             style={{ color }}>
+            Cluster Insight
+          </p>
+          <p className="text-white text-[11px] leading-relaxed">
+            {cluster.insight}
+          </p>
+        </div>
+      )}
+
       {/* Colour indicator bar */}
-      <div className="mt-4 h-0.5 rounded-full" style={{ background: `${color}30` }}>
+      <div className="h-0.5 rounded-full" style={{ background: `${color}30` }}>
         <div className="h-full rounded-full" style={{
           width: `${(cluster.student_count / 2000) * 100}%`,
           background: color,
@@ -122,17 +336,23 @@ export default function StudentClusters() {
 
   useEffect(() => { load() }, [])
 
+  // Dynamic cluster IDs from response
+  const clusterIds = data?.clusters?.map(c => c.cluster_id) ?? []
+
   // Split points by cluster for Recharts (one <Scatter> per cluster)
   const pointsByCluster = data?.points
-    ? [0, 1, 2].map(cid =>
+    ? clusterIds.map(cid =>
         data.points
           .filter(p => p.cluster === cid)
           .map(p => ({ x: p.x, y: p.y, cluster: p.cluster }))
       )
-    : [[], [], []]
+    : []
 
   const clusterNameForId = (cid) =>
     data?.clusters?.find(c => c.cluster_id === cid)?.interpretation ?? `Cluster ${cid}`
+
+  const optimalK       = data?.optimal_k ?? data?.clusters?.length ?? '—'
+  const silhouetteScore = data?.validation?.optimal_silhouette
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -154,7 +374,9 @@ export default function StudentClusters() {
                 IEEE Clustering
               </span>
             </h2>
-            <p className="text-gray-700 text-sm font-medium">t-SNE dimensionality reduction · KMeans (k=3) · Unsupervised learning</p>
+            <p className="text-gray-700 text-sm font-medium">
+              t-SNE · KMeans · Elbow Method · Silhouette Validation · Auto k-Selection
+            </p>
           </div>
         </div>
         <button
@@ -179,10 +401,11 @@ export default function StudentClusters() {
             <p className="text-indigo-700 font-bold text-xs mb-1 uppercase tracking-wider">IEEE Educational Data Mining</p>
             <p className="text-gray-700 text-xs leading-relaxed">
               This module applies <strong className="text-gray-900">t-SNE dimensionality reduction</strong> and{' '}
-              <strong className="text-gray-900">KMeans clustering</strong> to discover hidden student
-              learning behaviour patterns, aligning with Educational Data Mining techniques proposed in
-              IEEE research. Cluster interpretations are derived automatically from per-cluster
-              feature averages — no labels are hardcoded.
+              <strong className="text-gray-900">KMeans clustering</strong> with full mathematical validation
+              (Elbow Method + Silhouette Score) to discover hidden student learning behaviour patterns.
+              The optimal cluster count is <strong className="text-gray-900">automatically selected</strong> using
+              silhouette analysis — no manual tuning required. Cluster interpretations are derived
+              entirely from per-cluster feature averages, not hardcoded labels.
             </p>
           </div>
         </div>
@@ -193,9 +416,10 @@ export default function StudentClusters() {
         <div className="space-y-4 animate-pulse">
           <div className="h-8 w-48 rounded-xl" style={{ background: 'rgba(99,102,241,0.08)' }} />
           <div className="h-96 rounded-2xl" style={{ background: 'rgba(99,102,241,0.06)' }} />
+          <div className="h-52 rounded-2xl" style={{ background: 'rgba(16,185,129,0.05)' }} />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[0, 1, 2].map(i => (
-              <div key={i} className="h-52 rounded-2xl" style={{ background: 'rgba(99,102,241,0.06)' }} />
+              <div key={i} className="h-64 rounded-2xl" style={{ background: 'rgba(99,102,241,0.06)' }} />
             ))}
           </div>
         </div>
@@ -221,9 +445,9 @@ export default function StudentClusters() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-up s1">
             {[
               { label: 'Students Analysed', value: data.total_students.toLocaleString(), color: '#6366f1' },
-              { label: 'Behaviour Clusters', value: data.clusters.length, color: '#a855f7' },
-              { label: 'Algorithm', value: 't-SNE + KMeans', color: '#10b981' },
-              { label: 'Dimensions',  value: '4 → 2D',       color: '#f59e0b' },
+              { label: 'Optimal Clusters',  value: `k = ${optimalK}`,                   color: '#a855f7', note: 'Auto-selected' },
+              { label: 'Silhouette Score',  value: silhouetteScore?.toFixed(3) ?? '—',  color: '#10b981', note: '0 → 1 scale' },
+              { label: 'Algorithm',         value: 't-SNE + KMeans',                    color: '#f59e0b' },
             ].map((s, i) => (
               <div key={s.label} className="card card-dark"
                    style={{
@@ -235,6 +459,9 @@ export default function StudentClusters() {
                   {s.label}
                 </p>
                 <p className="text-2xl font-black" style={{ color: s.color }}>{s.value}</p>
+                {s.note && (
+                  <p className="text-white text-[9px] mt-1">{s.note}</p>
+                )}
               </div>
             ))}
           </div>
@@ -254,11 +481,11 @@ export default function StudentClusters() {
                   Each point represents one student. Colour indicates behaviour cluster.
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                {[0, 1, 2].map(cid => (
+              <div className="flex items-center gap-3 flex-wrap justify-end">
+                {clusterIds.map(cid => (
                   <div key={cid} className="flex items-center gap-1.5">
                     <div className="w-2.5 h-2.5 rounded-full"
-                         style={{ background: CLUSTER_COLORS[cid] }} />
+                         style={{ background: CLUSTER_COLORS[cid % CLUSTER_COLORS.length] }} />
                     <span className="text-white text-[10px]">
                       {clusterNameForId(cid).split(' ')[0]}
                     </span>
@@ -290,12 +517,12 @@ export default function StudentClusters() {
                 <Legend
                   wrapperStyle={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', paddingTop: 16 }}
                 />
-                {[0, 1, 2].map(cid => (
+                {clusterIds.map((cid, idx) => (
                   <Scatter
                     key={cid}
                     name={clusterNameForId(cid)}
-                    data={pointsByCluster[cid]}
-                    fill={CLUSTER_COLORS[cid]}
+                    data={pointsByCluster[idx]}
+                    fill={CLUSTER_COLORS[cid % CLUSTER_COLORS.length]}
                     opacity={0.75}
                     r={3}
                   />
@@ -304,13 +531,16 @@ export default function StudentClusters() {
             </ResponsiveContainer>
           </div>
 
+          {/* ── Cluster Validation Panel ─────────────────────────────────────── */}
+          <ValidationPanel validation={data.validation} />
+
           {/* Cluster summary cards */}
           <div>
-            <p className="section-title text-black flex items-center gap-2 mb-4 animate-fade-up s3">
-              <Users size={11} /> Cluster Summaries
+            <p className="section-title text-black flex items-center gap-2 mb-4 animate-fade-up s4">
+              <Users size={11} /> Cluster Summaries &amp; Insights
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {data.clusters.map((cluster, i) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.clusters.map((cluster) => (
                 <ClusterCard
                   key={cluster.cluster_id}
                   cluster={cluster}
@@ -321,7 +551,7 @@ export default function StudentClusters() {
           </div>
 
           {/* Average metrics comparison table */}
-          <div className="card animate-fade-up s4" style={{ background: 'rgba(255,255,255,0.97)' }}>
+          <div className="card animate-fade-up s5" style={{ background: 'rgba(255,255,255,0.97)' }}>
             <p className="font-bold text-black text-sm mb-4 flex items-center gap-2">
               <Network size={14} className="text-indigo-500" /> Cluster Average Comparison
             </p>
@@ -337,7 +567,7 @@ export default function StudentClusters() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.clusters.map((c, i) => (
+                  {data.clusters.map((c) => (
                     <tr key={c.cluster_id} className="tr-hover border-b border-gray-200">
                       <td className="py-3 pr-4">
                         <span className="inline-flex items-center gap-1.5">
