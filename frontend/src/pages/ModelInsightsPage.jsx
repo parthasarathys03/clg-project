@@ -46,8 +46,8 @@ export default function ModelInsightsPage() {
             <Cpu size={22} className="text-white" />
           </div>
           <div>
-            <h2 className="font-extrabold text-gray-800 text-xl">Model Insights</h2>
-            <p className="text-gray-400 text-sm">RandomForest performance & feature analysis</p>
+            <h2 className="font-extrabold text-black text-xl">Model Insights</h2>
+            <p className="text-gray-700 text-sm font-medium">RandomForest performance & feature analysis</p>
           </div>
         </div>
         <button onClick={load} className="btn-secondary flex items-center gap-2 text-xs">

@@ -154,7 +154,7 @@ export default function StudentClusters() {
                 IEEE Clustering
               </span>
             </h2>
-            <p className="text-gray-600 text-sm">t-SNE dimensionality reduction · KMeans (k=3) · Unsupervised learning</p>
+            <p className="text-gray-700 text-sm font-medium">t-SNE dimensionality reduction · KMeans (k=3) · Unsupervised learning</p>
           </div>
         </div>
         <button

@@ -53,7 +53,7 @@ export default function AnalyticsPage() {
           </div>
           <div>
             <h2 className="font-extrabold text-gray-800 text-xl">Analytics & Rankings</h2>
-            <p className="text-gray-400 text-sm">{totalR} unique student{totalR !== 1 ? 's' : ''} ranked</p>
+            <p className="text-gray-700 text-sm font-medium">{totalR} unique student{totalR !== 1 ? 's' : ''} ranked</p>
           </div>
         </div>
         <button onClick={load} className="btn-secondary flex items-center gap-2 text-xs">
@@ -64,22 +64,22 @@ export default function AnalyticsPage() {
       {/* Alert banner */}
       {alerts.length > 0 && (
         <div className="rounded-2xl p-4 animate-fade-up"
-             style={{ background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.2)' }}>
-          <p className="font-bold text-rose-600 text-sm flex items-center gap-2 mb-3">
-            <AlertTriangle size={14} /> {alerts.length} student{alerts.length > 1 ? 's' : ''} with consecutive At Risk flags
+             style={{ background: 'rgba(220,38,38,0.1)', border: '2px solid rgba(220,38,38,0.4)' }}>
+          <p className="font-bold text-red-700 text-sm flex items-center gap-2 mb-3">
+            <AlertTriangle size={14} className="text-red-600" /> {alerts.length} student{alerts.length > 1 ? 's' : ''} with consecutive At Risk flags
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {alerts.map(s => (
               <button key={s.student_id} onClick={() => navigate(`/student/${s.student_id}`)}
-                      className="flex items-center gap-3 rounded-xl px-3 py-2 text-left transition-all duration-200 hover:bg-rose-50"
-                      style={{ background: 'rgba(244,63,94,0.04)', border: '1px solid rgba(244,63,94,0.15)' }}>
+                      className="flex items-center gap-3 rounded-xl px-3 py-2 text-left transition-all duration-200 hover:bg-red-50"
+                      style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)' }}>
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                     style={{ background: 'rgba(244,63,94,0.1)' }}>
-                  <AlertTriangle size={12} className="text-rose-500" />
+                     style={{ background: 'rgba(220,38,38,0.15)' }}>
+                  <AlertTriangle size={12} className="text-red-600" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-rose-700 text-xs truncate">{s.student_name}</p>
-                  <p className="text-rose-400/70 text-[10px]">{s.consecutive_at_risk}× At Risk in a row</p>
+                  <p className="font-bold text-red-800 text-xs truncate">{s.student_name}</p>
+                  <p className="text-red-600 text-[10px]">{s.consecutive_at_risk}× At Risk in a row</p>
                 </div>
               </button>
             ))}
@@ -97,7 +97,7 @@ export default function AnalyticsPage() {
         <div className="rounded-2xl p-16 text-center"
              style={{ background: 'rgba(99,102,241,0.04)', border: '1px dashed rgba(99,102,241,0.2)' }}>
           <Users size={36} style={{ color: 'rgba(99,102,241,0.3)', margin: '0 auto 12px' }} />
-          <p className="text-gray-400 text-sm font-semibold">No predictions yet</p>
+          <p className="text-gray-700 text-sm font-medium">No predictions yet</p>
           <p className="text-gray-300 text-xs mt-1">Predict some students first to see rankings</p>
         </div>
       ) : (

@@ -55,7 +55,7 @@ export default function StudentProgressPage() {
 
   if (error) return (
     <div className="max-w-4xl mx-auto text-center py-20">
-      <p className="text-gray-400 text-sm">{error}</p>
+      <p className="text-gray-700 text-sm font-medium">{error}</p>
       <button onClick={() => navigate(-1)} className="btn-secondary mt-4 text-xs">Go Back</button>
     </div>
   )

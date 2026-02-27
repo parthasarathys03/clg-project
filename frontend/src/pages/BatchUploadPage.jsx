@@ -82,7 +82,7 @@ export default function BatchUploadPage() {
           </div>
           <div>
             <h2 className="font-extrabold text-black text-xl">Batch Upload</h2>
-            <p className="text-gray-600 text-sm">Predict an entire class from a CSV file</p>
+            <p className="text-gray-700 text-sm font-medium">Predict an entire class from a CSV file</p>
           </div>
         </div>
         <button onClick={downloadSample} className="btn-secondary flex items-center gap-2 text-xs">
