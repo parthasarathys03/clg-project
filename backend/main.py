@@ -174,37 +174,21 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
     except Exception:
         _class_avg = None
 
-    try:
-        advisory = get_explanation_and_advisory(
-            student_name=student.student_name,
-            attendance=student.attendance_percentage,
-            internal_marks=student.internal_marks,
-            assignment_score=student.assignment_score,
-            study_hours=student.study_hours_per_day,
-            risk_level=ml_result["risk_level"],
-            confidence=ml_result["confidence"],
-            key_factors=ml_result["key_factors"],
-            section=student.section,
-            department=student.department,
-            current_year=student.current_year,
-            class_averages=_class_avg,
-        )
-    except Exception:
-        advisory = {
-            "explanation":    "Advisory generation failed. Please review input data manually.",
-            "risk_factors":   [],
-            "strengths":      [],
-            "recommendations": [
-                {"priority": 1, "category": "Attendance",      "action": "Ensure attendance is above 75%.",       "timeframe": "2 weeks",  "expected_impact": "Reduces At-Risk probability."},
-                {"priority": 2, "category": "Internal Marks",  "action": "Target 60+ in internal marks.",         "timeframe": "3 weeks",  "expected_impact": "Passes the critical threshold."},
-                {"priority": 3, "category": "Assignment Score","action": "Submit all assignments on time.",        "timeframe": "1 week",   "expected_impact": "Improves composite score."},
-                {"priority": 4, "category": "Study Hours",     "action": "Study at least 3 hours daily.",         "timeframe": "Ongoing",  "expected_impact": "Builds consistent retention."},
-            ],
-            "weekly_plan":    {},
-            "report_summary": "Advisory generation failed. Manual review recommended.",
-            "fallback_used":  True,
-            "ai_provider":    "rule-based",
-        }
+    # AI advisory — no rule-based fallback; Gemini retries automatically
+    advisory = get_explanation_and_advisory(
+        student_name=student.student_name,
+        attendance=student.attendance_percentage,
+        internal_marks=student.internal_marks,
+        assignment_score=student.assignment_score,
+        study_hours=student.study_hours_per_day,
+        risk_level=ml_result["risk_level"],
+        confidence=ml_result["confidence"],
+        key_factors=ml_result["key_factors"],
+        section=student.section,
+        department=student.department,
+        current_year=student.current_year,
+        class_averages=_class_avg,
+    )
 
     record = {
         "id":              str(uuid.uuid4()),
@@ -221,7 +205,8 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
         "weekly_plan":     advisory.get("weekly_plan", {}),
         "report_summary":  advisory.get("report_summary", ""),
         "fallback_used":   advisory["fallback_used"],
-        "ai_provider":     advisory.get("ai_provider", "rule-based"),
+        "ai_provider":     advisory.get("ai_provider", "gemini"),
+        "model_name":      advisory.get("model_name", ""),
         "inputs": {
             "attendance_percentage": student.attendance_percentage,
             "internal_marks":        student.internal_marks,

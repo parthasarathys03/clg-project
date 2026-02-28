@@ -291,41 +291,88 @@ def _call_ollama(
         raw  = response.message.content
         data = json.loads(raw)
         elapsed = round(time.time() - t0, 2)
-        logger.info("AI_RESPONSE_RECEIVED provider=ollama elapsed=%ss student=%s", elapsed, student_name)
+        logger.info("AI_RESPONSE_RECEIVED provider=ollama model=%s elapsed=%ss student=%s", OLLAMA_MODEL, elapsed, student_name)
         data["weekly_plan"] = _normalize_weekly_plan(data.get("weekly_plan", {}))
-        return _ensure_4_recs(data)
+        result = _ensure_4_recs(data)
+        result["_model_name"] = OLLAMA_MODEL
+        return result
     except Exception as exc:
-        logger.warning("AI_FALLBACK_TRIGGERED provider=ollama reason='%s' student=%s", str(exc)[:200], student_name)
+        logger.warning("AI_PROVIDER_FAILED provider=ollama reason='%s' student=%s", str(exc)[:200], student_name)
         return None
 
 
 # ─── Provider 2: Gemini ──────────────────────────────────────────────────────
 
-def _get_gemini_model():
+# Gemini model cascade — if one model's quota is exhausted, try the next
+# Ordered: best quality first → smaller models as quota fallbacks
+_GEMINI_MODELS = [
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemma-3-27b-it",
+    "gemma-3-12b-it",
+]
+
+
+def _get_gemini_models():
+    """Return a list of configured Gemini model instances to try in order."""
     key = os.getenv("GEMINI_API_KEY", "").strip()
     if not key or key == "your-gemini-api-key-here":
-        return None
+        return []
     if not _gemini_available:
-        return None
+        return []
     genai.configure(api_key=key)
-    return genai.GenerativeModel(
-        model_name="gemini-2.5-flash",
-        system_instruction=_SYSTEM_INSTRUCTION,
-        generation_config=genai.GenerationConfig(
-            response_mime_type="application/json",
-            temperature=0.4,
-            max_output_tokens=4096,
-        ),
-    )
+    models = []
+    for model_name in _GEMINI_MODELS:
+        models.append(genai.GenerativeModel(
+            model_name=model_name,
+            system_instruction=_SYSTEM_INSTRUCTION,
+            generation_config=genai.GenerationConfig(
+                response_mime_type="application/json",
+                temperature=0.4,
+                max_output_tokens=4096,
+            ),
+        ))
+    return models
+
+
+def _parse_gemini_json(raw_text: str) -> dict:
+    """Extract and parse JSON from Gemini response, handling code fences and extra text."""
+    text = raw_text.strip()
+    # Strip markdown code fences
+    if text.startswith("```"):
+        if text.startswith("```json"):
+            text = text[7:]
+        else:
+            text = text[3:]
+        if text.endswith("```"):
+            text = text[:-3]
+        text = text.strip()
+    # Try direct parse first
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        # Extract outermost { ... } JSON object
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            return json.loads(text[start:end + 1])
+        raise
+
+
+# Retry config per model
+_RETRIES_PER_MODEL = 2
+_RETRY_DELAY = 3  # seconds
 
 
 def _call_gemini(
     student_name, attendance, internal_marks, assignment_score,
     study_hours, risk_level, confidence, key_factors, **kwargs
 ) -> dict | None:
-    model = _get_gemini_model()
-    if model is None:
-        logger.info("AI_FALLBACK_TRIGGERED provider=gemini reason='No API key or library' student=%s", student_name)
+    models = _get_gemini_models()
+    if not models:
+        logger.warning("GEMINI_UNAVAILABLE reason='No API key or library not installed' student=%s", student_name)
         return None
 
     prompt = _build_user_prompt(
@@ -333,50 +380,51 @@ def _call_gemini(
         study_hours, risk_level, confidence, key_factors, **kwargs
     )
 
-    try:
-        logger.info("AI_REQUEST_STARTED provider=gemini student=%s", student_name)
-        t0 = time.time()
-        response = model.generate_content(prompt)
-        raw_text = response.text
-        # Strip markdown code fences if present
-        if raw_text.strip().startswith("```"):
-            raw_text = raw_text.strip()
-            if raw_text.startswith("```json"):
-                raw_text = raw_text[7:]
-            elif raw_text.startswith("```"):
-                raw_text = raw_text[3:]
-            if raw_text.endswith("```"):
-                raw_text = raw_text[:-3]
-            raw_text = raw_text.strip()
-        # Try to extract JSON object if extra text surrounds it
-        try:
-            data = json.loads(raw_text)
-        except json.JSONDecodeError:
-            # Attempt to find the outermost { ... } JSON object
-            start = raw_text.find("{")
-            end = raw_text.rfind("}")
-            if start != -1 and end != -1 and end > start:
-                raw_text = raw_text[start:end + 1]
-                data = json.loads(raw_text)
-            else:
-                raise
-        elapsed = round(time.time() - t0, 2)
-        logger.info("AI_RESPONSE_RECEIVED provider=gemini elapsed=%ss student=%s", elapsed, student_name)
-        data["weekly_plan"] = _normalize_weekly_plan(data.get("weekly_plan", {}))
-        return _ensure_4_recs(data)
-    except json.JSONDecodeError as exc:
-        logger.warning("AI_FALLBACK_TRIGGERED provider=gemini reason='JSON parse error: %s' raw_len=%d student=%s", str(exc)[:100], len(raw_text), student_name)
-        logger.debug("Raw Gemini response: %s", raw_text[:2000])
-        return None
-    except Exception as exc:
-        err = str(exc)
-        if "429" in err or "RATE_LIMIT" in err or "quota" in err.lower():
-            logger.warning("AI_FALLBACK_TRIGGERED provider=gemini reason='RATE_LIMIT' student=%s", student_name)
-        elif "API_KEY" in err or "expired" in err.lower():
-            logger.warning("AI_FALLBACK_TRIGGERED provider=gemini reason='API_KEY_ERROR: %s' student=%s", err[:100], student_name)
-        else:
-            logger.warning("AI_FALLBACK_TRIGGERED provider=gemini reason='%s' student=%s", err[:200], student_name)
-        return None
+    last_error = None
+    for model in models:
+        mname = model.model_name if hasattr(model, 'model_name') else str(model._model_name)
+        # Clean model name for display (strip "models/" prefix)
+        display_name = mname.replace("models/", "")
+        for attempt in range(1, _RETRIES_PER_MODEL + 1):
+            try:
+                logger.info("AI_REQUEST_STARTED provider=gemini model=%s attempt=%d/%d student=%s",
+                            display_name, attempt, _RETRIES_PER_MODEL, student_name)
+                t0 = time.time()
+                response = model.generate_content(prompt)
+                raw_text = response.text
+                data = _parse_gemini_json(raw_text)
+                elapsed = round(time.time() - t0, 2)
+                logger.info("AI_RESPONSE_RECEIVED provider=gemini model=%s elapsed=%ss student=%s",
+                            display_name, elapsed, student_name)
+                data["weekly_plan"] = _normalize_weekly_plan(data.get("weekly_plan", {}))
+                result = _ensure_4_recs(data)
+                # Attach model_name so the caller can track which model succeeded
+                result["_model_name"] = display_name
+                return result
+            except json.JSONDecodeError as exc:
+                last_error = exc
+                logger.warning("GEMINI_RETRY model=%s attempt=%d reason='JSON parse error: %s' student=%s",
+                               display_name, attempt, str(exc)[:100], student_name)
+            except Exception as exc:
+                last_error = exc
+                err = str(exc)
+                is_quota = "429" in err or "RATE_LIMIT" in err or "quota" in err.lower()
+                if is_quota:
+                    logger.warning("AI_PROVIDER_FAILED provider=gemini model=%s reason=quota_exceeded student=%s",
+                                   display_name, student_name)
+                    break  # skip retries, move to next model immediately
+                else:
+                    logger.warning("GEMINI_RETRY model=%s attempt=%d reason='%s' student=%s",
+                                   display_name, attempt, err[:200], student_name)
+
+            # Wait before retrying same model
+            if attempt < _RETRIES_PER_MODEL:
+                logger.info("GEMINI_WAITING %ds before retry student=%s", _RETRY_DELAY, student_name)
+                time.sleep(_RETRY_DELAY)
+
+    logger.error("GEMINI_ALL_MODELS_EXHAUSTED models_tried=%d student=%s last_error='%s'",
+                 len(models), student_name, str(last_error)[:200])
+    return None
 
 
 # ─── Provider 3: Rule-based (always available) ───────────────────────────────
@@ -606,8 +654,13 @@ def get_explanation_and_advisory(
     class_averages: Optional[dict] = None,
 ) -> dict:
     """
-    Priority chain: Ollama → Gemini → Rule-based.
-    Returns a rich structured dict with ai_provider field indicating which was used.
+    Multi-LLM failover: Gemini (primary) → Ollama (secondary).
+    No rule-based fallback — 100% AI-generated explanations.
+
+    Execution order:
+      1. Gemini API (cascade across multiple models with retry)
+      2. Ollama local LLM (automatic failover)
+      3. RuntimeError if both fail (no silent fake text)
 
     class_averages expected format:
       {"avg_attendance": 72.5, "avg_internal_marks": 65.0,
@@ -626,30 +679,31 @@ def get_explanation_and_advisory(
     args = (student_name, attendance, internal_marks, assignment_score,
             study_hours, risk_level, confidence, key_factors)
 
-    # 1. Try Ollama (local, unlimited)
-    ai_data = _call_ollama(*args, **extra_kwargs)
+    provider = None
+    model_name = None
+    fallback_used = False
+
+    # 1. Try Gemini (primary — cloud AI with model cascade)
+    ai_data = _call_gemini(*args, **extra_kwargs)
     if ai_data is not None:
-        provider = "ollama"
+        provider = "gemini"
+        model_name = ai_data.pop("_model_name", "gemini-2.5-flash")
     else:
-        # 2. Try Gemini
-        ai_data = _call_gemini(*args, **extra_kwargs)
+        # 2. Failover to Ollama (secondary — local LLM)
+        logger.info("AI_FAILOVER_STARTED provider=ollama reason='Gemini unavailable' student=%s", student_name)
+        ai_data = _call_ollama(*args, **extra_kwargs)
         if ai_data is not None:
-            provider = "gemini"
+            provider = "ollama"
+            model_name = ai_data.pop("_model_name", OLLAMA_MODEL)
+            fallback_used = True
         else:
-            # 3. Rule-based fallback
-            rb = _rule_based(student_name, attendance, internal_marks,
-                             assignment_score, study_hours, risk_level, confidence,
-                             **extra_kwargs)
-            return {
-                "explanation":     rb["explanation"],
-                "risk_factors":    risk_factors,
-                "strengths":       rb["strengths"],
-                "recommendations": rb["recommendations"],
-                "weekly_plan":     rb["weekly_plan"],
-                "report_summary":  rb["report_summary"],
-                "fallback_used":   True,
-                "ai_provider":     "rule-based",
-            }
+            # 3. Total failure — no silent fake text
+            logger.error("AI_TOTAL_FAILURE all_providers_unavailable student=%s", student_name)
+            raise RuntimeError(
+                "AI advisory generation failed — all providers unavailable. "
+                "Check GEMINI_API_KEY in backend/.env or ensure Ollama is running. "
+                "Get a free key at https://aistudio.google.com/apikey"
+            )
 
     return {
         "explanation":     ai_data.get("explanation", ""),
@@ -658,6 +712,7 @@ def get_explanation_and_advisory(
         "recommendations": ai_data.get("recommendations", []),
         "weekly_plan":     ai_data.get("weekly_plan", {}),
         "report_summary":  ai_data.get("report_summary", ""),
-        "fallback_used":   False,
+        "fallback_used":   fallback_used,
         "ai_provider":     provider,
+        "model_name":      model_name,
     }

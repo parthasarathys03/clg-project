@@ -4,6 +4,7 @@ import {
   BarChart2, CheckCircle, XCircle, Sparkles, RotateCcw, User,
   Shield, Star, Calendar, Clock, BookOpen, ClipboardList,
   TrendingUp, TrendingDown, Minus, FileText, ChevronDown, ChevronUp,
+  RefreshCw, Zap, Cloud, ServerCrash,
 } from 'lucide-react'
 import RiskBadge from '../components/RiskBadge'
 import { predictStudent } from '../api'
@@ -50,11 +51,20 @@ function CircleProgress({ value, color, size = 90 }) {
   )
 }
 
+// Step-based loading messages for premium SaaS feel
+const LOADING_STEPS = [
+  { text: 'Analyzing student performance...', icon: BarChart2, delay: 0 },
+  { text: 'Consulting Gemini AI...', icon: Cloud, delay: 1500 },
+  { text: 'Generating advisory plan...', icon: Sparkles, delay: 4000 },
+  { text: 'Preparing personalized insights...', icon: BrainCircuit, delay: 7000 },
+]
+
 export default function PredictPage() {
   const [form, setForm]       = useState(INIT)
   const [errors, setErrors]   = useState({})
   const [result, setResult]   = useState(null)
   const [loading, setLoading] = useState(false)
+  const [loadingStep, setLoadingStep] = useState(0)
   const [apiErr, setApiErr]   = useState('')
   const [revealed, setRevealed] = useState(false)
   const resultRef = useRef(null)
@@ -84,6 +94,16 @@ export default function PredictPage() {
     if (apiErr) setApiErr('')
   }
 
+  // Drive loading step animation
+  useEffect(() => {
+    if (!loading) return
+    setLoadingStep(0)
+    const timers = LOADING_STEPS.slice(1).map((step, i) =>
+      setTimeout(() => setLoadingStep(i + 1), step.delay)
+    )
+    return () => timers.forEach(clearTimeout)
+  }, [loading])
+
   const handleSubmit = async e => {
     e.preventDefault()
     const errs = validate()
@@ -111,7 +131,12 @@ export default function PredictPage() {
         resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 100)
     } catch (err) {
-      setApiErr(err.response?.data?.detail || 'Prediction failed. Please try again.')
+      const detail = err.response?.data?.detail || ''
+      if (detail.includes('AI advisory') || detail.includes('all providers')) {
+        setApiErr('AI_UNAVAILABLE')
+      } else {
+        setApiErr(detail || 'Prediction failed. Please try again.')
+      }
     }
     setLoading(false)
   }
@@ -198,14 +223,36 @@ export default function PredictPage() {
               ))}
             </div>
 
-            {/* API Error */}
-            {apiErr && (
+            {/* API Error / AI Unavailable */}
+            {apiErr && apiErr === 'AI_UNAVAILABLE' ? (
+              <div className="rounded-xl p-5 space-y-3"
+                   style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.06), rgba(249,115,22,0.04))', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                       style={{ background: 'rgba(239,68,68,0.1)' }}>
+                    <ServerCrash size={16} className="text-red-500" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-red-700 text-sm">AI Advisory Temporarily Unavailable</p>
+                    <p className="text-xs text-red-500/80">All AI providers are currently unreachable</p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  Gemini API and Ollama are both unavailable. This is usually temporary — please retry in a few moments.
+                </p>
+                <button type="button" onClick={() => { setApiErr(''); handleSubmit({ preventDefault: () => {} }) }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
+                        style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                  <RefreshCw size={12} /> Retry Prediction
+                </button>
+              </div>
+            ) : apiErr ? (
               <div className="flex items-start gap-2 rounded-xl px-4 py-3 text-sm"
                    style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', color: '#e11d48' }}>
                 <AlertCircle size={15} className="mt-0.5 flex-shrink-0" />
                 {apiErr}
               </div>
-            )}
+            ) : null}
 
             {/* Buttons */}
             <div className="flex gap-3 pt-1">
@@ -231,7 +278,7 @@ export default function PredictPage() {
         {/* ── Result panel ────────────────────────────────────────────── */}
         <div ref={resultRef}>
           {loading && (
-            <div className="card card-dark flex flex-col items-center justify-center py-20 animate-fade-in"
+            <div className="card card-dark flex flex-col items-center justify-center py-16 animate-fade-in"
                  style={{ background: 'linear-gradient(145deg,rgba(15,12,41,0.9),rgba(30,27,75,0.85))', border: '1px solid rgba(99,102,241,0.2)', minHeight: '320px' }}>
               <div className="relative w-20 h-20 mb-6">
                 <div className="absolute inset-0 rounded-full border-4 border-indigo-900" />
@@ -242,8 +289,29 @@ export default function PredictPage() {
                   <BrainCircuit size={22} className="text-white animate-pulse" />
                 </div>
               </div>
-              <p className="text-white font-bold text-sm">Running ML Pipeline…</p>
-              <p className="text-white text-xs mt-1">Prediction · Explanation · Advisory</p>
+              {/* Step-based status */}
+              <div className="space-y-2 w-full max-w-[240px]">
+                {LOADING_STEPS.map((step, i) => {
+                  const StepIcon = step.icon
+                  const active = i === loadingStep
+                  const done = i < loadingStep
+                  return (
+                    <div key={i} className="flex items-center gap-2 transition-all duration-500"
+                         style={{ opacity: done ? 0.4 : active ? 1 : 0.2 }}>
+                      {done ? (
+                        <CheckCircle size={14} className="text-emerald-400 flex-shrink-0" />
+                      ) : active ? (
+                        <StepIcon size={14} className="text-indigo-300 animate-pulse flex-shrink-0" />
+                      ) : (
+                        <div className="w-3.5 h-3.5 rounded-full border border-white/20 flex-shrink-0" />
+                      )}
+                      <p className={`text-xs ${active ? 'text-white font-semibold' : 'text-white/50'}`}>
+                        {step.text}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )}
 
@@ -331,21 +399,22 @@ export default function PredictPage() {
                   <p className="text-white text-[10px] font-semibold">
                     {new Date(result.timestamp).toLocaleString()}
                   </p>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1"
                         style={{
-                          background: result.fallback_used ? 'rgba(245,158,11,0.15)'
-                            : result.ai_provider === 'ollama' ? 'rgba(16,185,129,0.15)'
+                          background: result.fallback_used
+                            ? 'rgba(245,158,11,0.15)'
                             : 'rgba(99,102,241,0.2)',
-                          color: result.fallback_used ? '#fbbf24'
-                            : result.ai_provider === 'ollama' ? '#34d399'
+                          color: result.fallback_used
+                            ? '#fbbf24'
                             : '#a5b4fc',
-                          border: `1px solid ${result.fallback_used ? 'rgba(245,158,11,0.25)'
-                            : result.ai_provider === 'ollama' ? 'rgba(16,185,129,0.25)'
+                          border: `1px solid ${result.fallback_used
+                            ? 'rgba(245,158,11,0.25)'
                             : 'rgba(99,102,241,0.3)'}`,
                         }}>
-                    {result.fallback_used ? '⚡ Rule-based'
-                      : result.ai_provider === 'ollama' ? '⬡ Ollama AI'
-                      : '✦ Gemini AI'}
+                    {result.fallback_used
+                      ? <><Zap size={8} /> Ollama AI (Fallback)</>
+                      : <><Sparkles size={8} /> Gemini AI</>
+                    }
                   </span>
                 </div>
               </div>
@@ -443,19 +512,38 @@ function AIIntelligencePanels({ result, theme }) {
               <p className="font-bold text-gray-900 text-lg">AI Explanation</p>
               <span className="text-xs font-bold px-2 py-1 rounded-full inline-flex items-center gap-1"
                     style={{
-                      background: result.fallback_used ? 'rgba(245,158,11,0.1)'
-                        : result.ai_provider === 'ollama' ? 'rgba(16,185,129,0.1)'
+                      background: result.fallback_used
+                        ? 'rgba(245,158,11,0.1)'
                         : 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.1))',
-                      color: result.fallback_used ? '#f59e0b'
-                        : result.ai_provider === 'ollama' ? '#10b981'
-                        : '#6366f1',
+                      color: result.fallback_used ? '#f59e0b' : '#6366f1',
                     }}>
-                <Sparkles size={10} />
-                {result.fallback_used ? 'Rule-based'
-                  : result.ai_provider === 'ollama' ? 'Ollama AI'
-                  : 'Gemini AI'}
+                {result.fallback_used
+                  ? <><Zap size={10} /> Ollama AI (Fallback)</>
+                  : <><Sparkles size={10} /> Gemini AI</>
+                }
               </span>
             </div>
+          </div>
+
+          {/* AI Provider Status Line */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+               style={{
+                 background: result.fallback_used
+                   ? 'rgba(245,158,11,0.05)' : 'rgba(99,102,241,0.04)',
+                 border: `1px solid ${result.fallback_used
+                   ? 'rgba(245,158,11,0.12)' : 'rgba(99,102,241,0.08)'}`,
+               }}>
+            {result.fallback_used ? (
+              <Cloud size={12} className="text-amber-500 flex-shrink-0" />
+            ) : (
+              <Cloud size={12} className="text-indigo-400 flex-shrink-0" />
+            )}
+            <span className="text-gray-600">
+              {result.fallback_used
+                ? <>Gemini unavailable — response generated using <strong className="text-amber-700">{result.model_name || 'Ollama'}</strong> fallback model</>
+                : <>Generated using <strong className="text-indigo-600">{result.model_name || 'Gemini AI'}</strong> (Primary Model)</>
+              }
+            </span>
           </div>
 
           <p className="text-gray-800 text-base leading-relaxed">{result.explanation}</p>
