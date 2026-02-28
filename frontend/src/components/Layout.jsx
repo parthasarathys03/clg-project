@@ -21,19 +21,37 @@ export function isClusterReady() {
   return globalClusterReady
 }
 
+// Get user role from localStorage
+const getUserRole = () => {
+  try {
+    return localStorage.getItem('userRole') || 'admin'
+  } catch (e) {
+    return 'admin'
+  }
+}
+
+// Get username from localStorage
+const getUsername = () => {
+  try {
+    return localStorage.getItem('username') || 'User'
+  } catch (e) {
+    return 'User'
+  }
+}
+
 const navItems = [
-  { to: '/dashboard', label: 'Dashboard',         icon: LayoutDashboard, color: '#818cf8' },
-  { to: '/predict',   label: 'Predict Student',   icon: BrainCircuit,    color: '#a78bfa' },
-  { to: '/teacher',   label: 'Teacher Analytics', icon: GraduationCap,   color: '#c084fc' },
-  { to: '/history',   label: 'History',           icon: ClipboardList,   color: '#f472b6' },
+  { to: '/dashboard', label: 'Dashboard',         icon: LayoutDashboard, color: '#818cf8', adminOnly: true },
+  { to: '/predict',   label: 'Predict Student',   icon: BrainCircuit,    color: '#a78bfa', adminOnly: false },
+  { to: '/teacher',   label: 'Teacher Analytics', icon: GraduationCap,   color: '#c084fc', adminOnly: true },
+  { to: '/history',   label: 'History',           icon: ClipboardList,   color: '#f472b6', adminOnly: true },
 ]
 
 const navItemsExtra = [
-  { to: '/batch',     label: 'Batch Upload',      icon: Upload,          color: '#34d399' },
-  { to: '/analytics', label: 'Analytics',         icon: Trophy,          color: '#fbbf24' },
-  { to: '/insights',  label: 'Model Insights',    icon: Cpu,             color: '#38bdf8' },
-  { to: '/clusters',  label: 'Behaviour Clusters',icon: Network,         color: '#a78bfa' },
-  { to: '/about',     label: 'About / IEEE',      icon: BookOpen,        color: '#60a5fa' },
+  { to: '/batch',     label: 'Batch Upload',      icon: Upload,          color: '#34d399', adminOnly: true },
+  { to: '/analytics', label: 'Analytics',         icon: Trophy,          color: '#fbbf24', adminOnly: true },
+  { to: '/insights',  label: 'Model Insights',    icon: Cpu,             color: '#38bdf8', adminOnly: true },
+  { to: '/clusters',  label: 'Behaviour Clusters',icon: Network,         color: '#a78bfa', adminOnly: true },
+  { to: '/about',     label: 'About / IEEE',      icon: BookOpen,        color: '#60a5fa', adminOnly: true },
 ]
 
 export default function Layout({ children }) {
@@ -41,6 +59,16 @@ export default function Layout({ children }) {
   const [clusterReady, setClusterReadyState] = useState(globalClusterReady)
   const location = useLocation()
   const navigate = useNavigate()
+  
+  // Get user info
+  const userRole = getUserRole()
+  const username = getUsername()
+  const isAdmin = userRole === 'admin'
+  
+  // Filter nav items based on role
+  const filteredNavItems = navItems.filter(item => !item.adminOnly || isAdmin)
+  const filteredNavItemsExtra = navItemsExtra.filter(item => !item.adminOnly || isAdmin)
+  
   const currentPage = [...navItems, ...navItemsExtra].find(n => location.pathname.startsWith(n.to))
 
   // Poll for cluster ready state
@@ -55,6 +83,8 @@ export default function Layout({ children }) {
     try {
       localStorage.removeItem('isAuthenticated')
       localStorage.removeItem('username')
+      localStorage.removeItem('userRole')
+      localStorage.removeItem('studentName')
     } catch (e) {
       console.warn('localStorage not available during logout:', e)
     }
@@ -111,10 +141,10 @@ export default function Layout({ children }) {
         <nav className="flex-1 py-5 px-2.5 space-y-1 overflow-y-auto">
           {!collapsed && (
             <p className="text-white/50 text-[9px] font-bold uppercase tracking-[0.2em] px-3 mb-3 select-none">
-              Main Menu
+              {isAdmin ? 'Main Menu' : 'Student Menu'}
             </p>
           )}
-          {navItems.map(({ to, label, icon: Icon, color }) => (
+          {filteredNavItems.map(({ to, label, icon: Icon, color }) => (
             <NavLink
               key={to}
               to={to}
@@ -151,17 +181,19 @@ export default function Layout({ children }) {
             </NavLink>
           ))}
 
-          {/* Divider */}
-          <div className={`py-2 ${collapsed ? 'px-1' : 'px-3'}`}>
-            <div className="border-t border-white/[0.08]" />
-          </div>
+          {/* Divider - only show for admin */}
+          {isAdmin && (
+            <div className={`py-2 ${collapsed ? 'px-1' : 'px-3'}`}>
+              <div className="border-t border-white/[0.08]" />
+            </div>
+          )}
 
-          {!collapsed && (
+          {isAdmin && !collapsed && (
             <p className="text-white/50 text-[9px] font-bold uppercase tracking-[0.2em] px-3 mb-2 select-none">
               SaaS Features
             </p>
           )}
-          {navItemsExtra.map(({ to, label, icon: Icon, color }) => (
+          {filteredNavItemsExtra.map(({ to, label, icon: Icon, color }) => (
             <NavLink
               key={to}
               to={to}
@@ -202,13 +234,24 @@ export default function Layout({ children }) {
           ))}
         </nav>
 
-        {/* Footer badge */}
-        {!collapsed && (
+        {/* Footer badge - only for admin */}
+        {isAdmin && !collapsed && (
           <div className="px-3 pb-4">
             <div className="rounded-xl p-3"
                  style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)' }}>
               <p className="text-white/55 text-[9px] font-bold uppercase tracking-wider">Final Year Project</p>
               <p className="text-indigo-200 text-xs font-semibold mt-0.5">IEEE Enhanced System</p>
+            </div>
+          </div>
+        )}
+
+        {/* Student info badge */}
+        {!isAdmin && !collapsed && (
+          <div className="px-3 pb-4">
+            <div className="rounded-xl p-3"
+                 style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.25)' }}>
+              <p className="text-white/55 text-[9px] font-bold uppercase tracking-wider">Logged in as</p>
+              <p className="text-emerald-200 text-xs font-semibold mt-0.5 truncate">{username}</p>
             </div>
           </div>
         )}
@@ -259,18 +302,24 @@ export default function Layout({ children }) {
               <span className="text-[11px] font-bold text-emerald-600">System Live</span>
             </div>
 
-            <NotificationPanel />
+            {isAdmin && <NotificationPanel />}
 
-            <div className="flex items-center gap-2 bg-white/90 border border-gray-200/80
+            <div className={`flex items-center gap-2 bg-white/90 border border-gray-200/80
                             rounded-xl px-3 py-2 cursor-pointer hover:border-indigo-200
-                            hover:shadow-md transition-all duration-200">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white"
-                   style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)' }}>
+                            hover:shadow-md transition-all duration-200`}>
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white`}
+                   style={{ background: isAdmin 
+                     ? 'linear-gradient(135deg,#6366f1,#a855f7)' 
+                     : 'linear-gradient(135deg,#10b981,#14b8a6)' }}>
                 <User size={13} />
               </div>
               <div className="hidden sm:block">
-                <p className="text-xs font-bold text-gray-900 leading-none">RAJI (HOD)</p>
-                <p className="text-[10px] text-gray-700 mt-0.5">Admin</p>
+                <p className="text-xs font-bold text-gray-900 leading-none truncate max-w-[100px]">
+                  {isAdmin ? 'RAJI (HOD)' : username}
+                </p>
+                <p className="text-[10px] text-gray-700 mt-0.5">
+                  {isAdmin ? 'Admin' : 'Student'}
+                </p>
               </div>
             </div>
           </div>

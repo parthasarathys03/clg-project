@@ -1,43 +1,76 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Lock, User, Eye, EyeOff } from 'lucide-react'
+import { Lock, User, Eye, EyeOff, GraduationCap, Shield } from 'lucide-react'
 import skpLogo from '../assets/skp-logo.png'
 
-const VALID_USERNAME = 'Pavithra'
-const VALID_PASSWORD = 'Pavithra@123'
+const ADMIN_USERNAME = 'Pavithra'
+const ADMIN_PASSWORD = 'Pavithra@123'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const [loginType, setLoginType] = useState('student') // 'student' or 'admin'
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  // Auto-fill password for student login
+  useEffect(() => {
+    if (loginType === 'student' && username.trim()) {
+      setPassword(`${username.trim()}@123`)
+    } else if (loginType === 'student') {
+      setPassword('')
+    }
+  }, [username, loginType])
+
+  // Clear fields when switching login type
+  useEffect(() => {
+    setUsername('')
+    setPassword('')
+    setError('')
+  }, [loginType])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setIsLoading(true)
 
-    // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    // Trim whitespace and validate
     const trimmedUsername = username.trim()
     const trimmedPassword = password.trim()
 
-    if (trimmedUsername === VALID_USERNAME && trimmedPassword === VALID_PASSWORD) {
-      try {
-        localStorage.setItem('isAuthenticated', 'true')
-        localStorage.setItem('username', trimmedUsername)
-        // Force navigation with replace to prevent back button returning to login
-        navigate('/dashboard', { replace: true })
-      } catch (err) {
-        console.error('Login error:', err)
-        setError('Login failed. Please try again.')
+    if (loginType === 'admin') {
+      // Admin login validation
+      if (trimmedUsername === ADMIN_USERNAME && trimmedPassword === ADMIN_PASSWORD) {
+        try {
+          localStorage.setItem('isAuthenticated', 'true')
+          localStorage.setItem('username', trimmedUsername)
+          localStorage.setItem('userRole', 'admin')
+          navigate('/dashboard', { replace: true })
+        } catch (err) {
+          setError('Login failed. Please try again.')
+        }
+      } else {
+        setError('Invalid admin credentials')
       }
     } else {
-      setError('Invalid username or password')
+      // Student login validation - name + name@123
+      const expectedPassword = `${trimmedUsername}@123`
+      if (trimmedUsername && trimmedPassword === expectedPassword) {
+        try {
+          localStorage.setItem('isAuthenticated', 'true')
+          localStorage.setItem('username', trimmedUsername)
+          localStorage.setItem('userRole', 'student')
+          localStorage.setItem('studentName', trimmedUsername)
+          navigate('/predict', { replace: true })
+        } catch (err) {
+          setError('Login failed. Please try again.')
+        }
+      } else {
+        setError('Please enter your name correctly')
+      }
     }
 
     setIsLoading(false)
@@ -55,12 +88,12 @@ export default function LoginPage() {
         {/* Login Card */}
         <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20">
           {/* Logo Section */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <div className="flex justify-center mb-4">
               <img 
                 src={skpLogo} 
                 alt="SKP Logo" 
-                className="w-32 h-32 object-contain rounded-lg"
+                className="w-28 h-28 object-contain rounded-lg"
               />
             </div>
             <h1 className="text-2xl font-bold text-white mb-1">
@@ -71,9 +104,35 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {/* Login Type Tabs */}
+          <div className="flex gap-2 mb-6 p-1 bg-white/5 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setLoginType('student')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-medium text-sm transition-all duration-200
+                ${loginType === 'student' 
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg' 
+                  : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+            >
+              <GraduationCap size={18} />
+              Student Login
+            </button>
+            <button
+              type="button"
+              onClick={() => setLoginType('admin')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-medium text-sm transition-all duration-200
+                ${loginType === 'admin' 
+                  ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg' 
+                  : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+            >
+              <Shield size={18} />
+              Admin Login
+            </button>
+          </div>
+
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Username Field */}
+            {/* Username/Name Field */}
             <div className="relative">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50">
                 <User size={20} />
@@ -82,7 +141,7 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Username"
+                placeholder={loginType === 'student' ? 'Enter Your Name' : 'Admin Username'}
                 className="w-full bg-white/10 border border-white/20 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-white/40 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 transition-all"
                 required
               />
@@ -98,7 +157,9 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
-                className="w-full bg-white/10 border border-white/20 rounded-xl py-3.5 pl-12 pr-12 text-white placeholder-white/40 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 transition-all"
+                readOnly={loginType === 'student'}
+                className={`w-full bg-white/10 border border-white/20 rounded-xl py-3.5 pl-12 pr-12 text-white placeholder-white/40 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 transition-all
+                  ${loginType === 'student' ? 'cursor-not-allowed opacity-70' : ''}`}
                 required
               />
               <button
@@ -109,6 +170,13 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
+
+            {/* Student hint */}
+            {loginType === 'student' && (
+              <p className="text-white/50 text-xs text-center">
+                Password is auto-generated as: <span className="text-emerald-300 font-mono">YourName@123</span>
+              </p>
+            )}
 
             {/* Error Message */}
             {error && (
@@ -121,7 +189,10 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-3.5 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/25"
+              className={`w-full font-semibold py-3.5 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg
+                ${loginType === 'student' 
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-emerald-500/25' 
+                  : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-indigo-500/25'}`}
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -132,7 +203,7 @@ export default function LoginPage() {
                   Signing in...
                 </span>
               ) : (
-                'Sign In'
+                loginType === 'student' ? 'Login as Student' : 'Login as Admin'
               )}
             </button>
           </form>
@@ -140,7 +211,9 @@ export default function LoginPage() {
           {/* Footer */}
           <div className="mt-6 text-center">
             <p className="text-white/40 text-xs">
-              Admin Access Only
+              {loginType === 'student' 
+                ? 'Students can only access the Prediction page' 
+                : 'Full system access for administrators'}
             </p>
           </div>
         </div>

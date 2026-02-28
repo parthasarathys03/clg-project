@@ -20,18 +20,36 @@ const isAuthenticated = () => {
   try {
     return localStorage.getItem('isAuthenticated') === 'true'
   } catch (e) {
-    // Handle cases where localStorage might not be available (e.g., private browsing)
     console.warn('localStorage not available:', e)
     return false
   }
 }
 
+// Get user role
+const getUserRole = () => {
+  try {
+    return localStorage.getItem('userRole') || 'admin'
+  } catch (e) {
+    return 'admin'
+  }
+}
+
+// Check if user is admin
+export const isAdmin = () => {
+  return getUserRole() === 'admin'
+}
+
 // Protected Route wrapper
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, adminOnly = false }) {
   const location = useLocation()
   
   if (!isAuthenticated()) {
     return <Navigate to="/login" state={{ from: location }} replace />
+  }
+  
+  // If route is admin-only and user is student, redirect to predict
+  if (adminOnly && !isAdmin()) {
+    return <Navigate to="/predict" replace />
   }
   
   return children
@@ -41,6 +59,10 @@ function AppRoutes() {
   const location = useLocation()
   const isLoginPage = location.pathname === '/login'
   const auth = isAuthenticated()
+  const role = getUserRole()
+
+  // Default redirect based on role
+  const defaultRoute = role === 'student' ? '/predict' : '/dashboard'
 
   return (
     <>
@@ -52,19 +74,19 @@ function AppRoutes() {
       ) : (
         <Layout>
           <Routes>
-            <Route path="/" element={auth ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
-            <Route path="/login" element={auth ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/" element={auth ? <Navigate to={defaultRoute} replace /> : <Navigate to="/login" replace />} />
+            <Route path="/login" element={auth ? <Navigate to={defaultRoute} replace /> : <LoginPage />} />
+            <Route path="/dashboard" element={<ProtectedRoute adminOnly><Dashboard /></ProtectedRoute>} />
             <Route path="/predict" element={<ProtectedRoute><PredictPage /></ProtectedRoute>} />
-            <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
-            <Route path="/history" element={<ProtectedRoute><StudentHistory /></ProtectedRoute>} />
-            <Route path="/about" element={<ProtectedRoute><AboutPage /></ProtectedRoute>} />
-            <Route path="/batch" element={<ProtectedRoute><BatchUploadPage /></ProtectedRoute>} />
-            <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
-            <Route path="/student/:studentId" element={<ProtectedRoute><StudentProgressPage /></ProtectedRoute>} />
-            <Route path="/insights" element={<ProtectedRoute><ModelInsightsPage /></ProtectedRoute>} />
-            <Route path="/clusters" element={<ProtectedRoute><StudentClusters /></ProtectedRoute>} />
-            <Route path="*" element={<Navigate to={auth ? "/dashboard" : "/login"} replace />} />
+            <Route path="/teacher" element={<ProtectedRoute adminOnly><TeacherDashboard /></ProtectedRoute>} />
+            <Route path="/history" element={<ProtectedRoute adminOnly><StudentHistory /></ProtectedRoute>} />
+            <Route path="/about" element={<ProtectedRoute adminOnly><AboutPage /></ProtectedRoute>} />
+            <Route path="/batch" element={<ProtectedRoute adminOnly><BatchUploadPage /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute adminOnly><AnalyticsPage /></ProtectedRoute>} />
+            <Route path="/student/:studentId" element={<ProtectedRoute adminOnly><StudentProgressPage /></ProtectedRoute>} />
+            <Route path="/insights" element={<ProtectedRoute adminOnly><ModelInsightsPage /></ProtectedRoute>} />
+            <Route path="/clusters" element={<ProtectedRoute adminOnly><StudentClusters /></ProtectedRoute>} />
+            <Route path="*" element={<Navigate to={auth ? defaultRoute : "/login"} replace />} />
           </Routes>
         </Layout>
       )}
