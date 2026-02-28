@@ -30,8 +30,8 @@ class StudentInput(BaseModel):
 
     @validator("section")
     def section_valid(cls, v):
-        if v is not None and v not in ("IT-A", "IT-B", "IT-C"):
-            raise ValueError("section must be IT-A, IT-B, or IT-C")
+        if v is not None and v not in ("IT-A", "IT-B", "IT-C", "IT-D"):
+            raise ValueError("section must be IT-A, IT-B, IT-C, or IT-D")
         return v
 
 

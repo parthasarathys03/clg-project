@@ -1,7 +1,7 @@
 """
-AI Advisory Module  —  v6  (Multi-Key Rotation + AI-Only)
+AI Advisory Module  —  v7  (Multi-Provider Failover: Gemini → Groq → Ollama)
 ===========================================================================
-Priority: Gemini Key1 → Key2 → Key3 → Key4 → Ollama (no rule-based)
+Priority: Gemini (6 keys) → Groq (2 keys) → Ollama (local)
 
 Returns a rich structured dict for every prediction:
 
@@ -47,9 +47,22 @@ try:
 except ImportError:
     _gemini_available = False
 
+try:
+    from groq import Groq
+    _groq_available = True
+except ImportError:
+    _groq_available = False
+
 
 # Override via OLLAMA_MODEL env-var if a different local model is available
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "mistral")
+
+# Groq models to try (fast inference)
+_GROQ_MODELS = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "mixtral-8x7b-32768",
+]
 
 THRESHOLDS = {
     "attendance_percentage": 75,
@@ -292,8 +305,7 @@ _GEMINI_MODELS = [
     "gemini-2.5-flash-lite",
     "gemini-2.0-flash",
     "gemini-2.0-flash-lite",
-    "gemma-3-27b-it",
-    "gemma-3-12b-it",
+    # Gemma models removed - "Developer instruction not enabled" error
 ]
 
 
@@ -334,8 +346,8 @@ def _parse_gemini_json(raw_text: str) -> dict:
 
 
 # Retry config per model
-_RETRIES_PER_MODEL = 2
-_RETRY_DELAY = 3  # seconds
+_RETRIES_PER_MODEL = 1  # Reduced from 2 - quota errors don't benefit from retry
+_RETRY_DELAY = 1  # seconds - reduced from 3
 _AI_TIMEOUT = 30  # seconds max per request
 
 
@@ -424,7 +436,88 @@ def _call_gemini(
     return None
 
 
-# ─── Provider 2: Ollama (local, no rate limits) ─────────────────────────────
+# ─── Provider 2: Groq (fast cloud inference) ─────────────────────────────────
+
+def _get_groq_keys() -> list:
+    """Collect all Groq API keys from env: GROQ_API_KEY_1, _2, etc."""
+    keys = []
+    for i in range(1, 10):
+        k = os.getenv(f"GROQ_API_KEY_{i}", "").strip()
+        if k and k.startswith("gsk_"):
+            keys.append(k)
+    # Also check legacy single key
+    legacy = os.getenv("GROQ_API_KEY", "").strip()
+    if legacy and legacy.startswith("gsk_") and legacy not in keys:
+        keys.append(legacy)
+    return keys
+
+
+def _call_groq(
+    student_name, attendance, internal_marks, assignment_score,
+    study_hours, risk_level, confidence, key_factors, **kwargs
+) -> dict | None:
+    keys = _get_groq_keys()
+    if not keys or not _groq_available:
+        logger.warning("GROQ_UNAVAILABLE reason='No API keys or library not installed' student=%s", student_name)
+        return None
+
+    prompt = _build_user_prompt(
+        student_name, attendance, internal_marks, assignment_score,
+        study_hours, risk_level, confidence, key_factors, **kwargs
+    )
+
+    last_error = None
+
+    for key_idx, api_key in enumerate(keys, 1):
+        client = Groq(api_key=api_key)
+
+        for model_name in _GROQ_MODELS:
+            try:
+                logger.info("AI_REQUEST_STARTED provider=groq key=%d/%d model=%s student=%s",
+                            key_idx, len(keys), model_name, student_name)
+                t0 = time.time()
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=[
+                        {"role": "system", "content": _SYSTEM_INSTRUCTION},
+                        {"role": "user", "content": prompt},
+                    ],
+                    temperature=0.4,
+                    max_tokens=4096,
+                    response_format={"type": "json_object"},
+                )
+                raw_text = response.choices[0].message.content
+                data = json.loads(raw_text)
+                elapsed = round(time.time() - t0, 2)
+                logger.info("AI_RESPONSE_RECEIVED provider=groq key=%d model=%s elapsed=%ss student=%s",
+                            key_idx, model_name, elapsed, student_name)
+                data["weekly_plan"] = _normalize_weekly_plan(data.get("weekly_plan", {}))
+                result = _ensure_4_recs(data)
+                result["_model_name"] = model_name
+                result["_key_index"] = key_idx
+                return result
+            except Exception as exc:
+                last_error = exc
+                err = str(exc)
+                is_quota = "429" in err or "rate_limit" in err.lower() or "quota" in err.lower()
+                if is_quota:
+                    logger.warning("AI_PROVIDER_FAILED provider=groq key=%d model=%s reason=quota_exceeded student=%s",
+                                   key_idx, model_name, student_name)
+                    break  # Try next key
+                else:
+                    logger.warning("GROQ_RETRY model=%s reason='%s' student=%s",
+                                   model_name, err[:200], student_name)
+                    continue  # Try next model
+
+        logger.info("AI_KEY_ROTATION provider=groq key=%d/%d exhausted, trying next key student=%s",
+                    key_idx, len(keys), student_name)
+
+    logger.error("GROQ_ALL_KEYS_EXHAUSTED keys_tried=%d student=%s last_error='%s'",
+                 len(keys), student_name, str(last_error)[:200])
+    return None
+
+
+# ─── Provider 3: Ollama (local, no rate limits) ─────────────────────────────
 
 def _call_ollama(
     student_name, attendance, internal_marks, assignment_score,
@@ -521,21 +614,30 @@ def get_explanation_and_advisory(
         model_name = ai_data.pop("_model_name", "gemini-2.5-flash")
         ai_data.pop("_key_index", None)
     else:
-        # 2. Failover to Ollama (secondary — local LLM)
-        logger.info("AI_FAILOVER_STARTED provider=ollama reason='All Gemini keys exhausted' student=%s", student_name)
-        ai_data = _call_ollama(*args, **extra_kwargs)
+        # 2. Failover to Groq (secondary — fast cloud inference)
+        logger.info("AI_FAILOVER_STARTED provider=groq reason='All Gemini keys exhausted' student=%s", student_name)
+        ai_data = _call_groq(*args, **extra_kwargs)
         if ai_data is not None:
-            provider = "ollama"
-            model_name = ai_data.pop("_model_name", OLLAMA_MODEL)
+            provider = "groq"
+            model_name = ai_data.pop("_model_name", "llama-3.3-70b-versatile")
+            ai_data.pop("_key_index", None)
             fallback_used = True
         else:
-            # 3. Total failure — no silent fake text, no rule-based
-            logger.error("AI_TOTAL_FAILURE all_providers_unavailable student=%s", student_name)
-            raise RuntimeError(
-                "AI advisory generation failed — all providers unavailable. "
-                "Check GEMINI_API_KEY_1..4 in backend/.env or ensure Ollama is running. "
-                "Get a free key at https://aistudio.google.com/apikey"
-            )
+            # 3. Failover to Ollama (tertiary — local LLM)
+            logger.info("AI_FAILOVER_STARTED provider=ollama reason='All Groq keys exhausted' student=%s", student_name)
+            ai_data = _call_ollama(*args, **extra_kwargs)
+            if ai_data is not None:
+                provider = "ollama"
+                model_name = ai_data.pop("_model_name", OLLAMA_MODEL)
+                fallback_used = True
+            else:
+                # 4. Total failure — no silent fake text, no rule-based
+                logger.error("AI_TOTAL_FAILURE all_providers_unavailable student=%s", student_name)
+                raise RuntimeError(
+                    "AI advisory generation failed — all providers unavailable. "
+                    "Check GEMINI_API_KEY_1..6, GROQ_API_KEY_1..2 in backend/.env or ensure Ollama is running. "
+                    "Get free keys at https://aistudio.google.com/apikey or https://console.groq.com/keys"
+                )
 
     result = {
         "explanation":     ai_data.get("explanation", ""),
