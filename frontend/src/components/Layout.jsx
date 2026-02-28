@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, BrainCircuit, GraduationCap,
   ClipboardList, BookOpen, Menu, X,
   User, ChevronRight,
   Upload, Trophy, Cpu, Network,
+  LogOut,
 } from 'lucide-react'
 import NotificationPanel from './NotificationPanel'
 import skpLogo from '../assets/skp-logo.png'
@@ -39,6 +40,7 @@ export default function Layout({ children }) {
   const [collapsed, setCollapsed] = useState(false)
   const [clusterReady, setClusterReadyState] = useState(globalClusterReady)
   const location = useLocation()
+  const navigate = useNavigate()
   const currentPage = [...navItems, ...navItemsExtra].find(n => location.pathname.startsWith(n.to))
 
   // Poll for cluster ready state
@@ -48,6 +50,12 @@ export default function Layout({ children }) {
     }, 1000)
     return () => clearInterval(interval)
   }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated')
+    localStorage.removeItem('username')
+    navigate('/login')
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -200,6 +208,20 @@ export default function Layout({ children }) {
             </div>
           </div>
         )}
+
+        {/* Logout Button */}
+        <div className={`px-3 pb-4 ${collapsed ? 'px-2' : ''}`}>
+          <button
+            onClick={handleLogout}
+            title={collapsed ? 'Logout' : undefined}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
+                       text-white/70 hover:text-white hover:bg-red-500/20 hover:border-red-500/30
+                       border border-transparent ${collapsed ? 'justify-center' : ''}`}
+          >
+            <LogOut size={17} className="flex-shrink-0" />
+            {!collapsed && <span className="text-sm font-medium">Logout</span>}
+          </button>
+        </div>
       </aside>
 
       {/* ── Main area ────────────────────────────────────────────────────── */}
