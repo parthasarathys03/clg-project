@@ -22,10 +22,20 @@ export default function LoginPage() {
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-      localStorage.setItem('isAuthenticated', 'true')
-      localStorage.setItem('username', username)
-      navigate('/dashboard')
+    // Trim whitespace and validate
+    const trimmedUsername = username.trim()
+    const trimmedPassword = password.trim()
+
+    if (trimmedUsername === VALID_USERNAME && trimmedPassword === VALID_PASSWORD) {
+      try {
+        localStorage.setItem('isAuthenticated', 'true')
+        localStorage.setItem('username', trimmedUsername)
+        // Force navigation with replace to prevent back button returning to login
+        navigate('/dashboard', { replace: true })
+      } catch (err) {
+        console.error('Login error:', err)
+        setError('Login failed. Please try again.')
+      }
     } else {
       setError('Invalid username or password')
     }

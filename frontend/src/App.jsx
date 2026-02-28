@@ -15,9 +15,15 @@ import ModelInsightsPage from './pages/ModelInsightsPage'
 import StudentClusters from './pages/StudentClusters'
 import LoginPage from './pages/LoginPage'
 
-// Authentication check
+// Authentication check with error handling for deployment
 const isAuthenticated = () => {
-  return localStorage.getItem('isAuthenticated') === 'true'
+  try {
+    return localStorage.getItem('isAuthenticated') === 'true'
+  } catch (e) {
+    // Handle cases where localStorage might not be available (e.g., private browsing)
+    console.warn('localStorage not available:', e)
+    return false
+  }
 }
 
 // Protected Route wrapper
@@ -34,6 +40,7 @@ function ProtectedRoute({ children }) {
 function AppRoutes() {
   const location = useLocation()
   const isLoginPage = location.pathname === '/login'
+  const auth = isAuthenticated()
 
   return (
     <>
@@ -45,8 +52,8 @@ function AppRoutes() {
       ) : (
         <Layout>
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={auth ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
+            <Route path="/login" element={auth ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/predict" element={<ProtectedRoute><PredictPage /></ProtectedRoute>} />
             <Route path="/teacher" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
@@ -57,6 +64,7 @@ function AppRoutes() {
             <Route path="/student/:studentId" element={<ProtectedRoute><StudentProgressPage /></ProtectedRoute>} />
             <Route path="/insights" element={<ProtectedRoute><ModelInsightsPage /></ProtectedRoute>} />
             <Route path="/clusters" element={<ProtectedRoute><StudentClusters /></ProtectedRoute>} />
+            <Route path="*" element={<Navigate to={auth ? "/dashboard" : "/login"} replace />} />
           </Routes>
         </Layout>
       )}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Users, TrendingUp, AlertTriangle, CheckCircle,
   BrainCircuit, Database, RefreshCw, ArrowRight, Zap, Activity
@@ -51,6 +51,7 @@ export default function Dashboard() {
   const [resetting, setResetting] = useState(false)
   const [trainMsg, setTrainMsg] = useState(null)
   const { confirm } = useModal()
+  const navigate = useNavigate()
   
   // Pre-compute clusters in background so they're ready when user clicks Behaviour Clusters
   useClusterPrecompute()
@@ -368,11 +369,15 @@ export default function Dashboard() {
                   </thead>
                   <tbody>
                     {stats.recent_predictions.map((r, idx) => (
-                      <tr key={r.id} className="tr-hover border-b border-gray-200"
-                          style={{ animationDelay: `${idx * 0.04}s` }}>
+                      <tr key={r.id} className="tr-hover border-b border-gray-200 cursor-pointer"
+                          style={{ animationDelay: `${idx * 0.04}s` }}
+                          onClick={() => navigate(`/student/${r.student_id}`)}>
                         <td className="py-3 pr-5">
-                          <p className="font-semibold text-black text-xs">{r.student_name}</p>
-                          <p className="font-mono text-gray-600 text-[10px]">{r.student_id}</p>
+                          <Link to={`/student/${r.student_id}`} onClick={e => e.stopPropagation()}
+                                className="hover:text-indigo-700 transition-colors">
+                            <p className="font-semibold text-black text-xs">{r.student_name}</p>
+                            <p className="font-mono text-gray-600 text-[10px]">{r.student_id}</p>
+                          </Link>
                         </td>
                         <td className="py-3 pr-5 text-black text-xs">{r.inputs?.attendance_percentage}%</td>
                         <td className="py-3 pr-5 text-black text-xs">{r.inputs?.internal_marks}</td>

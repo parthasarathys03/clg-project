@@ -52,9 +52,13 @@ export default function Layout({ children }) {
   }, [])
 
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated')
-    localStorage.removeItem('username')
-    navigate('/login')
+    try {
+      localStorage.removeItem('isAuthenticated')
+      localStorage.removeItem('username')
+    } catch (e) {
+      console.warn('localStorage not available during logout:', e)
+    }
+    navigate('/login', { replace: true })
   }
 
   return (
@@ -265,7 +269,7 @@ export default function Layout({ children }) {
                 <User size={13} />
               </div>
               <div className="hidden sm:block">
-                <p className="text-xs font-bold text-gray-900 leading-none">Instructor</p>
+                <p className="text-xs font-bold text-gray-900 leading-none">RAJI (HOD)</p>
                 <p className="text-[10px] text-gray-700 mt-0.5">Admin</p>
               </div>
             </div>
