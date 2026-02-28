@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getStudentClusters } from '../api'
-import { setClusterReady } from '../components/Layout'
+import { setClusterReady } from '../utils/clusterUtils'
 
 // Global cache for cluster data (persists across navigation)
 let globalClusterCache = null

@@ -9,17 +9,7 @@ import {
 } from 'lucide-react'
 import NotificationPanel from './NotificationPanel'
 import skpLogo from '../assets/skp-logo.png'
-
-// Global cache check for cluster ready state
-let globalClusterReady = false
-
-export function setClusterReady(ready) {
-  globalClusterReady = ready
-}
-
-export function isClusterReady() {
-  return globalClusterReady
-}
+import { setClusterReady, isClusterReady } from '../utils/clusterUtils'
 
 // Get user role from localStorage
 const getUserRole = () => {
@@ -56,7 +46,7 @@ const navItemsExtra = [
 
 export default function Layout({ children }) {
   const [collapsed, setCollapsed] = useState(false)
-  const [clusterReady, setClusterReadyState] = useState(globalClusterReady)
+  const [clusterReady, setClusterReadyState] = useState(isClusterReady())
   const location = useLocation()
   const navigate = useNavigate()
   
@@ -74,7 +64,7 @@ export default function Layout({ children }) {
   // Poll for cluster ready state
   useEffect(() => {
     const interval = setInterval(() => {
-      setClusterReadyState(globalClusterReady)
+      setClusterReadyState(isClusterReady())
     }, 1000)
     return () => clearInterval(interval)
   }, [])

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import {
   BrainCircuit, AlertCircle,
   BarChart2, CheckCircle, XCircle, Sparkles, RotateCcw, User,
-  RefreshCw, Cloud, ServerCrash,
+  RefreshCw, Cloud, ServerCrash, Zap,
 } from 'lucide-react'
 import RiskBadge from '../components/RiskBadge'
 import AIAdvisoryPanels from '../components/AIAdvisoryPanels'
@@ -18,7 +18,7 @@ const FIELDS = [
   { key: 'assignment_score',      label: 'Assignment Score',  placeholder: '0 – 100', type: 'number', hint: 'Out of 100',          icon: '📋' },
   { key: 'study_hours_per_day',   label: 'Study Hours/Day',   placeholder: '0 – 12',  type: 'number', hint: '≥ 3 hrs recommended', icon: '🕐' },
 ]
-const SECTIONS = ['IT-A', 'IT-B', 'IT-C']
+const SECTIONS = ['IT-A', 'IT-B', 'IT-C', 'IT-D']
 const YEARS = [1, 2, 3, 4]
 const INIT = { student_id: '', student_name: '', section: '', current_year: '', attendance_percentage: '', internal_marks: '', assignment_score: '', study_hours_per_day: '' }
 

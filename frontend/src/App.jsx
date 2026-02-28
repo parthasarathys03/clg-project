@@ -35,7 +35,7 @@ const getUserRole = () => {
 }
 
 // Check if user is admin
-export const isAdmin = () => {
+const isAdmin = () => {
   return getUserRole() === 'admin'
 }
 
