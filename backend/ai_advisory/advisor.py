@@ -309,7 +309,7 @@ def _get_gemini_model():
         return None
     genai.configure(api_key=key)
     return genai.GenerativeModel(
-        model_name="gemini-2.0-flash",
+        model_name="gemini-2.5-flash",
         system_instruction=_SYSTEM_INSTRUCTION,
         generation_config=genai.GenerationConfig(
             response_mime_type="application/json",
@@ -348,13 +348,25 @@ def _call_gemini(
             if raw_text.endswith("```"):
                 raw_text = raw_text[:-3]
             raw_text = raw_text.strip()
-        data = json.loads(raw_text)
+        # Try to extract JSON object if extra text surrounds it
+        try:
+            data = json.loads(raw_text)
+        except json.JSONDecodeError:
+            # Attempt to find the outermost { ... } JSON object
+            start = raw_text.find("{")
+            end = raw_text.rfind("}")
+            if start != -1 and end != -1 and end > start:
+                raw_text = raw_text[start:end + 1]
+                data = json.loads(raw_text)
+            else:
+                raise
         elapsed = round(time.time() - t0, 2)
         logger.info("AI_RESPONSE_RECEIVED provider=gemini elapsed=%ss student=%s", elapsed, student_name)
         data["weekly_plan"] = _normalize_weekly_plan(data.get("weekly_plan", {}))
         return _ensure_4_recs(data)
     except json.JSONDecodeError as exc:
-        logger.warning("AI_FALLBACK_TRIGGERED provider=gemini reason='JSON parse error: %s' student=%s", str(exc)[:100], student_name)
+        logger.warning("AI_FALLBACK_TRIGGERED provider=gemini reason='JSON parse error: %s' raw_len=%d student=%s", str(exc)[:100], len(raw_text), student_name)
+        logger.debug("Raw Gemini response: %s", raw_text[:2000])
         return None
     except Exception as exc:
         err = str(exc)
