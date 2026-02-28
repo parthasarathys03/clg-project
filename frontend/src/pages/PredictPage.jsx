@@ -137,8 +137,13 @@ export default function PredictPage() {
       }, 100)
     } catch (err) {
       const detail = err.response?.data?.detail || ''
+      const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout')
       if (detail.includes('AI advisory') || detail.includes('all providers')) {
         setApiErr('AI_UNAVAILABLE')
+      } else if (isTimeout) {
+        setApiErr('Request timed out — server may be waking up. Please wait 30s and try again.')
+      } else if (detail.toLowerCase().includes('not trained') || detail.toLowerCase().includes('model')) {
+        setApiErr('ML Model not trained yet. Go to Dashboard and click "Train Model" first.')
       } else {
         setApiErr(detail || 'Prediction failed. Please try again.')
       }
