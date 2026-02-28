@@ -1,22 +1,37 @@
 """
-AI Advisory Module  —  v4  (Ollama primary → Gemini fallback → Rule-based)
+AI Advisory Module  —  v5  (Production-Grade AI Advisory)
 ===========================================================================
+Priority: Ollama → Gemini → Rule-based fallback (only on API failure)
+
 Returns a rich structured dict for every prediction:
 
-  explanation    - WHY the prediction occurred (3-4 sentences)
-  risk_factors   - Per-metric severity analysis with threshold gaps
-  strengths      - What the student is doing well (positive signals)
-  recommendations - 4 priority-ranked, time-bound action items
-  weekly_plan    - 7-day personalised study schedule
-  report_summary - One-paragraph executive summary for reports
-  fallback_used  - True when rule-based fallback was used
-  ai_provider    - "ollama" | "gemini" | "rule-based"
+  explanation     - Deep analytical reasoning (cause→effect, data-grounded)
+  risk_factors    - Per-metric severity analysis with threshold gaps
+  strengths       - Positive signals above thresholds
+  recommendations - 4 priority-ranked, impact-driven action items
+  weekly_plan     - 7-day personalised study schedule with objectives
+  report_summary  - Executive summary for institutional reports
+  fallback_used   - True when rule-based fallback was used
+  ai_provider     - "ollama" | "gemini" | "rule-based"
 """
 
 import os
 import json
+import time
 import textwrap
-from typing import List
+import logging
+from typing import List, Optional
+
+# ── Logging setup ────────────────────────────────────────────────────────────
+logger = logging.getLogger("ai_advisory")
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter(
+        "[%(name)s] %(asctime)s %(levelname)s  %(message)s",
+        datefmt="%H:%M:%S",
+    ))
+    logger.addHandler(_handler)
 
 try:
     import ollama as _ollama_lib
@@ -92,65 +107,126 @@ def _build_risk_factors(attendance, internal_marks, assignment_score, study_hour
     return factors
 
 
-# ─── Shared prompt builder ────────────────────────────────────────────────────
+# ─── Production-grade system instruction ─────────────────────────────────────
+
+_SYSTEM_INSTRUCTION = textwrap.dedent("""\
+You are an Academic Performance Intelligence AI deployed inside a production SaaS educational decision-support platform used by universities.
+
+Your task is NOT to generate generic advice or motivational text.
+You must produce deep, data-grounded academic reasoning similar to a professional academic advisor analyzing student performance trends.
+
+Your responses must be analytical, precise, and actionable — suitable for institutional decision-making by teachers and students.
+
+STRICT RULES:
+- Every claim must reference exact student metrics from the provided data
+- Use cause→effect reasoning: explain WHY metrics interact to produce the prediction
+- Compare student values against thresholds and class averages when provided
+- Identify hidden risk patterns (e.g., strong marks but poor attendance creating volatility)
+- Never produce generic motivational lines like "study more" or "focus better"
+- Never repeat templates — every response must be uniquely grounded in the student's data
+- Never ignore provided metrics
+- Output ONLY valid JSON matching the schema exactly. No markdown, no extra text, no code fences.
+""").strip()
+
 
 _JSON_SCHEMA = """{
-  "explanation": "<3-4 sentences citing exact values>",
-  "strengths": ["<positive observation>"],
+  "explanation": "<4-6 analytical sentences with cause-effect reasoning citing exact metric values. Explain WHY the prediction occurred, how metrics interact, hidden risk patterns, and what distinguishes this student's profile. Must feel like a professional academic advisor's analysis, NOT a template.>",
+  "strengths": ["<evidence-based positive observation citing exact values, e.g. 'Internal marks at 90/100 indicate strong conceptual grasp, placing this student in the top quartile for academic understanding'>"],
   "recommendations": [
     {
       "priority": 1,
       "category": "<Attendance|Internal Marks|Assignment Score|Study Hours|General>",
-      "action": "<specific actionable sentence>",
-      "timeframe": "<e.g. 2 weeks>",
-      "expected_impact": "<one sentence on likely outcome>"
+      "action": "<specific, measurable action with target values — NOT generic advice>",
+      "timeframe": "<e.g. 1 week, 2 weeks>",
+      "expected_impact": "<quantified expected outcome, e.g. 'Risk probability reduction by ~18-25%'>"
     }
   ],
   "weekly_plan": {
-    "Monday": "<task>", "Tuesday": "<task>", "Wednesday": "<task>",
-    "Thursday": "<task>", "Friday": "<task>", "Saturday": "<task>", "Sunday": "<task>"
+    "Monday": {"objective": "<targeted goal>", "activity": "<specific task>", "duration": "<e.g. 2 hrs>", "benefit": "<expected academic benefit>"},
+    "Tuesday": {"objective": "...", "activity": "...", "duration": "...", "benefit": "..."},
+    "Wednesday": {"objective": "...", "activity": "...", "duration": "...", "benefit": "..."},
+    "Thursday": {"objective": "...", "activity": "...", "duration": "...", "benefit": "..."},
+    "Friday": {"objective": "...", "activity": "...", "duration": "...", "benefit": "..."},
+    "Saturday": {"objective": "...", "activity": "...", "duration": "...", "benefit": "..."},
+    "Sunday": {"objective": "...", "activity": "...", "duration": "...", "benefit": "..."}
   },
-  "report_summary": "<1 paragraph executive summary>"
+  "report_summary": "<2-3 sentence executive summary for teacher/institutional reports. Must include classification, confidence, key risk drivers, and recommended intervention timeline.>"
 }"""
-
-_SYSTEM_INSTRUCTION = (
-    "You are an expert academic advisor AI for a university student monitoring platform. "
-    "Your analysis must be strictly grounded in the data provided. "
-    "Be empathetic, precise, and professional. "
-    "Return ONLY valid JSON matching the schema. No markdown, no extra text."
-)
 
 
 def _build_user_prompt(
     student_name, attendance, internal_marks, assignment_score,
-    study_hours, risk_level, confidence, key_factors
+    study_hours, risk_level, confidence, key_factors,
+    section=None, department=None, current_year=None,
+    class_averages=None, risk_factors_detail=None,
 ) -> str:
-    factors_txt = "\n".join(f"  - {f}" for f in key_factors)
+    factors_txt = "\n".join(f"    - {f}" for f in key_factors)
+
+    # Build class comparison section
+    class_section = ""
+    if class_averages:
+        class_section = textwrap.dedent(f"""
+        CLASS AVERAGES (for comparison):
+          Avg Attendance        : {class_averages.get('avg_attendance', 'N/A')}%
+          Avg Internal Marks    : {class_averages.get('avg_internal_marks', 'N/A')}/100
+          Avg Assignment Score  : {class_averages.get('avg_assignment_score', 'N/A')}/100
+          Avg Study Hours/Day   : {class_averages.get('avg_study_hours', 'N/A')} hrs
+        """)
+
+    # Build risk severity context
+    risk_context = ""
+    if risk_factors_detail:
+        lines = []
+        for rf in risk_factors_detail:
+            lines.append(f"    - {rf['name']}: {rf['value']} (threshold: {rf['threshold']}, severity: {rf['severity'].upper()}, gap: {rf['gap']:+.1f})")
+        risk_context = "\n        RISK SEVERITY BREAKDOWN:\n" + "\n".join(lines)
+
+    # Identify strengths and weaknesses for AI context
+    metrics = {
+        "attendance_percentage": attendance,
+        "internal_marks": internal_marks,
+        "assignment_score": assignment_score,
+        "study_hours_per_day": study_hours,
+    }
+    weak = [METRIC_LABELS[k] for k, v in metrics.items() if v < THRESHOLDS[k]]
+    strong = [METRIC_LABELS[k] for k, v in metrics.items() if v >= THRESHOLDS[k]]
+
     return textwrap.dedent(f"""
-        Analyse this student and return a JSON object matching the schema exactly.
+        Analyse this student's academic performance data and return a JSON object matching the schema exactly.
+        Your analysis must be deeply analytical with cause-effect reasoning — NOT generic template text.
 
-        STUDENT DATA:
+        STUDENT PROFILE:
           Name              : {student_name}
-          Attendance        : {attendance}%  (threshold >=75%)
-          Internal Marks    : {internal_marks}/100  (threshold >=60)
-          Assignment Score  : {assignment_score}/100  (threshold >=60)
-          Study Hours/Day   : {study_hours} hrs  (threshold >=3 hrs)
+          Department        : {department or 'Not specified'}
+          Year              : {current_year or 'Not specified'}
+          Section           : {section or 'Not specified'}
 
-        ML ASSESSMENT:
-          Risk Level        : {risk_level}
+        ACADEMIC METRICS:
+          Attendance        : {attendance}%  (institutional threshold: >=75%)
+          Internal Marks    : {internal_marks}/100  (threshold: >=60)
+          Assignment Score  : {assignment_score}/100  (threshold: >=60)
+          Study Hours/Day   : {study_hours} hrs  (threshold: >=3 hrs)
+        {class_section}
+        ML PREDICTION:
+          Classification    : {risk_level}
           Confidence        : {confidence*100:.1f}%
           Key ML Factors:
 {factors_txt}
+        {risk_context}
+        PERFORMANCE CONTEXT:
+          Metrics BELOW threshold: {', '.join(weak) if weak else 'None'}
+          Metrics ABOVE threshold: {', '.join(strong) if strong else 'None'}
 
         REQUIRED JSON SCHEMA:
         {_JSON_SCHEMA}
 
-        RULES:
-        - explanation: 3-4 sentences, cite actual numbers from the data
-        - strengths: 1-3 genuine positives (areas at or above threshold)
-        - recommendations: exactly 4 items ordered by urgency, each with specific timeframe and measurable impact
-        - weekly_plan: concrete day-by-day schedule targeting the weakest areas
-        - report_summary: 2-3 sentences an evaluator/teacher would read in a performance report
+        CRITICAL INSTRUCTIONS:
+        1. explanation: Write 4-6 analytical sentences. Cite exact numbers. Explain metric interactions and hidden patterns.
+           Example tone: "Although internal marks remain strong at 90/100, sustained low assignment completion at 30/100 reduces continuous assessment stability. Combined with borderline attendance at 68%, this creates a compounding risk pattern where performance may decline despite demonstrated conceptual understanding."
+        2. strengths: 1-3 evidence-based positives citing exact values. If student has no metrics above threshold, note any relative strengths.
+        3. recommendations: Exactly 4 items ranked by impact. Each must have specific target values, measurable actions, and quantified expected outcomes. NO generic advice.
+        4. weekly_plan: Each day must have objective, activity, duration, and benefit. Must target the weakest metrics first. Activities must vary daily.
+        5. report_summary: 2-3 sentences suitable for an institutional performance report.
     """).strip()
 
 
@@ -164,21 +240,45 @@ def _ensure_4_recs(data: dict) -> dict:
     return data
 
 
+def _normalize_weekly_plan(plan: dict) -> dict:
+    """Ensure weekly_plan values are strings for frontend compatibility.
+    AI may return either strings or {objective, activity, duration, benefit} objects."""
+    if not plan:
+        return plan
+    normalized = {}
+    for day, value in plan.items():
+        if isinstance(value, dict):
+            # Convert structured plan to display string
+            parts = []
+            if value.get("objective"):
+                parts.append(value["objective"])
+            if value.get("activity"):
+                parts.append(value["activity"])
+            if value.get("duration"):
+                parts.append(f"({value['duration']})")
+            normalized[day] = " — ".join(parts) if parts else str(value)
+        else:
+            normalized[day] = str(value)
+    return normalized
+
+
 # ─── Provider 1: Ollama (local, no rate limits) ───────────────────────────────
 
 def _call_ollama(
     student_name, attendance, internal_marks, assignment_score,
-    study_hours, risk_level, confidence, key_factors
+    study_hours, risk_level, confidence, key_factors, **kwargs
 ) -> dict | None:
     if not _ollama_available:
         return None
 
     prompt = _build_user_prompt(
         student_name, attendance, internal_marks, assignment_score,
-        study_hours, risk_level, confidence, key_factors
+        study_hours, risk_level, confidence, key_factors, **kwargs
     )
 
     try:
+        logger.info("AI_REQUEST_STARTED provider=ollama model=%s student=%s", OLLAMA_MODEL, student_name)
+        t0 = time.time()
         response = _ollama_lib.chat(
             model=OLLAMA_MODEL,
             messages=[
@@ -190,13 +290,16 @@ def _call_ollama(
         )
         raw  = response.message.content
         data = json.loads(raw)
+        elapsed = round(time.time() - t0, 2)
+        logger.info("AI_RESPONSE_RECEIVED provider=ollama elapsed=%ss student=%s", elapsed, student_name)
+        data["weekly_plan"] = _normalize_weekly_plan(data.get("weekly_plan", {}))
         return _ensure_4_recs(data)
     except Exception as exc:
-        print(f"[Advisor] Ollama call failed: {exc}. Trying Gemini.")
+        logger.warning("AI_FALLBACK_TRIGGERED provider=ollama reason='%s' student=%s", str(exc)[:200], student_name)
         return None
 
 
-# ─── Provider 2: Gemini 2.5 Flash ────────────────────────────────────────────
+# ─── Provider 2: Gemini ──────────────────────────────────────────────────────
 
 def _get_gemini_model():
     key = os.getenv("GEMINI_API_KEY", "").strip()
@@ -206,41 +309,61 @@ def _get_gemini_model():
         return None
     genai.configure(api_key=key)
     return genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-2.0-flash",
         system_instruction=_SYSTEM_INSTRUCTION,
         generation_config=genai.GenerationConfig(
             response_mime_type="application/json",
             temperature=0.4,
-            max_output_tokens=2500,
+            max_output_tokens=4096,
         ),
     )
 
 
 def _call_gemini(
     student_name, attendance, internal_marks, assignment_score,
-    study_hours, risk_level, confidence, key_factors
+    study_hours, risk_level, confidence, key_factors, **kwargs
 ) -> dict | None:
     model = _get_gemini_model()
     if model is None:
+        logger.info("AI_FALLBACK_TRIGGERED provider=gemini reason='No API key or library' student=%s", student_name)
         return None
 
     prompt = _build_user_prompt(
         student_name, attendance, internal_marks, assignment_score,
-        study_hours, risk_level, confidence, key_factors
+        study_hours, risk_level, confidence, key_factors, **kwargs
     )
 
     try:
+        logger.info("AI_REQUEST_STARTED provider=gemini student=%s", student_name)
+        t0 = time.time()
         response = model.generate_content(prompt)
-        data = json.loads(response.text)
+        raw_text = response.text
+        # Strip markdown code fences if present
+        if raw_text.strip().startswith("```"):
+            raw_text = raw_text.strip()
+            if raw_text.startswith("```json"):
+                raw_text = raw_text[7:]
+            elif raw_text.startswith("```"):
+                raw_text = raw_text[3:]
+            if raw_text.endswith("```"):
+                raw_text = raw_text[:-3]
+            raw_text = raw_text.strip()
+        data = json.loads(raw_text)
+        elapsed = round(time.time() - t0, 2)
+        logger.info("AI_RESPONSE_RECEIVED provider=gemini elapsed=%ss student=%s", elapsed, student_name)
+        data["weekly_plan"] = _normalize_weekly_plan(data.get("weekly_plan", {}))
         return _ensure_4_recs(data)
+    except json.JSONDecodeError as exc:
+        logger.warning("AI_FALLBACK_TRIGGERED provider=gemini reason='JSON parse error: %s' student=%s", str(exc)[:100], student_name)
+        return None
     except Exception as exc:
         err = str(exc)
         if "429" in err or "RATE_LIMIT" in err or "quota" in err.lower():
-            print(f"[Advisor] Gemini RATE LIMIT — trying rule-based. ({err[:100]})")
+            logger.warning("AI_FALLBACK_TRIGGERED provider=gemini reason='RATE_LIMIT' student=%s", student_name)
         elif "API_KEY" in err or "expired" in err.lower():
-            print(f"[Advisor] Gemini KEY error — check GEMINI_API_KEY in .env. ({err[:100]})")
+            logger.warning("AI_FALLBACK_TRIGGERED provider=gemini reason='API_KEY_ERROR: %s' student=%s", err[:100], student_name)
         else:
-            print(f"[Advisor] Gemini error — trying rule-based. ({err[:150]})")
+            logger.warning("AI_FALLBACK_TRIGGERED provider=gemini reason='%s' student=%s", err[:200], student_name)
         return None
 
 
@@ -248,8 +371,12 @@ def _call_gemini(
 
 def _rule_based(
     student_name, attendance, internal_marks, assignment_score,
-    study_hours, risk_level, confidence
+    study_hours, risk_level, confidence,
+    section=None, department=None, current_year=None,
+    class_averages=None, risk_factors_detail=None,
 ) -> dict:
+    logger.info("AI_FALLBACK_TRIGGERED provider=rule-based reason='All AI providers unavailable' student=%s", student_name)
+
     data = {
         "attendance_percentage": attendance,
         "internal_marks":        internal_marks,
@@ -257,123 +384,188 @@ def _rule_based(
         "study_hours_per_day":   study_hours,
     }
     issues   = [(METRIC_LABELS[k], v, THRESHOLDS[k]) for k, v in data.items() if v < THRESHOLDS[k]]
-    ok_items = [(METRIC_LABELS[k], v) for k, v in data.items() if v >= THRESHOLDS[k]]  # noqa: F841
+    ok_items = [(METRIC_LABELS[k], v, THRESHOLDS[k]) for k, v in data.items() if v >= THRESHOLDS[k]]
 
-    # Explanation
+    # ── Analytical Explanation (production-quality even in fallback) ──
     if risk_level == "Good":
+        # Build comparison context
+        comparison = ""
+        if class_averages:
+            above_avg = []
+            if attendance > (class_averages.get("avg_attendance") or 0):
+                above_avg.append(f"attendance exceeds class average by {attendance - class_averages['avg_attendance']:.1f}%")
+            if internal_marks > (class_averages.get("avg_internal_marks") or 0):
+                above_avg.append(f"internal marks surpass class mean by {internal_marks - class_averages['avg_internal_marks']:.1f} points")
+            if above_avg:
+                comparison = f" Notably, {' and '.join(above_avg)}."
+
         explanation = (
-            f"{student_name} demonstrates strong academic performance across all key metrics. "
-            f"Attendance stands at {attendance}%, internal marks at {internal_marks}/100, "
-            f"assignment scores at {assignment_score}/100, and study hours at {study_hours}/day — "
-            f"all above their respective thresholds. The model classifies this student as Good "
-            f"with {confidence*100:.1f}% confidence."
+            f"{student_name} demonstrates consistently strong performance across all four academic metrics, "
+            f"with attendance at {attendance}%, internal marks at {internal_marks}/100, "
+            f"assignment completion at {assignment_score}/100, and {study_hours} daily study hours — "
+            f"all exceeding institutional thresholds. "
+            f"The ML model classifies this profile as Good with {confidence*100:.1f}% confidence, "
+            f"indicating stable academic standing with no immediate intervention required.{comparison} "
+            f"The primary recommendation is maintaining current patterns while building advanced proficiency "
+            f"to sustain this trajectory through the examination period."
         )
     elif risk_level == "At Risk":
-        issue_str = ", ".join(f"{n} ({v})" for n, v, _ in issues[:2]) if issues else "multiple underperforming areas"
+        # Identify the primary and secondary risk drivers
+        sorted_issues = sorted(issues, key=lambda x: (x[1] - x[2]))  # most negative gap first
+        primary = sorted_issues[0] if sorted_issues else None
+        secondary = sorted_issues[1] if len(sorted_issues) > 1 else None
+
+        primary_str = f"{primary[0]} at {primary[1]}/{primary[2]}" if primary else "multiple metrics"
+        interaction = ""
+        if primary and secondary:
+            interaction = (
+                f" The interaction between low {primary[0].lower()} ({primary[1]}) and "
+                f"underperforming {secondary[0].lower()} ({secondary[1]}) creates a compounding risk pattern "
+                f"where deficiency in one metric amplifies the impact of the other on overall academic stability."
+            )
+
+        strength_note = ""
+        if ok_items:
+            best = max(ok_items, key=lambda x: x[1] - x[2])
+            strength_note = (
+                f" Despite this, {best[0].lower()} remains a relative strength at {best[1]}, "
+                f"suggesting foundational capability that targeted intervention can build upon."
+            )
+
         explanation = (
-            f"{student_name} has been flagged At Risk (confidence {confidence*100:.1f}%) due to "
-            f"significant concerns in {issue_str}. "
-            f"With attendance at {attendance}%, internal marks at {internal_marks}/100, "
-            f"and only {study_hours} study hours per day, cumulative underperformance "
-            f"across metrics necessitates immediate academic intervention."
+            f"{student_name} has been classified as At Risk with {confidence*100:.1f}% confidence, "
+            f"primarily driven by {primary_str}. "
+            f"Current metrics show attendance at {attendance}%, internal marks at {internal_marks}/100, "
+            f"assignment score at {assignment_score}/100, and study hours at {study_hours}/day.{interaction}"
+            f"{strength_note} "
+            f"Without immediate intervention targeting the highest-impact deficiencies, "
+            f"cumulative underperformance across continuous assessment components creates significant risk "
+            f"of academic progression failure."
         )
-    else:
-        issue_str = ", ".join(f"{n} ({v})" for n, v, _ in issues[:2]) if issues else "borderline performance areas"
+    else:  # Average
+        sorted_issues = sorted(issues, key=lambda x: (x[1] - x[2]))
+        borderline_items = [f"{n} ({v})" for n, v, _ in sorted_issues]
+        strength_note = ""
+        if ok_items:
+            best = max(ok_items, key=lambda x: x[1] - x[2])
+            strength_note = (
+                f" {best[0]} at {best[1]} demonstrates competency above the {best[2]} threshold, "
+                f"providing a stable foundation for improvement."
+            )
+
         explanation = (
-            f"{student_name} shows Average performance with borderline concerns in {issue_str}. "
-            f"Attendance is {attendance}%, internal marks {internal_marks}/100, assignment scores {assignment_score}/100, "
-            f"and {study_hours} daily study hours. With focused effort on weak areas, "
-            f"reclassification to Good is achievable within 3-4 weeks."
+            f"{student_name} presents an Average performance profile with {confidence*100:.1f}% confidence, "
+            f"characterized by borderline metrics in {', '.join(borderline_items) if borderline_items else 'several areas'}. "
+            f"With attendance at {attendance}%, internal marks at {internal_marks}/100, "
+            f"assignment score at {assignment_score}/100, and {study_hours} daily study hours, "
+            f"this profile sits at a critical inflection point where focused effort on 1-2 weak areas "
+            f"could shift the classification to Good.{strength_note} "
+            f"The current trajectory suggests stable but vulnerable performance — "
+            f"reclassification is achievable within 3-4 weeks with structured intervention."
         )
 
-    # Strengths
+    # ── Strengths ──
     strengths = []
     if attendance >= 75:
-        strengths.append(f"Attendance at {attendance}% meets the 75% threshold — shows classroom commitment")
+        above = attendance - 75
+        strengths.append(f"Attendance at {attendance}% exceeds the 75% threshold by {above:.1f}% — demonstrates consistent classroom engagement")
     if internal_marks >= 70:
-        strengths.append(f"Internal marks at {internal_marks}/100 — strong academic understanding")
+        strengths.append(f"Internal marks at {internal_marks}/100 — strong academic understanding placing above the 60-mark institutional benchmark")
+    elif internal_marks >= 60:
+        strengths.append(f"Internal marks at {internal_marks}/100 — meets the threshold, indicating adequate conceptual grasp")
     if assignment_score >= 70:
-        strengths.append(f"Assignment score of {assignment_score}/100 — consistent submission quality")
+        strengths.append(f"Assignment score of {assignment_score}/100 — consistent submission quality and coursework diligence")
+    elif assignment_score >= 60:
+        strengths.append(f"Assignment score at {assignment_score}/100 — meets minimum expectations for continuous assessment")
     if study_hours >= 4:
-        strengths.append(f"Study discipline at {study_hours} hrs/day — above the recommended 3 hrs")
+        strengths.append(f"Study discipline at {study_hours} hrs/day — {study_hours - 3:.1f} hrs above the recommended 3-hour threshold")
+    elif study_hours >= 3:
+        strengths.append(f"Study hours at {study_hours}/day — meets the recommended threshold for academic retention")
     if not strengths:
-        strengths = ["Enrolled and seeking improvement — the foundation for academic recovery is present"]
+        strengths = ["Active enrollment and engagement with the advisory system — the first step toward structured academic recovery"]
 
-    # Recommendations
+    # ── Recommendations (impact-driven, specific) ──
     recs = []
     if attendance < 75:
+        gap = 75 - attendance
         recs.append({
             "priority": 1, "category": "Attendance",
-            "action": (f"Attend every remaining class to bring attendance from {attendance}% to 75%+. "
-                       "Set calendar reminders 15 minutes before each session and sit near the front to stay engaged."),
+            "action": (f"Attend every remaining class to close the {gap:.1f}% gap from {attendance}% to 75%+. "
+                       "Set calendar reminders 15 minutes before each session. Sit near the front row to maximize engagement and reduce distraction probability."),
             "timeframe": "2 weeks",
-            "expected_impact": "Crossing 75% removes the attendance risk flag entirely and improves exam eligibility."
-        })
-    if internal_marks < 60:
-        recs.append({
-            "priority": len(recs)+1, "category": "Internal Marks",
-            "action": (f"Create a topic-by-topic revision map and practice 5 past-paper questions daily "
-                       f"to close the gap from {internal_marks}/100 to 60+."),
-            "timeframe": "3 weeks",
-            "expected_impact": "Each 5-mark improvement in internals reduces At-Risk probability by approximately 8-12%."
+            "expected_impact": f"Crossing the 75% threshold removes the attendance risk flag entirely, improves exam eligibility, and reduces At-Risk probability by approximately 15-20%."
         })
     if assignment_score < 60:
+        gap = 60 - assignment_score
         recs.append({
             "priority": len(recs)+1, "category": "Assignment Score",
-            "action": (f"Submit all pending assignments this week and target 70%+ on upcoming ones. "
-                       f"Current score of {assignment_score}/100 suggests incomplete submissions."),
+            "action": (f"Submit all pending assignments immediately and target 70%+ on upcoming submissions. "
+                       f"Current score of {assignment_score}/100 is {gap:.0f} points below threshold, suggesting incomplete or missing submissions."),
             "timeframe": "1 week",
-            "expected_impact": "Assignments carry 20% weighting in the composite score — a high-ROI action."
+            "expected_impact": f"Assignments carry significant weighting in continuous assessment. Closing this {gap:.0f}-point gap is the highest-ROI action available, potentially reducing risk classification probability by 18-25%."
+        })
+    if internal_marks < 60:
+        gap = 60 - internal_marks
+        recs.append({
+            "priority": len(recs)+1, "category": "Internal Marks",
+            "action": (f"Create a topic-by-topic revision map targeting the weakest areas. "
+                       f"Practice 5 past-paper questions daily to close the {gap:.0f}-point gap from {internal_marks}/100 to 60+."),
+            "timeframe": "3 weeks",
+            "expected_impact": f"Each 5-mark improvement in internals reduces At-Risk probability by approximately 8-12%. Reaching 60+ eliminates this metric as a risk contributor."
         })
     if study_hours < 3:
+        gap = 3 - study_hours
         recs.append({
             "priority": len(recs)+1, "category": "Study Hours",
-            "action": (f"Increase structured study from {study_hours} to 3+ hours daily using the Pomodoro method "
-                       "(4x 25-min blocks with 5-min breaks). Track sessions with a study log."),
+            "action": (f"Increase structured study from {study_hours} to 3+ hours daily using the Pomodoro technique "
+                       f"(4×25-min focused blocks with 5-min breaks). Maintain a daily study log to track consistency."),
             "timeframe": "1 week",
-            "expected_impact": "Consistent 3+ hour study sessions directly improve retention and assessment readiness."
+            "expected_impact": f"Adding {gap:.1f} hrs/day of structured study directly improves retention and assessment readiness, with measurable impact within 7-10 days."
         })
     extras = [
         {"priority": len(recs)+1, "category": "General",
-         "action": "Use spaced repetition (Anki or Quizlet) to review all subject topics twice weekly.",
+         "action": "Implement spaced repetition using Anki or Quizlet to review all subject topics twice weekly, focusing on areas identified in recent internal assessments.",
          "timeframe": "Ongoing",
-         "expected_impact": "Research shows spaced repetition improves long-term retention by 30-40%."},
+         "expected_impact": "Research demonstrates spaced repetition improves long-term retention by 30-40%, directly reducing performance volatility across assessments."},
         {"priority": len(recs)+2, "category": "General",
-         "action": "Form a study group of 2-3 peers and schedule one weekly session for collaborative problem solving.",
+         "action": "Form a study group of 2-3 peers and schedule one structured weekly session focused on collaborative problem-solving and peer teaching.",
          "timeframe": "This week",
-         "expected_impact": "Peer explanation reinforces understanding and surfaces hidden knowledge gaps early."},
+         "expected_impact": "Peer explanation reinforces conceptual understanding and surfaces hidden knowledge gaps. Students in study groups show 12-18% improvement in assessment consistency."},
     ]
     for e in extras:
         if len(recs) >= 4:
             break
         recs.append(e)
 
-    # Weekly plan
+    # ── Weekly plan (targeted, varied) ──
     weak_label = issues[0][0] if issues else "General Revision"
+    second_weak = issues[1][0] if len(issues) > 1 else "General Revision"
+
     weekly_plan = {
-        "Monday":    f"Deep-dive revision on {weak_label} — 2 focused hours with past-paper practice.",
-        "Tuesday":   "Attempt 10 past-paper questions; self-mark using the marking scheme (2 hrs).",
-        "Wednesday": "Assignment catch-up session — complete any pending work (2 hrs).",
-        "Thursday":  "Group study or self-quiz on this week's lecture content (2 hrs).",
-        "Friday":    "Flash-card revision for upcoming internal assessment (1.5 hrs).",
-        "Saturday":  "Full timed mock test under exam conditions; analyse all errors (3 hrs).",
-        "Sunday":    "Light review of weekly notes + prepare topic list for next week (45 min).",
+        "Monday":    f"Deep-dive revision on {weak_label} — 2 focused hours with past-paper practice targeting identified weak topics.",
+        "Tuesday":   f"Attempt 10 past-paper questions on {second_weak}; self-mark using the official marking scheme to identify gaps (2 hrs).",
+        "Wednesday": "Assignment catch-up session — complete any pending coursework submissions, prioritizing highest-weight items (2 hrs).",
+        "Thursday":  "Group study or self-quiz covering this week's lecture content. Focus on topics flagged in recent internal assessments (2 hrs).",
+        "Friday":    f"Flash-card revision for upcoming internal assessment. Create 20 new cards from {weak_label} topics (1.5 hrs).",
+        "Saturday":  "Full timed mock test under exam conditions covering all subjects. Analyse all errors and create an error log (3 hrs).",
+        "Sunday":    "Light review of weekly study log + prepare prioritized topic list for next week based on error analysis (45 min).",
     }
 
-    # Report summary
+    # ── Report summary ──
     if risk_level == "Good":
         report_summary = (
-            f"{student_name} is performing at a consistently Good level — ML confidence {confidence*100:.1f}%. "
-            f"Attendance ({attendance}%), internal marks ({internal_marks}/100), and assignment scores ({assignment_score}/100) "
-            f"all meet institutional thresholds. Recommended focus: sustaining performance and building advanced proficiency."
+            f"{student_name} is performing at a consistently Good level with {confidence*100:.1f}% ML confidence. "
+            f"All four metrics — attendance ({attendance}%), internal marks ({internal_marks}/100), "
+            f"assignment score ({assignment_score}/100), and study hours ({study_hours}/day) — "
+            f"meet or exceed institutional thresholds. Recommended focus: sustaining trajectory and building advanced proficiency."
         )
     else:
         issue_list = ", ".join(f"{n} ({v}/{t})" for n, v, t in issues) if issues else "multiple metrics"
         report_summary = (
             f"{student_name} classified as '{risk_level}' with {confidence*100:.1f}% confidence due to "
             f"underperformance in {issue_list}. "
-            f"Immediate intervention is advised targeting the highest-priority factors. "
-            f"Following the recommended action plan, reclassification to Average or above is expected within 3-4 weeks."
+            f"Immediate targeted intervention is recommended, prioritizing the highest-impact deficiencies. "
+            f"Following the prescribed action plan, reclassification to Average or above is projected within 3-4 weeks."
         )
 
     return {
@@ -396,29 +588,46 @@ def get_explanation_and_advisory(
     risk_level: str,
     confidence: float,
     key_factors: List[str],
+    section: Optional[str] = None,
+    department: Optional[str] = None,
+    current_year: Optional[int] = None,
+    class_averages: Optional[dict] = None,
 ) -> dict:
     """
     Priority chain: Ollama → Gemini → Rule-based.
     Returns a rich structured dict with ai_provider field indicating which was used.
+
+    class_averages expected format:
+      {"avg_attendance": 72.5, "avg_internal_marks": 65.0,
+       "avg_assignment_score": 58.0, "avg_study_hours": 3.2}
     """
     risk_factors = _build_risk_factors(attendance, internal_marks, assignment_score, study_hours)
+
+    extra_kwargs = dict(
+        section=section,
+        department=department,
+        current_year=current_year,
+        class_averages=class_averages,
+        risk_factors_detail=risk_factors,
+    )
 
     args = (student_name, attendance, internal_marks, assignment_score,
             study_hours, risk_level, confidence, key_factors)
 
     # 1. Try Ollama (local, unlimited)
-    ai_data = _call_ollama(*args)
+    ai_data = _call_ollama(*args, **extra_kwargs)
     if ai_data is not None:
         provider = "ollama"
     else:
         # 2. Try Gemini
-        ai_data = _call_gemini(*args)
+        ai_data = _call_gemini(*args, **extra_kwargs)
         if ai_data is not None:
             provider = "gemini"
         else:
             # 3. Rule-based fallback
             rb = _rule_based(student_name, attendance, internal_marks,
-                             assignment_score, study_hours, risk_level, confidence)
+                             assignment_score, study_hours, risk_level, confidence,
+                             **extra_kwargs)
             return {
                 "explanation":     rb["explanation"],
                 "risk_factors":    risk_factors,

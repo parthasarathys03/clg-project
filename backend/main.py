@@ -162,6 +162,18 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Prediction error: {exc}")
 
+    # Fetch class averages for AI context
+    try:
+        _stats = db.get_dashboard_stats()
+        _class_avg = {
+            "avg_attendance":       _stats.get("average_attendance", 0),
+            "avg_internal_marks":   _stats.get("average_internal_marks", 0),
+            "avg_assignment_score": _stats.get("average_assignment_score", 0),
+            "avg_study_hours":      _stats.get("average_study_hours", 0),
+        }
+    except Exception:
+        _class_avg = None
+
     try:
         advisory = get_explanation_and_advisory(
             student_name=student.student_name,
@@ -172,6 +184,10 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
             risk_level=ml_result["risk_level"],
             confidence=ml_result["confidence"],
             key_factors=ml_result["key_factors"],
+            section=student.section,
+            department=student.department,
+            current_year=student.current_year,
+            class_averages=_class_avg,
         )
     except Exception:
         advisory = {

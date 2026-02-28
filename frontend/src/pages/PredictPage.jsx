@@ -344,8 +344,8 @@ export default function PredictPage() {
                             : 'rgba(99,102,241,0.3)'}`,
                         }}>
                     {result.fallback_used ? '⚡ Rule-based'
-                      : result.ai_provider === 'ollama' ? '⬡ Ollama'
-                      : '✦ Gemini'}
+                      : result.ai_provider === 'ollama' ? '⬡ Ollama AI'
+                      : '✦ Gemini AI'}
                   </span>
                 </div>
               </div>
@@ -441,18 +441,19 @@ function AIIntelligencePanels({ result, theme }) {
             </div>
             <div className="flex-1">
               <p className="font-bold text-gray-900 text-lg">AI Explanation</p>
-              <span className="text-xs font-bold px-2 py-1 rounded-full"
+              <span className="text-xs font-bold px-2 py-1 rounded-full inline-flex items-center gap-1"
                     style={{
                       background: result.fallback_used ? 'rgba(245,158,11,0.1)'
                         : result.ai_provider === 'ollama' ? 'rgba(16,185,129,0.1)'
-                        : 'rgba(99,102,241,0.1)',
+                        : 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.1))',
                       color: result.fallback_used ? '#f59e0b'
                         : result.ai_provider === 'ollama' ? '#10b981'
                         : '#6366f1',
                     }}>
+                <Sparkles size={10} />
                 {result.fallback_used ? 'Rule-based'
-                  : result.ai_provider === 'ollama' ? 'Ollama'
-                  : 'Gemini'}
+                  : result.ai_provider === 'ollama' ? 'Ollama AI'
+                  : 'Gemini AI'}
               </span>
             </div>
           </div>
