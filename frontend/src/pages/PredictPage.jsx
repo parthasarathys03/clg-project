@@ -18,7 +18,9 @@ const FIELDS = [
   { key: 'assignment_score',      label: 'Assignment Score',  placeholder: '0 – 100', type: 'number', hint: 'Out of 100',          icon: '📋' },
   { key: 'study_hours_per_day',   label: 'Study Hours/Day',   placeholder: '0 – 12',  type: 'number', hint: '≥ 3 hrs recommended', icon: '🕐' },
 ]
-const INIT = { student_id: '', student_name: '', attendance_percentage: '', internal_marks: '', assignment_score: '', study_hours_per_day: '' }
+const SECTIONS = ['IT-A', 'IT-B', 'IT-C']
+const YEARS = [1, 2, 3, 4]
+const INIT = { student_id: '', student_name: '', section: '', current_year: '', attendance_percentage: '', internal_marks: '', assignment_score: '', study_hours_per_day: '' }
 
 const riskTheme = {
   Good:     { grad: 'linear-gradient(135deg,#022c22,#064e3b)', accent: '#10b981', glow: 'rgba(16,185,129,0.4)',  label: 'Excellent Performance' },
@@ -72,6 +74,8 @@ export default function PredictPage() {
     const e = {}
     if (!form.student_id.trim())   e.student_id   = 'Required'
     if (!form.student_name.trim()) e.student_name = 'Required'
+    if (!form.section)             e.section      = 'Required'
+    if (!form.current_year)        e.current_year = 'Required'
     const nums = [
       { k: 'attendance_percentage', min: 0, max: 100 },
       { k: 'internal_marks',        min: 0, max: 100 },
@@ -117,6 +121,8 @@ export default function PredictPage() {
       const res = await predictStudent({
         student_id:            form.student_id.trim(),
         student_name:          form.student_name.trim(),
+        section:               form.section,
+        current_year:          parseInt(form.current_year),
         attendance_percentage: parseFloat(form.attendance_percentage),
         internal_marks:        parseFloat(form.internal_marks),
         assignment_score:      parseFloat(form.assignment_score),
@@ -198,6 +204,48 @@ export default function PredictPage() {
                   )}
                 </div>
               ))}
+            </div>
+
+            {/* Section & Year row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="label">Section</label>
+                <select
+                  name="section"
+                  value={form.section}
+                  onChange={handleChange}
+                  className={`input-field ${errors.section ? 'border-rose-400' : ''}`}
+                >
+                  <option value="">Select Section</option>
+                  {SECTIONS.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                {errors.section && (
+                  <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
+                    <XCircle size={10} /> {errors.section}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="label">Year</label>
+                <select
+                  name="current_year"
+                  value={form.current_year}
+                  onChange={handleChange}
+                  className={`input-field ${errors.current_year ? 'border-rose-400' : ''}`}
+                >
+                  <option value="">Select Year</option>
+                  {YEARS.map(y => (
+                    <option key={y} value={y}>{y}{y === 1 ? 'st' : y === 2 ? 'nd' : y === 3 ? 'rd' : 'th'} Year</option>
+                  ))}
+                </select>
+                {errors.current_year && (
+                  <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1">
+                    <XCircle size={10} /> {errors.current_year}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Academic fields */}

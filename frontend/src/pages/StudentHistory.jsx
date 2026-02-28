@@ -241,12 +241,20 @@ export default function StudentHistory() {
                       className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                     />
                   </div>
-                  <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3 items-center">
+                  <div className="flex-1 grid grid-cols-2 sm:grid-cols-6 gap-3 items-center">
                     <div>
                       <Link to={`/student/${r.student_id}`} className="hover:text-indigo-600 transition-colors" onClick={e => e.stopPropagation()}>
                         <p className="font-bold text-gray-900 text-sm leading-tight">{r.student_name}</p>
                         <p className="font-mono text-gray-700 text-[10px]">{r.student_id}</p>
                       </Link>
+                    </div>
+                    <div className="hidden sm:block">
+                      <p className="font-bold text-gray-900 text-sm">{r.section || '-'}</p>
+                      <p className="text-gray-500 text-[10px]">Section</p>
+                    </div>
+                    <div className="hidden sm:block">
+                      <p className="font-bold text-gray-900 text-sm">{r.current_year ? `${r.current_year} Year` : '-'}</p>
+                      <p className="text-gray-500 text-[10px]">Year</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <RiskBadge level={r.risk_level} />
