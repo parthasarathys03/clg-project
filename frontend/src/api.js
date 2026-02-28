@@ -5,7 +5,7 @@ const api = axios.create({
   timeout: 120000,
 })
 
-export const trainModel      = ()        => api.post('/train')
+export const trainModel      = ()        => api.post('/train', {}, { timeout: 300000 })
 export const predictStudent  = (data)    => api.post('/predict', data)
 export const getDashboard    = (params)  => api.get('/dashboard', { params })
 export const getPredictions  = (params)  => api.get('/predictions', { params })
