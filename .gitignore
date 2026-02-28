@@ -11,7 +11,8 @@ venv/
 pip-log.txt
 
 # Environment variables
-.env
+# .env is intentionally committed so API keys deploy automatically
+# .env
 .env.local
 
 # Build outputs
