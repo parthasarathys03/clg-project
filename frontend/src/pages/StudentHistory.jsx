@@ -264,7 +264,7 @@ export default function StudentHistory() {
                       Confidence: <span className="font-bold text-gray-900">{(r.confidence*100).toFixed(1)}%</span>
                     </div>
                     <p className="text-gray-500 text-xs hidden sm:block">
-                      {new Date(r.timestamp).toLocaleString()}
+                      {new Date(r.timestamp).toLocaleString('en-US', { hour12: true, year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">

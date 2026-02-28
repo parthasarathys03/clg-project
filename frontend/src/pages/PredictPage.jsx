@@ -444,7 +444,7 @@ export default function PredictPage() {
                 {/* AI tag */}
                 <div className="flex items-center justify-between">
                   <p className="text-white text-[10px] font-semibold">
-                    {new Date(result.timestamp).toLocaleString()}
+                    {new Date(result.timestamp).toLocaleString('en-US', { hour12: true, year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </p>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1"
                         style={{

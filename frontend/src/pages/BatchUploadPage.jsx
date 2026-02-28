@@ -5,12 +5,12 @@ import { batchUpload, getBatchProgress } from '../api'
 import { useToast } from '../components/Toast'
 
 const SAMPLE_CSV = `student_id,student_name,department,current_year,section,attendance,CA_1_internal_marks,assignments,study_hours
-SKP-IT-A01,Aravind Kumar,Information Technology,4,IT-A,92,88,90,5.5
-SKP-IT-A02,Priya Dharshini,Information Technology,4,IT-A,95,91,93,6.0
-SKP-IT-B01,Karthikeyan R,Information Technology,4,IT-B,74,58,65,2.5
-SKP-IT-B02,Tamilselvi M,Information Technology,4,IT-B,77,63,67,3.0
-SKP-IT-C01,Manikandan R,Information Technology,4,IT-C,45,28,35,0.5
-SKP-IT-C02,Vikram S,Information Technology,4,IT-C,50,35,40,1.0`
+SKP-IT-A101,Aravind Kumar,Information Technology,4,IT-A,92,88,90,5.5
+SKP-IT-A102,Priya Dharshini,Information Technology,4,IT-A,95,91,93,6.0
+SKP-IT-B101,Karthikeyan R,Information Technology,4,IT-B,74,58,65,2.5
+SKP-IT-B102,Tamilselvi M,Information Technology,4,IT-B,77,63,67,3.0
+SKP-IT-C101,Manikandan R,Information Technology,4,IT-C,45,28,35,0.5
+SKP-IT-C102,Vikram S,Information Technology,4,IT-C,50,35,40,1.0`
 
 function downloadSample() {
   const blob = new Blob([SAMPLE_CSV], { type: 'text/csv' })

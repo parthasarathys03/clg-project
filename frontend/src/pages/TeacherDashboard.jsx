@@ -352,7 +352,7 @@ export default function TeacherDashboard() {
                     <td className="py-3 pr-4 text-black">{r.inputs?.study_hours_per_day}h</td>
                     <td className="py-3 pr-4"><RiskBadge level={r.risk_level} /></td>
                     <td className="py-3 pr-4 font-bold text-black">{(r.confidence*100).toFixed(0)}%</td>
-                    <td className="py-3 pr-4 text-gray-600">{new Date(r.timestamp).toLocaleTimeString()}</td>
+                    <td className="py-3 pr-4 text-gray-600">{new Date(r.timestamp).toLocaleString('en-US', { hour12: true, year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
                     <td className="py-3">
                       <button
                         onClick={() => handleDelete(r.id)}

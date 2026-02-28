@@ -166,7 +166,7 @@ export default function ModelInsightsPage() {
                         <td className="py-3 pr-4 font-black text-indigo-700">{(h.accuracy * 100).toFixed(2)}%</td>
                         <td className="py-3 pr-4 text-black">{h.cv_score ? `${(h.cv_score * 100).toFixed(2)}%` : '—'}</td>
                         <td className="py-3 pr-4 text-black">{h.dataset_rows?.toLocaleString() || '—'}</td>
-                        <td className="py-3 pr-4 text-gray-600">{new Date(h.trained_at).toLocaleString()}</td>
+                        <td className="py-3 pr-4 text-gray-600">{new Date(h.trained_at).toLocaleString('en-US', { hour12: true, year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
                       </tr>
                     ))}
                   </tbody>

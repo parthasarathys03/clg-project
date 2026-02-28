@@ -215,7 +215,7 @@ export default function StudentProgressPage() {
             </div>
             <div>
               <p className="font-bold text-gray-900 text-sm">AI Advisory — Latest Prediction</p>
-              <p className="text-gray-500 text-xs">{new Date(latest.timestamp).toLocaleString()}</p>
+              <p className="text-gray-500 text-xs">{new Date(latest.timestamp).toLocaleString('en-US', { hour12: true, year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</p>
             </div>
           </div>
           <AIAdvisoryPanels result={latest} theme={theme} />
@@ -249,7 +249,7 @@ export default function StudentProgressPage() {
                         </span>
                       )}
                       <span className="text-[10px] text-gray-400 flex items-center gap-1">
-                        <Calendar size={9} /> {new Date(h.timestamp).toLocaleString()}
+                        <Calendar size={9} /> {new Date(h.timestamp).toLocaleString('en-US', { hour12: true, year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-gray-500">
