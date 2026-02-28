@@ -76,13 +76,13 @@ def train_model() -> dict:
 
     # ── Model ────────────────────────────────────────────────────────────────
     clf = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=None,
+        n_estimators=100,
+        max_depth=15,
         min_samples_split=4,
         min_samples_leaf=2,
         class_weight="balanced",
         random_state=42,
-        n_jobs=-1,
+        n_jobs=1,
     )
     clf.fit(X_train, y_train)
 

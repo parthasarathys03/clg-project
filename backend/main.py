@@ -188,22 +188,28 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
         _class_avg = None
 
     # AI advisory with caching (checks in-memory + DB cache)
-    advisory = get_explanation_and_advisory(
-        student_name=student.student_name,
-        attendance=student.attendance_percentage,
-        internal_marks=student.internal_marks,
-        assignment_score=student.assignment_score,
-        study_hours=student.study_hours_per_day,
-        risk_level=ml_result["risk_level"],
-        confidence=ml_result["confidence"],
-        key_factors=ml_result["key_factors"],
-        section=student.section,
-        department=student.department,
-        current_year=student.current_year,
-        class_averages=_class_avg,
-        student_id=student.student_id,
-        use_cache=True,
-    )
+    try:
+        advisory = get_explanation_and_advisory(
+            student_name=student.student_name,
+            attendance=student.attendance_percentage,
+            internal_marks=student.internal_marks,
+            assignment_score=student.assignment_score,
+            study_hours=student.study_hours_per_day,
+            risk_level=ml_result["risk_level"],
+            confidence=ml_result["confidence"],
+            key_factors=ml_result["key_factors"],
+            section=student.section,
+            department=student.department,
+            current_year=student.current_year,
+            class_averages=_class_avg,
+            student_id=student.student_id,
+            use_cache=True,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"AI advisory generation failed — all providers unavailable. {exc}"
+        )
 
     # Also persist to DB cache for demo reset
     cache_key = _metrics_hash(
