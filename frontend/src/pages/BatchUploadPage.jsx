@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react'
-import { Upload, Download, FileText, CheckCircle, XCircle, Loader2, ClipboardList } from 'lucide-react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { Upload, Download, FileText, CheckCircle, XCircle, Loader2, ClipboardList, Sparkles, Cloud, RefreshCw } from 'lucide-react'
 import RiskBadge from '../components/RiskBadge'
-import { batchUpload } from '../api'
+import { batchUpload, getBatchProgress } from '../api'
 import { useToast } from '../components/Toast'
 
 const SAMPLE_CSV = `student_id,student_name,department,current_year,section,attendance,CA_1_internal_marks,assignments,study_hours
@@ -33,7 +33,11 @@ export default function BatchUploadPage() {
   const [loading, setLoading]     = useState(false)
   const [result, setResult]       = useState(null)
   const [progress, setProgress]   = useState(0)
+  const [progressText, setProgressText] = useState('')
+  const [batchId, setBatchId]     = useState(null)
+  const [totalRows, setTotalRows] = useState(0)
   const inputRef = useRef(null)
+  const pollRef  = useRef(null)
   const toast    = useToast()
 
   const handleFile = f => {
@@ -41,7 +45,7 @@ export default function BatchUploadPage() {
     if (!f.name.endsWith('.csv')) {
       toast('Only CSV files are accepted', 'error'); return
     }
-    setFile(f); setResult(null); setProgress(0)
+    setFile(f); setResult(null); setProgress(0); setProgressText(''); setBatchId(null)
   }
 
   const onDrop = e => {
@@ -49,26 +53,69 @@ export default function BatchUploadPage() {
     handleFile(e.dataTransfer.files[0])
   }
 
+  // Poll batch progress
+  const pollProgress = useCallback(async (bid) => {
+    try {
+      const res = await getBatchProgress(bid)
+      const data = res.data
+      const pct = data.total > 0 ? Math.round((data.processed / data.total) * 100) : 0
+      setProgress(pct)
+      setProgressText(`Generating AI advisories (${data.processed}/${data.total} completed)`)
+
+      if (data.status === 'done') {
+        clearInterval(pollRef.current)
+        pollRef.current = null
+        setProgress(100)
+        setProgressText(`Complete — ${data.processed} students processed`)
+        setResult(data)
+        setLoading(false)
+        toast(`Processed ${data.processed} of ${data.total} students`, 'success')
+        window.dispatchEvent(new CustomEvent('predictionSaved'))
+      }
+    } catch {
+      // Keep polling on network errors
+    }
+  }, [toast])
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
+  }, [])
+
   const upload = async () => {
     if (!file) return
-    setLoading(true); setProgress(10)
+    setLoading(true); setProgress(5); setProgressText('Uploading CSV...')
     try {
       const fd = new FormData()
       fd.append('file', file)
-      const tick = setInterval(() => setProgress(p => Math.min(p + 10, 85)), 300)
-      const res  = await batchUpload(fd)
-      clearInterval(tick); setProgress(100)
-      setResult(res.data)
-      toast(`Processed ${res.data.processed} of ${res.data.total} students`, 'success')
-      window.dispatchEvent(new CustomEvent('predictionSaved'))
+      const res = await batchUpload(fd)
+      const data = res.data
+
+      if (data.status === 'processing') {
+        // Async mode — start polling
+        setBatchId(data.batch_id)
+        setTotalRows(data.total)
+        setProgress(10)
+        setProgressText(`Generating AI advisories (0/${data.total} completed)`)
+        pollRef.current = setInterval(() => pollProgress(data.batch_id), 2000)
+      } else {
+        // Sync fallback (shouldn't happen with new backend)
+        setProgress(100)
+        setResult(data)
+        setLoading(false)
+        toast(`Processed ${data.processed} of ${data.total} students`, 'success')
+        window.dispatchEvent(new CustomEvent('predictionSaved'))
+      }
     } catch (e) {
-      setProgress(0)
+      setProgress(0); setProgressText('')
       toast(e.response?.data?.detail || 'Upload failed', 'error')
+      setLoading(false)
     }
-    setLoading(false)
   }
 
-  const distCount = result ? result.results.reduce((acc, r) => {
+  const distCount = result ? (result.results || []).reduce((acc, r) => {
     acc[r.risk_level] = (acc[r.risk_level] || 0) + 1; return acc
   }, {}) : {}
 
@@ -128,17 +175,25 @@ export default function BatchUploadPage() {
         )}
       </div>
 
-      {/* Progress bar */}
+      {/* Real-time progress bar */}
       {loading && (
         <div className="animate-fade-up">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-bold text-gray-700">Processing predictions…</span>
+            <span className="text-xs font-bold text-gray-700 flex items-center gap-2">
+              <Sparkles size={12} className="text-indigo-500 animate-pulse" />
+              {progressText || 'Processing predictions…'}
+            </span>
             <span className="text-xs text-indigo-500 font-bold">{progress}%</span>
           </div>
-          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(99,102,241,0.1)' }}>
-            <div className="h-full rounded-full transition-all duration-300"
+          <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(99,102,241,0.1)' }}>
+            <div className="h-full rounded-full transition-all duration-500 ease-out"
                  style={{ width: `${progress}%`, background: 'linear-gradient(90deg,#6366f1,#a855f7)' }} />
           </div>
+          {progress > 0 && progress < 100 && (
+            <p className="text-[10px] text-gray-500 mt-1.5 flex items-center gap-1">
+              <Cloud size={10} /> AI generating personalised advisories — please wait
+            </p>
+          )}
         </div>
       )}
 
@@ -197,7 +252,7 @@ export default function BatchUploadPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {result.results.map((r, i) => (
+                  {(result.results || []).map((r, i) => (
                     <tr key={r.id} className="tr-hover border-b border-gray-200">
                       <td className="py-2.5 pr-3 text-gray-700">{i + 1}</td>
                       <td className="py-2.5 pr-3 font-semibold text-black">{r.student_name}</td>
@@ -220,7 +275,7 @@ export default function BatchUploadPage() {
           </div>
 
           <div className="flex justify-center">
-            <button onClick={() => { setFile(null); setResult(null) }}
+            <button onClick={() => { setFile(null); setResult(null); setProgress(0); setProgressText(''); setBatchId(null) }}
                     className="btn-secondary text-xs px-6">
               Upload Another File
             </button>

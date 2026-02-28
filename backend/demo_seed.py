@@ -1,23 +1,34 @@
 """
-Demo Seed Module
-================
-Seeds 25 Tamil-named IT students across sections IT-A   
+Demo Seed Module  —  v2  (Cache-Backed Instant Reset)
+=====================================================
+Seeds 25 Tamil-named IT students across sections IT-A
 for SKP Engineering College demo with realistic academic distribution:
   8 High Performing  ·  10 Average  ·  7 At-Risk
 
+Architecture:
+  - First seed: calls Gemini AI once per student, caches full response in DB
+  - Reset: clears predictions → re-inserts from cache (INSTANT, no AI call)
+  - Only calls AI again if cache is empty (first-ever launch)
+
 Public API:
     get_demo_students() -> list[dict]
-    seed_demo_data()    -> int          # runs predictions, returns count
-    reset_demo_data()   -> dict         # clears DB, re-seeds, returns summary
+    seed_demo_data()    -> int          # runs predictions + caches, returns count
+    reset_demo_data()   -> dict         # instant reset from cache
 """
 
 import os
 import sys
+import time
+import uuid
+import logging
+from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import database as db
 from models.schemas import StudentInput
+
+logger = logging.getLogger("demo_seed")
 
 # ── 25 demo students ─────────────────────────────────────────────────────────
 # (student_id, student_name, section, attendance, marks, assignments, study_hours)
@@ -76,26 +87,109 @@ def get_demo_students() -> list:
 
 def seed_demo_data() -> int:
     """
-    Run ML prediction + AI advisory for all 25 demo students and store in DB.
-    The model must be ready before calling this (caller ensures auto-train).
+    Run ML prediction + AI advisory for all 25 demo students.
+    Uses cache: if AI response already cached, skips API call entirely.
+    Adds delay between AI calls to respect rate limits.
     Returns number of students seeded.
     """
-    # Import inside function to avoid circular import (demo_seed ↔ main)
     from main import _run_prediction
 
     count = 0
-    for s in get_demo_students():
+    students = get_demo_students()
+    for i, s in enumerate(students):
         student = StudentInput(**s)
         _run_prediction(student)
         count += 1
+        logger.info("DEMO_SEED seeded %d/%d: %s", count, len(students), s["student_name"])
+        # Delay between API calls to respect Gemini rate limits
+        if i < len(students) - 1:
+            time.sleep(4)
+    return count
+
+
+def _seed_from_cache() -> int:
+    """
+    Re-insert 25 demo students using cached AI advisories from DB.
+    No AI calls — instant insertion. Returns count of seeded students.
+    """
+    from ml_model import predict as predictor
+    from ai_advisory.advisor import _build_risk_factors, _metrics_hash
+
+    count = 0
+    students = get_demo_students()
+
+    for s in students:
+        student = StudentInput(**s)
+
+        # ML prediction (instant, no AI)
+        ml_result = predictor.predict(
+            attendance_percentage=student.attendance_percentage,
+            internal_marks=student.internal_marks,
+            assignment_score=student.assignment_score,
+            study_hours_per_day=student.study_hours_per_day,
+        )
+
+        # Look up cached advisory
+        cache_key = _metrics_hash(
+            student.student_id,
+            student.attendance_percentage,
+            student.internal_marks,
+            student.assignment_score,
+            student.study_hours_per_day,
+        )
+        cached = db.get_cached_advisory(cache_key)
+
+        if cached:
+            advisory = cached
+            risk_factors = _build_risk_factors(
+                student.attendance_percentage, student.internal_marks,
+                student.assignment_score, student.study_hours_per_day,
+            )
+        else:
+            # Cache miss — this shouldn't happen if seed_demo_data ran before
+            logger.warning("DEMO_CACHE_MISS student=%s — will need fresh AI call", s["student_name"])
+            return -1  # Signal caller to do full seed
+
+        record = {
+            "id":              str(uuid.uuid4()),
+            "student_id":      student.student_id,
+            "student_name":    student.student_name,
+            "risk_level":      ml_result["risk_level"],
+            "confidence":      ml_result["confidence"],
+            "probabilities":   ml_result["probabilities"],
+            "key_factors":     ml_result["key_factors"],
+            "explanation":     advisory.get("explanation", ""),
+            "risk_factors":    risk_factors,
+            "strengths":       advisory.get("strengths", []),
+            "recommendations": advisory.get("recommendations", []),
+            "weekly_plan":     advisory.get("weekly_plan", {}),
+            "report_summary":  advisory.get("report_summary", ""),
+            "fallback_used":   advisory.get("fallback_used", False),
+            "ai_provider":     advisory.get("ai_provider", "gemini"),
+            "model_name":      advisory.get("model_name", ""),
+            "inputs": {
+                "attendance_percentage": student.attendance_percentage,
+                "internal_marks":        student.internal_marks,
+                "assignment_score":      student.assignment_score,
+                "study_hours_per_day":   student.study_hours_per_day,
+            },
+            "timestamp":    datetime.now().isoformat(),
+            "section":      student.section,
+            "department":   student.department,
+            "current_year": student.current_year,
+        }
+        db.insert_prediction(record)
+        count += 1
+
+    logger.info("DEMO_SEED_FROM_CACHE completed: %d students inserted instantly", count)
     return count
 
 
 def reset_demo_data() -> dict:
     """
     Clear all predictions and batch jobs, then re-seed 25 demo students.
-    Preserves training_history and model.pkl (no re-training needed).
-    Returns summary dict.
+    Uses cached AI advisories for INSTANT reset (no Gemini calls).
+    If cache is empty, falls back to full AI generation.
     """
     from main import _auto_train
     from ml_analysis import analysis_service as cluster_svc
@@ -107,13 +201,22 @@ def reset_demo_data() -> dict:
     # 2. Invalidate stale cluster cache
     cluster_svc.invalidate_cache()
 
-    # 3. Ensure model is trained (no-op if model.pkl exists)
+    # 3. Ensure model is trained
     _auto_train()
 
-    # 4. Re-seed all 25 demo students
-    count = seed_demo_data()
+    # 4. Try instant reset from cache
+    cache_count = db.get_advisory_cache_count()
+    if cache_count >= len(DEMO_STUDENTS):
+        count = _seed_from_cache()
+        if count > 0:
+            cluster_svc.invalidate_cache()
+            logger.info("DEMO_RESET_INSTANT students=%d from_cache=True", count)
+            return {"message": "Demo reset complete (instant from cache)", "students_seeded": count, "from_cache": True}
+        # Cache miss — fall through to full seed
 
-    # 5. Invalidate cluster cache again (new prediction data)
+    # 5. Full seed with AI (first time only)
+    logger.info("DEMO_RESET_FULL_SEED cache_entries=%d needed=%d", cache_count, len(DEMO_STUDENTS))
+    count = seed_demo_data()
     cluster_svc.invalidate_cache()
 
-    return {"message": "Demo data reset successfully", "students_seeded": count}
+    return {"message": "Demo reset complete (AI generated)", "students_seeded": count, "from_cache": False}

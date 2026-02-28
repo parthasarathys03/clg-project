@@ -11,7 +11,8 @@ Endpoints:
   GET    /api/predictions                 → paginated prediction history
   DELETE /api/predictions/{id}            → delete a prediction record
   GET    /api/dataset/info                → dataset statistics
-  POST   /api/batch-upload                → bulk predict from uploaded CSV
+  POST   /api/batch-upload                → async bulk predict from uploaded CSV
+  GET    /api/batch/{batch_id}/progress   → real-time batch progress
   GET    /api/student/{student_id}/progress → per-student prediction timeline
   GET    /api/alerts                      → students with consecutive At Risk flags
   GET    /api/rankings                    → all students ranked by composite score
@@ -26,8 +27,12 @@ import os
 import sys
 import csv
 import uuid
+import time
+import threading
+import logging
 from datetime import datetime
 from typing import Optional
+from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import FastAPI, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
@@ -47,18 +52,24 @@ from models.schemas import (
 )
 from ml_model import predict as predictor
 from ml_model import train as trainer
-from ai_advisory.advisor import get_explanation_and_advisory
+from ai_advisory.advisor import (
+    get_explanation_and_advisory,
+    _metrics_hash,
+    get_cache_size as get_advisor_cache_size,
+)
 import database as db
 from ml_analysis import analysis_service as cluster_svc
+
+logger = logging.getLogger("main")
 
 # ── App setup ────────────────────────────────────────────────────────────────
 app = FastAPI(
     title="AI Student Performance Advisory System",
-    version="2.0.0",
+    version="3.0.0",
     description=(
         "Predicts student academic risk levels using RandomForestClassifier "
         "and provides AI-generated explanations and study advisory. "
-        "Institutional SaaS edition with SQLite persistence."
+        "Multi-key Gemini rotation + Ollama failover. Institutional SaaS edition."
     ),
 )
 
@@ -70,11 +81,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Batch processing state (in-memory, per-batch progress tracking) ─────────
+_batch_progress = {}   # batch_id → {"total": N, "processed": N, "status": "processing"|"done"|"error", "errors": [...]}
+
+# Semaphore to limit concurrent AI calls (prevents Gemini rate-limit floods)
+_AI_SEMAPHORE = threading.Semaphore(3)
+_AI_CALL_DELAY = 4  # seconds between AI calls in batch mode
+
 
 @app.on_event("startup")
 def startup():
     db.init_db()
-    import threading
+    import threading as _t
 
     # Auto-seed demo data if database is empty (first launch)
     if db.get_prediction_count() == 0:
@@ -88,20 +106,15 @@ def startup():
                 print("[STARTUP] Demo data seeded: 25 students ready")
             except Exception as e:
                 print(f"[STARTUP] Auto-seed failed: {e}")
-        threading.Thread(target=_background_seed, daemon=True).start()
+        _t.Thread(target=_background_seed, daemon=True).start()
     elif predictor.is_model_ready() and db.has_null_cv_scores():
-        # Backfill cv_score for older training records in the background
-        threading.Thread(target=_backfill_training_cv, daemon=True).start()
+        _t.Thread(target=_backfill_training_cv, daemon=True).start()
 
 
 # ─── shared helpers ───────────────────────────────────────────────────────────
 
 def _backfill_training_cv():
-    """
-    Compute 5-fold CV score from the saved model + dataset and backfill any
-    training_history rows that have cv_score = NULL (created by older code).
-    Runs in a background thread — safe to call at startup.
-    """
+    """Compute 5-fold CV score and backfill training_history rows with NULL cv_score."""
     if not db.has_null_cv_scores():
         return
     try:
@@ -147,7 +160,7 @@ def _auto_train():
 
 
 def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
-    """Core predict + advise pipeline. Returns a storable record dict."""
+    """Core predict + advise pipeline with AI caching. Returns a storable record dict."""
     _auto_train()
 
     try:
@@ -174,7 +187,7 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
     except Exception:
         _class_avg = None
 
-    # AI advisory — no rule-based fallback; Gemini retries automatically
+    # AI advisory with caching (checks in-memory + DB cache)
     advisory = get_explanation_and_advisory(
         student_name=student.student_name,
         attendance=student.attendance_percentage,
@@ -188,6 +201,25 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
         department=student.department,
         current_year=student.current_year,
         class_averages=_class_avg,
+        student_id=student.student_id,
+        use_cache=True,
+    )
+
+    # Also persist to DB cache for demo reset
+    cache_key = _metrics_hash(
+        student.student_id,
+        student.attendance_percentage,
+        student.internal_marks,
+        student.assignment_score,
+        student.study_hours_per_day,
+    )
+    db.store_cached_advisory(
+        cache_key=cache_key,
+        student_id=student.student_id,
+        metrics_hash=cache_key,
+        ai_response=advisory,
+        ai_provider=advisory.get("ai_provider", "gemini"),
+        model_name=advisory.get("model_name", ""),
     )
 
     record = {
@@ -229,15 +261,28 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
 @app.get("/api/health")
 def health():
     stats = db.get_dashboard_stats()
-    has_gemini    = bool(os.getenv("GEMINI_API_KEY", "").strip())
-    has_openai    = bool(os.getenv("OPENAI_API_KEY", "").strip())
+    # Check for any Gemini key
+    has_gemini = any(
+        bool(os.getenv(f"GEMINI_API_KEY_{i}", "").strip())
+        for i in range(1, 10)
+    ) or bool(os.getenv("GEMINI_API_KEY", "").strip())
+    has_openai = bool(os.getenv("OPENAI_API_KEY", "").strip())
     ai_configured = has_gemini or has_openai
-    ai_provider   = "gemini" if has_gemini else ("openai" if has_openai else "rule-based")
+    ai_provider = "gemini" if has_gemini else ("openai" if has_openai else "none")
+
+    # Count Gemini keys
+    gemini_keys = sum(
+        1 for i in range(1, 10)
+        if os.getenv(f"GEMINI_API_KEY_{i}", "").strip()
+    )
+
     return {
         "status": "ok",
         "model_ready": predictor.is_model_ready(),
-        "openai_configured": ai_configured,   # kept for backward-compat
+        "openai_configured": ai_configured,
         "ai_provider": ai_provider,
+        "gemini_keys": gemini_keys,
+        "advisory_cache_size": db.get_advisory_cache_count(),
         "predictions_stored": stats["total_students"],
     }
 
@@ -258,7 +303,6 @@ def train_model():
             dataset_rows=result["dataset_rows"],
             feature_importances=result["feature_importances"],
         )
-        # Backfill any older training records that were saved without cv_score
         if cv_mean is not None:
             db.backfill_cv_scores(cv_mean)
         return TrainResponse(
@@ -278,7 +322,8 @@ def train_model():
 
 @app.post("/api/demo/reset")
 def reset_demo():
-    """Clear all predictions and batch jobs, re-seed 25 demo students."""
+    """Clear all predictions and batch jobs, re-seed 25 demo students.
+    Uses cached AI advisories for instant reset."""
     try:
         from demo_seed import reset_demo_data
         result = reset_demo_data()
@@ -361,7 +406,7 @@ def dataset_info():
 
 
 # ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  BATCH UPLOAD                                                                ║
+# ║  BATCH UPLOAD  (Async with real-time progress)                               ║
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 
 BATCH_REQUIRED_COLS = {
@@ -369,14 +414,62 @@ BATCH_REQUIRED_COLS = {
     "section", "attendance", "CA_1_internal_marks", "assignments", "study_hours",
 }
 
+
+def _process_batch_worker(batch_id: str, rows: list, filename: str):
+    """Background worker that processes batch rows with rate-limited AI calls."""
+    progress = _batch_progress[batch_id]
+    results = []
+    errors = []
+
+    for i, row in enumerate(rows):
+        try:
+            student = StudentInput(
+                student_id=str(row["student_id"]).strip(),
+                student_name=str(row["student_name"]).strip(),
+                attendance_percentage=float(row["attendance"]),
+                internal_marks=float(row["CA_1_internal_marks"]),
+                assignment_score=float(row["assignments"]),
+                study_hours_per_day=float(row["study_hours"]),
+                section=str(row["section"]).strip(),
+                department=str(row["department"]).strip(),
+                current_year=int(float(row["current_year"])),
+            )
+
+            # Rate-limit AI calls
+            with _AI_SEMAPHORE:
+                record = _run_prediction(student, batch_id=batch_id)
+                results.append(record)
+
+            progress["processed"] = len(results)
+            progress["results"] = results
+
+            # Delay between AI calls to prevent rate limiting
+            if i < len(rows) - 1:
+                time.sleep(_AI_CALL_DELAY)
+
+        except Exception as exc:
+            err_msg = str(exc)
+            # Extract detail from HTTPException
+            if hasattr(exc, 'detail'):
+                err_msg = exc.detail
+            errors.append({"row": i + 2, "error": err_msg})
+            progress["processed"] = len(results)
+
+    # Finalize
+    progress["status"] = "done"
+    progress["errors"] = errors[:10]
+    progress["results"] = results
+
+    db.update_batch_job(batch_id, len(results), "done")
+    cluster_svc.invalidate_cache()
+
+    logger.info("BATCH_COMPLETE batch_id=%s processed=%d failed=%d total=%d",
+                batch_id, len(results), len(errors), len(rows))
+
+
 @app.post("/api/batch-upload")
 async def batch_upload(file: UploadFile = File(...)):
-    """
-    Accept a CSV file with columns:
-      student_name, student_id, attendance_percentage,
-      internal_marks, assignment_score, study_hours_per_day
-    Runs prediction for every valid row and returns results.
-    """
+    """Accept a CSV file. Starts async background processing with progress tracking."""
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Only CSV files are accepted.")
 
@@ -401,37 +494,51 @@ async def batch_upload(file: UploadFile = File(...)):
     batch_id = str(uuid.uuid4())
     db.insert_batch_job(batch_id, file.filename, len(rows))
 
-    results = []
-    errors  = []
-    for i, row in enumerate(rows):
-        try:
-            student = StudentInput(
-                student_id=str(row["student_id"]).strip(),
-                student_name=str(row["student_name"]).strip(),
-                attendance_percentage=float(row["attendance"]),
-                internal_marks=float(row["CA_1_internal_marks"]),
-                assignment_score=float(row["assignments"]),
-                study_hours_per_day=float(row["study_hours"]),
-                section=str(row["section"]).strip(),
-                department=str(row["department"]).strip(),
-                current_year=int(float(row["current_year"])),
-            )
-            record = _run_prediction(student, batch_id=batch_id)
-            results.append(record)
-        except Exception as exc:
-            errors.append({"row": i + 2, "error": str(exc)})
+    # Initialize progress tracker
+    _batch_progress[batch_id] = {
+        "batch_id": batch_id,
+        "filename": file.filename,
+        "total": len(rows),
+        "processed": 0,
+        "status": "processing",
+        "errors": [],
+        "results": [],
+    }
 
-    db.update_batch_job(batch_id, len(results), "done")
-    cluster_svc.invalidate_cache()
+    # Start background processing
+    thread = threading.Thread(
+        target=_process_batch_worker,
+        args=(batch_id, rows, file.filename),
+        daemon=True,
+    )
+    thread.start()
+
+    # Return immediately with batch_id for progress polling
+    return {
+        "batch_id": batch_id,
+        "filename": file.filename,
+        "total": len(rows),
+        "status": "processing",
+        "message": f"Processing {len(rows)} students in background. Poll /api/batch/{batch_id}/progress for updates.",
+    }
+
+
+@app.get("/api/batch/{batch_id}/progress")
+def batch_progress(batch_id: str):
+    """Real-time progress for an active batch upload."""
+    progress = _batch_progress.get(batch_id)
+    if not progress:
+        raise HTTPException(status_code=404, detail="Batch job not found")
 
     return {
-        "batch_id":  batch_id,
-        "filename":  file.filename,
-        "total":     len(rows),
-        "processed": len(results),
-        "failed":    len(errors),
-        "errors":    errors[:10],
-        "results":   results,
+        "batch_id":  progress["batch_id"],
+        "filename":  progress["filename"],
+        "total":     progress["total"],
+        "processed": progress["processed"],
+        "failed":    len(progress.get("errors", [])),
+        "status":    progress["status"],
+        "errors":    progress.get("errors", [])[:10],
+        "results":   progress.get("results", []) if progress["status"] == "done" else [],
     }
 
 
@@ -518,7 +625,6 @@ def export_predictions():
 def model_insights():
     history = db.get_training_history()
 
-    # Feature importances from the loaded model (if ready)
     fi = {}
     if predictor.is_model_ready():
         try:
@@ -553,29 +659,6 @@ def training_history():
 
 @app.get("/api/student-clusters")
 def student_clusters(refresh: bool = Query(False)):
-    """
-    Return t-SNE 2D coordinates + KMeans cluster labels for all students.
-
-    Results are computed once and cached in memory.  Pass ?refresh=true to
-    force recomputation (e.g. after the dataset has been regenerated).
-
-    Response schema:
-        {
-            "total_students": int,
-            "clusters": [
-                {
-                    "cluster_id":      int,
-                    "student_count":   int,
-                    "avg_attendance":  float,
-                    "avg_marks":       float,
-                    "avg_assignments": float,
-                    "avg_study_hours": float,
-                    "interpretation":  str
-                }
-            ],
-            "points": [{"x": float, "y": float, "cluster": int}, ...]
-        }
-    """
     try:
         result = cluster_svc.get_student_clusters(force_recompute=refresh)
         return result

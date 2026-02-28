@@ -51,6 +51,16 @@ def init_db():
             feature_importances TEXT,
             trained_at          TEXT NOT NULL
         );
+
+        CREATE TABLE IF NOT EXISTS advisory_cache (
+            cache_key   TEXT PRIMARY KEY,
+            student_id  TEXT NOT NULL,
+            metrics_hash TEXT NOT NULL,
+            ai_response TEXT NOT NULL,
+            ai_provider TEXT NOT NULL,
+            model_name  TEXT NOT NULL,
+            created_at  TEXT NOT NULL
+        );
     """)
     conn.commit()
     # Migrations: add columns to existing databases
@@ -418,3 +428,53 @@ def get_training_history() -> list:
         d["feature_importances"] = json.loads(d["feature_importances"]) if d["feature_importances"] else {}
         result.append(d)
     return result
+
+
+# ─── advisory cache ──────────────────────────────────────────────────────────
+
+def get_cached_advisory(cache_key: str) -> dict | None:
+    """Retrieve a cached AI advisory response by cache_key."""
+    conn = _get_conn()
+    row = conn.execute("SELECT * FROM advisory_cache WHERE cache_key = ?", (cache_key,)).fetchone()
+    conn.close()
+    if not row:
+        return None
+    return json.loads(row["ai_response"])
+
+
+def store_cached_advisory(cache_key: str, student_id: str, metrics_hash: str,
+                          ai_response: dict, ai_provider: str, model_name: str):
+    """Store an AI advisory response in the persistent cache."""
+    conn = _get_conn()
+    conn.execute("""
+        INSERT OR REPLACE INTO advisory_cache
+          (cache_key, student_id, metrics_hash, ai_response, ai_provider, model_name, created_at)
+        VALUES (?,?,?,?,?,?,?)
+    """, (cache_key, student_id, metrics_hash, json.dumps(ai_response),
+          ai_provider, model_name, datetime.utcnow().isoformat()))
+    conn.commit()
+    conn.close()
+
+
+def get_all_cached_advisories() -> list:
+    """Return all cached advisory entries (for demo re-seeding)."""
+    conn = _get_conn()
+    rows = conn.execute("SELECT * FROM advisory_cache").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def clear_advisory_cache():
+    """Delete all cached advisories."""
+    conn = _get_conn()
+    conn.execute("DELETE FROM advisory_cache")
+    conn.commit()
+    conn.close()
+
+
+def get_advisory_cache_count() -> int:
+    """Return number of cached advisories."""
+    conn = _get_conn()
+    count = conn.execute("SELECT COUNT(*) FROM advisory_cache").fetchone()[0]
+    conn.close()
+    return count
