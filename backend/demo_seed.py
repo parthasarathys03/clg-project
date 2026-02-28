@@ -185,6 +185,54 @@ def _seed_from_cache() -> int:
     return count
 
 
+def _backfill_demo_cache_from_predictions() -> int:
+    """
+    Ensure advisory_cache has entries for demo students by rebuilding
+    from existing prediction records (no AI calls).
+    Returns number of cache entries written.
+    """
+    from ai_advisory.advisor import _metrics_hash
+
+    added = 0
+    for sid, _, _, _, _, _, _ in DEMO_STUDENTS:
+        history = db.get_all_predictions_for_student(sid)
+        if not history:
+            continue
+        latest = history[-1]
+        inputs = latest.get("inputs") or {}
+        cache_key = _metrics_hash(
+            sid,
+            inputs.get("attendance_percentage", 0),
+            inputs.get("internal_marks", 0),
+            inputs.get("assignment_score", 0),
+            inputs.get("study_hours_per_day", 0),
+        )
+
+        advisory = {
+            "explanation":     latest.get("explanation", ""),
+            "risk_factors":    latest.get("risk_factors", []),
+            "strengths":       latest.get("strengths", []),
+            "recommendations": latest.get("recommendations", []),
+            "weekly_plan":     latest.get("weekly_plan", {}),
+            "report_summary":  latest.get("report_summary", ""),
+            "fallback_used":   latest.get("fallback_used", False),
+            "ai_provider":     latest.get("ai_provider", "gemini"),
+            "model_name":      latest.get("model_name", ""),
+        }
+
+        db.store_cached_advisory(
+            cache_key=cache_key,
+            student_id=sid,
+            metrics_hash=cache_key,
+            ai_response=advisory,
+            ai_provider=advisory.get("ai_provider", "gemini"),
+            model_name=advisory.get("model_name", ""),
+        )
+        added += 1
+
+    return added
+
+
 def reset_demo_data() -> dict:
     """
     Clear all predictions and batch jobs, then re-seed 25 demo students.
@@ -193,6 +241,13 @@ def reset_demo_data() -> dict:
     """
     from main import _auto_train
     from ml_analysis import analysis_service as cluster_svc
+
+    # 0. Backfill advisory cache from existing predictions (if needed)
+    cache_count = db.get_advisory_cache_count()
+    if cache_count < len(DEMO_STUDENTS):
+        added = _backfill_demo_cache_from_predictions()
+        cache_count = db.get_advisory_cache_count()
+        logger.info("DEMO_CACHE_BACKFILL added=%d cache_count=%d", added, cache_count)
 
     # 1. Clear predictions and batch jobs
     db.clear_predictions()
