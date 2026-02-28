@@ -332,6 +332,37 @@ def reset_demo():
         raise HTTPException(status_code=500, detail=f"Demo reset failed: {exc}")
 
 
+@app.delete("/api/batch/clear")
+def clear_batch_data():
+    """Clear only batch predictions, preserving manual and demo seed data.
+    
+    Use this to remove uploaded class data without affecting:
+    - Manual individual predictions
+    - Demo seed students (25 Tamil students)
+    """
+    try:
+        deleted_predictions = db.clear_batch_predictions()
+        db.clear_batch_jobs()
+        cluster_svc.invalidate_cache()
+        return {
+            "message": "Batch data cleared successfully",
+            "deleted_predictions": deleted_predictions,
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Clear batch failed: {exc}")
+
+
+@app.get("/api/batch/stats")
+def batch_stats():
+    """Get statistics about batch vs manual predictions."""
+    return {
+        "batch_predictions": db.get_batch_prediction_count(),
+        "manual_predictions": db.get_manual_prediction_count(),
+        "total_predictions": db.get_prediction_count(),
+        "cache_size": get_advisor_cache_size(),
+    }
+
+
 # ╔══════════════════════════════════════════════════════════════════════════════╗
 # ║  SINGLE PREDICTION                                                           ║
 # ╚══════════════════════════════════════════════════════════════════════════════╝
@@ -346,8 +377,12 @@ def predict_student(student: StudentInput):
 # ╚══════════════════════════════════════════════════════════════════════════════╝
 
 @app.get("/api/dashboard")
-def get_dashboard():
-    stats = db.get_dashboard_stats()
+def get_dashboard(
+    data_source: str = Query("all", description="all | batch_only | demo_only"),
+    section: Optional[str] = Query(None, description="Filter by section (e.g., IT-B)")
+):
+    """Get dashboard stats with optional data source filtering."""
+    stats = db.get_dashboard_stats(data_source=data_source, section=section)
     recent = db.get_predictions(page=1, limit=10)["items"]
     return {**stats, "recent_predictions": recent}
 
@@ -416,10 +451,18 @@ BATCH_REQUIRED_COLS = {
 
 
 def _process_batch_worker(batch_id: str, rows: list, filename: str):
-    """Background worker that processes batch rows with rate-limited AI calls."""
+    """Background worker that processes batch rows with cache-first approach.
+    
+    SaaS-style workflow:
+    - First checks advisory_cache for existing AI responses
+    - Only generates new AI for rows not in cache
+    - Tracks cache hits vs new generations for UI feedback
+    """
     progress = _batch_progress[batch_id]
     results = []
     errors = []
+    cache_hits = 0
+    ai_generated = 0
 
     for i, row in enumerate(rows):
         try:
@@ -435,17 +478,41 @@ def _process_batch_worker(batch_id: str, rows: list, filename: str):
                 current_year=int(float(row["current_year"])),
             )
 
-            # Rate-limit AI calls
-            with _AI_SEMAPHORE:
-                record = _run_prediction(student, batch_id=batch_id)
+            # Check if this exact student+metrics combo is already cached
+            cache_key = _metrics_hash(
+                student.student_id,
+                student.attendance_percentage,
+                student.internal_marks,
+                student.assignment_score,
+                student.study_hours_per_day,
+            )
+            cached = db.get_cached_advisory(cache_key)
+            
+            if cached:
+                # Cache hit - instant processing (no AI call)
+                cache_hits += 1
+                record = _run_prediction_from_cache(student, cached, batch_id)
                 results.append(record)
+                progress["processed"] = len(results)
+                progress["cache_hits"] = cache_hits
+                progress["ai_generated"] = ai_generated
+                progress["results"] = results
+                # No delay needed for cache hits
+            else:
+                # Cache miss - need AI generation with rate limiting
+                ai_generated += 1
+                with _AI_SEMAPHORE:
+                    record = _run_prediction(student, batch_id=batch_id)
+                    results.append(record)
 
-            progress["processed"] = len(results)
-            progress["results"] = results
+                progress["processed"] = len(results)
+                progress["cache_hits"] = cache_hits
+                progress["ai_generated"] = ai_generated
+                progress["results"] = results
 
-            # Delay between AI calls to prevent rate limiting
-            if i < len(rows) - 1:
-                time.sleep(_AI_CALL_DELAY)
+                # Delay between AI calls to prevent rate limiting
+                if i < len(rows) - 1:
+                    time.sleep(_AI_CALL_DELAY)
 
         except Exception as exc:
             err_msg = str(exc)
@@ -459,12 +526,58 @@ def _process_batch_worker(batch_id: str, rows: list, filename: str):
     progress["status"] = "done"
     progress["errors"] = errors[:10]
     progress["results"] = results
+    progress["cache_hits"] = cache_hits
+    progress["ai_generated"] = ai_generated
 
     db.update_batch_job(batch_id, len(results), "done")
     cluster_svc.invalidate_cache()
 
-    logger.info("BATCH_COMPLETE batch_id=%s processed=%d failed=%d total=%d",
-                batch_id, len(results), len(errors), len(rows))
+    logger.info("BATCH_COMPLETE batch_id=%s processed=%d cache_hits=%d ai_generated=%d failed=%d total=%d",
+                batch_id, len(results), cache_hits, ai_generated, len(errors), len(rows))
+
+
+def _run_prediction_from_cache(student: StudentInput, cached_advisory: dict, batch_id: str = None) -> dict:
+    """Create prediction record using cached advisory (no AI call)."""
+    _auto_train()
+
+    # ML prediction is always run (it's instant)
+    ml_result = predictor.predict(
+        attendance_percentage=student.attendance_percentage,
+        internal_marks=student.internal_marks,
+        assignment_score=student.assignment_score,
+        study_hours_per_day=student.study_hours_per_day,
+    )
+
+    record = {
+        "id":              str(uuid.uuid4()),
+        "student_id":      student.student_id,
+        "student_name":    student.student_name,
+        "risk_level":      ml_result["risk_level"],
+        "confidence":      ml_result["confidence"],
+        "probabilities":   ml_result["probabilities"],
+        "key_factors":     ml_result["key_factors"],
+        "explanation":     cached_advisory.get("explanation", ""),
+        "risk_factors":    cached_advisory.get("risk_factors", []),
+        "strengths":       cached_advisory.get("strengths", []),
+        "recommendations": cached_advisory.get("recommendations", []),
+        "weekly_plan":     cached_advisory.get("weekly_plan", {}),
+        "report_summary":  cached_advisory.get("report_summary", ""),
+        "fallback_used":   cached_advisory.get("fallback_used", False),
+        "ai_provider":     cached_advisory.get("ai_provider", "cached"),
+        "model_name":      cached_advisory.get("model_name", "from_cache"),
+        "inputs": {
+            "attendance_percentage": student.attendance_percentage,
+            "internal_marks":        student.internal_marks,
+            "assignment_score":      student.assignment_score,
+            "study_hours_per_day":   student.study_hours_per_day,
+        },
+        "timestamp":    datetime.now().isoformat(),
+        "section":      student.section,
+        "department":   student.department,
+        "current_year": student.current_year,
+    }
+    db.insert_prediction(record, batch_id=batch_id)
+    return record
 
 
 @app.post("/api/batch-upload")
@@ -500,6 +613,8 @@ async def batch_upload(file: UploadFile = File(...)):
         "filename": file.filename,
         "total": len(rows),
         "processed": 0,
+        "cache_hits": 0,
+        "ai_generated": 0,
         "status": "processing",
         "errors": [],
         "results": [],
@@ -525,20 +640,22 @@ async def batch_upload(file: UploadFile = File(...)):
 
 @app.get("/api/batch/{batch_id}/progress")
 def batch_progress(batch_id: str):
-    """Real-time progress for an active batch upload."""
+    """Real-time progress for an active batch upload with cache stats."""
     progress = _batch_progress.get(batch_id)
     if not progress:
         raise HTTPException(status_code=404, detail="Batch job not found")
 
     return {
-        "batch_id":  progress["batch_id"],
-        "filename":  progress["filename"],
-        "total":     progress["total"],
-        "processed": progress["processed"],
-        "failed":    len(progress.get("errors", [])),
-        "status":    progress["status"],
-        "errors":    progress.get("errors", [])[:10],
-        "results":   progress.get("results", []) if progress["status"] == "done" else [],
+        "batch_id":      progress["batch_id"],
+        "filename":      progress["filename"],
+        "total":         progress["total"],
+        "processed":     progress["processed"],
+        "failed":        len(progress.get("errors", [])),
+        "status":        progress["status"],
+        "cache_hits":    progress.get("cache_hits", 0),
+        "ai_generated":  progress.get("ai_generated", 0),
+        "errors":        progress.get("errors", [])[:10],
+        "results":       progress.get("results", []) if progress["status"] == "done" else [],
     }
 
 

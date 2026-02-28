@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { Upload, Download, FileText, CheckCircle, XCircle, Loader2, ClipboardList, Sparkles, Cloud, RefreshCw } from 'lucide-react'
+import { Upload, Download, FileText, CheckCircle, XCircle, Loader2, ClipboardList, Sparkles, Cloud, RefreshCw, Zap, Database } from 'lucide-react'
 import RiskBadge from '../components/RiskBadge'
-import { batchUpload, getBatchProgress } from '../api'
+import { batchUpload, getBatchProgress, clearBatchData } from '../api'
 import { useToast } from '../components/Toast'
 
 const SAMPLE_CSV = `student_id,student_name,department,current_year,section,attendance,CA_1_internal_marks,assignments,study_hours
@@ -36,6 +36,8 @@ export default function BatchUploadPage() {
   const [progressText, setProgressText] = useState('')
   const [batchId, setBatchId]     = useState(null)
   const [totalRows, setTotalRows] = useState(0)
+  const [cacheHits, setCacheHits] = useState(0)
+  const [aiGenerated, setAiGenerated] = useState(0)
   const inputRef = useRef(null)
   const pollRef  = useRef(null)
   const toast    = useToast()
@@ -46,6 +48,7 @@ export default function BatchUploadPage() {
       toast('Only CSV files are accepted', 'error'); return
     }
     setFile(f); setResult(null); setProgress(0); setProgressText(''); setBatchId(null)
+    setCacheHits(0); setAiGenerated(0)
   }
 
   const onDrop = e => {
@@ -60,16 +63,35 @@ export default function BatchUploadPage() {
       const data = res.data
       const pct = data.total > 0 ? Math.round((data.processed / data.total) * 100) : 0
       setProgress(pct)
-      setProgressText(`Generating AI advisories (${data.processed}/${data.total} completed)`)
+      setCacheHits(data.cache_hits || 0)
+      setAiGenerated(data.ai_generated || 0)
+      
+      // Smart progress text based on cache usage
+      if (data.cache_hits > 0 && data.ai_generated === 0) {
+        setProgressText(`Loading from cache (${data.processed}/${data.total}) — instant!`)
+      } else if (data.cache_hits > 0) {
+        setProgressText(`Processing (${data.processed}/${data.total}) — ${data.cache_hits} cached, ${data.ai_generated} generating`)
+      } else {
+        setProgressText(`Generating AI advisories (${data.processed}/${data.total})`)
+      }
 
       if (data.status === 'done') {
         clearInterval(pollRef.current)
         pollRef.current = null
         setProgress(100)
-        setProgressText(`Complete — ${data.processed} students processed`)
+        
+        // Final summary
+        if (data.cache_hits === data.total) {
+          setProgressText(`Instant load — all ${data.total} from cache`)
+        } else if (data.cache_hits > 0) {
+          setProgressText(`Complete — ${data.cache_hits} cached, ${data.ai_generated} generated`)
+        } else {
+          setProgressText(`Complete — ${data.processed} students processed`)
+        }
+        
         setResult(data)
         setLoading(false)
-        toast(`Processed ${data.processed} of ${data.total} students`, 'success')
+        toast(`Processed ${data.processed} students (${data.cache_hits} from cache)`, 'success')
         window.dispatchEvent(new CustomEvent('predictionSaved'))
       }
     } catch {
@@ -87,6 +109,7 @@ export default function BatchUploadPage() {
   const upload = async () => {
     if (!file) return
     setLoading(true); setProgress(5); setProgressText('Uploading CSV...')
+    setCacheHits(0); setAiGenerated(0)
     try {
       const fd = new FormData()
       fd.append('file', file)
@@ -98,8 +121,8 @@ export default function BatchUploadPage() {
         setBatchId(data.batch_id)
         setTotalRows(data.total)
         setProgress(10)
-        setProgressText(`Generating AI advisories (0/${data.total} completed)`)
-        pollRef.current = setInterval(() => pollProgress(data.batch_id), 2000)
+        setProgressText(`Checking cache for ${data.total} students...`)
+        pollRef.current = setInterval(() => pollProgress(data.batch_id), 1000)
       } else {
         // Sync fallback (shouldn't happen with new backend)
         setProgress(100)
@@ -115,9 +138,24 @@ export default function BatchUploadPage() {
     }
   }
 
+  const handleClearBatch = async () => {
+    try {
+      await clearBatchData()
+      toast('Batch data cleared successfully', 'success')
+      setFile(null); setResult(null); setProgress(0); setProgressText(''); setBatchId(null)
+      window.dispatchEvent(new CustomEvent('predictionSaved'))
+    } catch (e) {
+      toast(e.response?.data?.detail || 'Clear failed', 'error')
+    }
+  }
+
   const distCount = result ? (result.results || []).reduce((acc, r) => {
     acc[r.risk_level] = (acc[r.risk_level] || 0) + 1; return acc
   }, {}) : {}
+
+  // Detect section from results
+  const detectedSection = result?.results?.[0]?.section || null
+  const detectedYear = result?.results?.[0]?.current_year || null
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -131,13 +169,40 @@ export default function BatchUploadPage() {
           </div>
           <div>
             <h2 className="font-extrabold text-black text-xl">Batch Upload</h2>
-            <p className="text-gray-700 text-sm font-medium">Predict an entire class from a CSV file</p>
+            <p className="text-gray-700 text-sm font-medium">
+              {result && detectedSection 
+                ? `Processed: Section ${detectedSection} (Year ${detectedYear || '—'})` 
+                : 'Predict an entire class from a CSV file'}
+            </p>
           </div>
         </div>
         <button onClick={downloadSample} className="btn-secondary flex items-center gap-2 text-xs">
           <Download size={13} /> Download Template
         </button>
       </div>
+
+      {/* Section info banner when result is ready */}
+      {result && detectedSection && (
+        <div className="rounded-xl p-3 flex items-center justify-between animate-fade-up"
+             style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.08))', border: '1px solid rgba(99,102,241,0.15)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.12)' }}>
+              <FileText size={18} className="text-indigo-600" />
+            </div>
+            <div>
+              <p className="font-bold text-indigo-700 text-sm">
+                Class: {detectedSection} • Year {detectedYear || '—'}
+              </p>
+              <p className="text-xs text-gray-600">
+                {result.processed} students processed — data isolated from demo students
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-mono px-2 py-1 rounded-lg bg-indigo-100 text-indigo-700">
+            Batch ID: {batchId?.slice(0, 8)}...
+          </span>
+        </div>
+      )}
 
       {/* Drop zone */}
       <div className={`animate-fade-up s1 rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer
@@ -180,18 +245,32 @@ export default function BatchUploadPage() {
         <div className="animate-fade-up">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-bold text-gray-700 flex items-center gap-2">
-              <Sparkles size={12} className="text-indigo-500 animate-pulse" />
-              {progressText || 'Processing predictions…'}
+              {cacheHits > 0 && aiGenerated === 0 ? (
+                <><Database size={12} className="text-emerald-500" /> {progressText}</>
+              ) : cacheHits > 0 ? (
+                <><Sparkles size={12} className="text-indigo-500 animate-pulse" /> {progressText}</>
+              ) : (
+                <><Sparkles size={12} className="text-indigo-500 animate-pulse" /> {progressText || 'Processing predictions…'}</>
+              )}
             </span>
             <span className="text-xs text-indigo-500 font-bold">{progress}%</span>
           </div>
           <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(99,102,241,0.1)' }}>
             <div className="h-full rounded-full transition-all duration-500 ease-out"
-                 style={{ width: `${progress}%`, background: 'linear-gradient(90deg,#6366f1,#a855f7)' }} />
+                 style={{ 
+                   width: `${progress}%`, 
+                   background: cacheHits > 0 && aiGenerated === 0 
+                     ? 'linear-gradient(90deg,#10b981,#059669)' 
+                     : 'linear-gradient(90deg,#6366f1,#a855f7)' 
+                 }} />
           </div>
           {progress > 0 && progress < 100 && (
             <p className="text-[10px] text-gray-500 mt-1.5 flex items-center gap-1">
-              <Cloud size={10} /> AI generating personalised advisories — please wait
+              {cacheHits > 0 && aiGenerated === 0 ? (
+                <><Zap size={10} /> Loading from permanent cache — instant processing</>
+              ) : (
+                <><Cloud size={10} /> AI generating personalised advisories — please wait</>
+              )}
             </p>
           )}
         </div>
@@ -210,16 +289,39 @@ export default function BatchUploadPage() {
       {result && (
         <div className="space-y-4 animate-fade-up">
 
+          {/* Cache performance banner */}
+          {result.cache_hits > 0 && (
+            <div className="rounded-xl p-3 flex items-center gap-3" 
+                 style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(99,102,241,0.1))', border: '1px solid rgba(16,185,129,0.2)' }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.15)' }}>
+                <Zap size={18} className="text-emerald-500" />
+              </div>
+              <div>
+                <p className="font-bold text-emerald-700 text-sm">
+                  {result.cache_hits === result.total ? 'Instant Load — 100% from Cache' : `${result.cache_hits} Students Loaded from Cache`}
+                </p>
+                <p className="text-xs text-gray-600">
+                  {result.cache_hits === result.total 
+                    ? 'Zero AI calls — all advisories were pre-cached'
+                    : `${result.ai_generated} new advisories generated, ${result.cache_hits} loaded instantly`}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Summary cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {[
-              { label: 'Total Rows',   value: result.total,     color: '#818cf8' },
-              { label: 'Processed',    value: result.processed, color: '#10b981' },
-              { label: 'Failed',       value: result.failed,    color: '#f43f5e' },
-              { label: 'At Risk',      value: distCount['At Risk'] || 0, color: '#f59e0b' },
+              { label: 'Total',       value: result.total,                  color: '#818cf8', icon: ClipboardList },
+              { label: 'From Cache',  value: result.cache_hits || 0,        color: '#10b981', icon: Database },
+              { label: 'Generated',   value: result.ai_generated || 0,      color: '#6366f1', icon: Sparkles },
+              { label: 'Failed',      value: result.failed,                 color: '#f43f5e', icon: XCircle },
+              { label: 'At Risk',     value: distCount['At Risk'] || 0,     color: '#f59e0b', icon: null },
             ].map(m => (
               <div key={m.label} className="card text-center" style={{ background: 'rgba(255,255,255,0.97)' }}>
-                <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest">{m.label}</p>
+                <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-1">
+                  {m.icon && <m.icon size={10} />} {m.label}
+                </p>
                 <p className="text-2xl font-black mt-1" style={{ color: m.color }}>{m.value}</p>
               </div>
             ))}
@@ -274,10 +376,14 @@ export default function BatchUploadPage() {
             </div>
           </div>
 
-          <div className="flex justify-center">
-            <button onClick={() => { setFile(null); setResult(null); setProgress(0); setProgressText(''); setBatchId(null) }}
-                    className="btn-secondary text-xs px-6">
-              Upload Another File
+          <div className="flex justify-center gap-3">
+            <button onClick={() => { setFile(null); setResult(null); setProgress(0); setProgressText(''); setBatchId(null); setCacheHits(0); setAiGenerated(0) }}
+                    className="btn-secondary text-xs px-6 flex items-center gap-2">
+              <Upload size={13} /> Upload Another File
+            </button>
+            <button onClick={handleClearBatch}
+                    className="btn-secondary text-xs px-6 flex items-center gap-2 text-rose-600 border-rose-200 hover:bg-rose-50">
+              <XCircle size={13} /> Clear Batch Data
             </button>
           </div>
         </div>

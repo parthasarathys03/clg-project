@@ -209,27 +209,47 @@ def get_all_predictions_for_student(student_id: str) -> list:
     return [_row_to_record(r) for r in rows]
 
 
-def get_dashboard_stats() -> dict:
+def get_dashboard_stats(data_source: str = "all", section: str = None) -> dict:
+    """Get dashboard statistics with optional filtering.
+    
+    Args:
+        data_source: "all" | "batch_only" | "demo_only" (batch_id IS NULL)
+        section: Optional section filter (e.g., "IT-B")
+    """
     conn = _get_conn()
-    total = conn.execute("SELECT COUNT(*) FROM predictions").fetchone()[0]
+    
+    # Build WHERE clause based on data_source and section
+    conditions = []
+    if data_source == "batch_only":
+        conditions.append("batch_id IS NOT NULL")
+    elif data_source == "demo_only":
+        conditions.append("batch_id IS NULL")
+    
+    if section:
+        conditions.append(f"section = '{section}'")
+    
+    where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+    
+    total = conn.execute(f"SELECT COUNT(*) FROM predictions {where_clause}").fetchone()[0]
     dist_rows = conn.execute(
-        "SELECT risk_level, COUNT(*) as cnt FROM predictions GROUP BY risk_level"
+        f"SELECT risk_level, COUNT(*) as cnt FROM predictions {where_clause} GROUP BY risk_level"
     ).fetchall()
     dist = {r["risk_level"]: r["cnt"] for r in dist_rows}
 
-    avg_row = conn.execute("""
+    avg_row = conn.execute(f"""
         SELECT
             ROUND(AVG(json_extract(inputs,'$.attendance_percentage')),1)  AS att,
             ROUND(AVG(json_extract(inputs,'$.internal_marks')),1)          AS marks,
             ROUND(AVG(json_extract(inputs,'$.assignment_score')),1)        AS assign,
             ROUND(AVG(json_extract(inputs,'$.study_hours_per_day')),1)     AS hours
-        FROM predictions
+        FROM predictions {where_clause}
     """).fetchone()
 
     # Section-wise risk breakdown
-    sec_rows = conn.execute("""
+    sec_where = f"{where_clause} {'AND' if where_clause else 'WHERE'} section IS NOT NULL" if where_clause else "WHERE section IS NOT NULL"
+    sec_rows = conn.execute(f"""
         SELECT section, risk_level, COUNT(*) as cnt
-        FROM predictions WHERE section IS NOT NULL
+        FROM predictions {sec_where}
         GROUP BY section, risk_level
     """).fetchall()
     section_stats = {}
@@ -241,12 +261,30 @@ def get_dashboard_stats() -> dict:
         section_stats[s]["total"] += r["cnt"]
 
     # Year distribution
-    yr_rows = conn.execute("""
+    yr_where = f"{where_clause} {'AND' if where_clause else 'WHERE'} current_year IS NOT NULL" if where_clause else "WHERE current_year IS NOT NULL"
+    yr_rows = conn.execute(f"""
         SELECT current_year, COUNT(DISTINCT student_id) as cnt
-        FROM predictions WHERE current_year IS NOT NULL
+        FROM predictions {yr_where}
         GROUP BY current_year ORDER BY current_year
     """).fetchall()
     year_stats = {str(r["current_year"]): r["cnt"] for r in yr_rows}
+    
+    # Get active batch info (if batch_only)
+    active_batch = None
+    if data_source == "batch_only":
+        batch_row = conn.execute("""
+            SELECT batch_id, section, COUNT(*) as cnt
+            FROM predictions 
+            WHERE batch_id IS NOT NULL
+            GROUP BY batch_id, section
+            ORDER BY timestamp DESC LIMIT 1
+        """).fetchone()
+        if batch_row:
+            active_batch = {
+                "batch_id": batch_row["batch_id"],
+                "section": batch_row["section"],
+                "count": batch_row["cnt"],
+            }
 
     conn.close()
     return {
@@ -256,12 +294,14 @@ def get_dashboard_stats() -> dict:
             "Average": dist.get("Average", 0),
             "At Risk": dist.get("At Risk", 0),
         },
-        "average_attendance":      avg_row["att"]    or 0,
-        "average_internal_marks":  avg_row["marks"]  or 0,
-        "average_assignment_score":avg_row["assign"] or 0,
-        "average_study_hours":     avg_row["hours"]  or 0,
-        "section_stats":           section_stats,
-        "year_stats":              year_stats,
+        "average_attendance":      avg_row["att"]    or 0 if avg_row else 0,
+        "average_internal_marks":  avg_row["marks"]  or 0 if avg_row else 0,
+        "average_assignment_score":avg_row["assign"] or 0 if avg_row else 0,
+        "average_study_hours":     avg_row["hours"]  or 0 if avg_row else 0,
+        "section_stats": section_stats,
+        "year_stats": year_stats,
+        "data_source": data_source,
+        "active_batch": active_batch,
     }
 
 
@@ -357,6 +397,51 @@ def clear_batch_jobs():
     conn.execute("DELETE FROM batch_jobs")
     conn.commit()
     conn.close()
+
+
+def clear_batch_predictions():
+    """Delete only batch predictions (WHERE batch_id IS NOT NULL), preserving manual and demo data."""
+    conn = _get_conn()
+    deleted = conn.execute("DELETE FROM predictions WHERE batch_id IS NOT NULL").rowcount
+    conn.commit()
+    conn.close()
+    return deleted
+
+
+def get_batch_prediction_count():
+    """Count predictions that came from batch uploads."""
+    conn = _get_conn()
+    count = conn.execute("SELECT COUNT(*) FROM predictions WHERE batch_id IS NOT NULL").fetchone()[0]
+    conn.close()
+    return count
+
+
+def get_manual_prediction_count():
+    """Count predictions that were manually entered (not from batch)."""
+    conn = _get_conn()
+    count = conn.execute("SELECT COUNT(*) FROM predictions WHERE batch_id IS NULL").fetchone()[0]
+    conn.close()
+    return count
+
+
+def get_predictions_by_batch(batch_id: str) -> list:
+    """Get all predictions for a specific batch."""
+    conn = _get_conn()
+    rows = conn.execute(
+        "SELECT * FROM predictions WHERE batch_id = ? ORDER BY timestamp DESC",
+        (batch_id,)
+    ).fetchall()
+    conn.close()
+    return [_row_to_dict(r) for r in rows]
+
+
+def clear_predictions_by_batch(batch_id: str) -> int:
+    """Delete predictions for a specific batch only."""
+    conn = _get_conn()
+    deleted = conn.execute("DELETE FROM predictions WHERE batch_id = ?", (batch_id,)).rowcount
+    conn.commit()
+    conn.close()
+    return deleted
 
 
 # ─── batch jobs ──────────────────────────────────────────────────────────────

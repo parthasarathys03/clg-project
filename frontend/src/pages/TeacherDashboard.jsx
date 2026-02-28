@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Users, TrendingUp, AlertTriangle, CheckCircle,
-  BarChart2, RefreshCw, Search, GraduationCap, Trash2
+  BarChart2, RefreshCw, Search, GraduationCap, Trash2, Database, Layers, Upload
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -17,6 +17,12 @@ import { getDashboard, getPredictions, getDatasetInfo, deletePrediction } from '
 
 const PIE_COLORS = { Good: '#10b981', Average: '#f59e0b', 'At Risk': '#f43f5e' }
 
+const DATA_SOURCE_OPTIONS = [
+  { value: 'all', label: 'All Data', icon: Layers, desc: 'Demo + Batch' },
+  { value: 'batch_only', label: 'Batch Only', icon: Upload, desc: 'Current Class' },
+  { value: 'demo_only', label: 'Demo Only', icon: Database, desc: '25 Demo Students' },
+]
+
 export default function TeacherDashboard() {
   const [stats, setStats]           = useState(null)
   const [dataset, setDataset]       = useState(null)
@@ -26,6 +32,7 @@ export default function TeacherDashboard() {
   const [search, setSearch]         = useState('')
   const [filterRisk, setFilter]     = useState('')
   const [filterSection, setSection] = useState('')
+  const [dataSource, setDataSource] = useState('all')
   const [page, setPage]             = useState(1)
   const [deleting, setDeleting]     = useState(null)
   const { confirm, alert: showAlert } = useModal()
@@ -35,7 +42,7 @@ export default function TeacherDashboard() {
     setLoading(true)
     try {
       const [d, p, ds] = await Promise.all([
-        getDashboard(),
+        getDashboard({ data_source: dataSource, section: filterSection || undefined }),
         getPredictions({ page, limit: PER, risk_level: filterRisk || undefined, search: search || undefined, section: filterSection || undefined }),
         getDatasetInfo(),
       ])
@@ -47,7 +54,7 @@ export default function TeacherDashboard() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [page, filterRisk, filterSection, search])
+  useEffect(() => { load() }, [page, filterRisk, filterSection, search, dataSource])
 
   const handleDelete = async (id) => {
     const confirmed = await confirm({
@@ -121,13 +128,57 @@ export default function TeacherDashboard() {
           </div>
           <div>
             <h2 className="font-extrabold text-gray-900 text-xl">Teacher Analytics</h2>
-            <p className="text-gray-700 text-sm">Live cohort performance overview</p>
+            <p className="text-gray-700 text-sm">
+              {dataSource === 'batch_only' && stats?.active_batch?.section
+                ? `Viewing: ${stats.active_batch.section} (${stats.total_students} students)`
+                : dataSource === 'demo_only'
+                  ? 'Viewing: Demo Data (25 students)'
+                  : 'Live cohort performance overview'}
+            </p>
           </div>
         </div>
-        <button onClick={load} className="btn-secondary">
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Data Source Selector */}
+          <div className="flex rounded-xl overflow-hidden border border-gray-200" style={{ background: 'rgba(255,255,255,0.9)' }}>
+            {DATA_SOURCE_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => { setDataSource(opt.value); setPage(1) }}
+                className={`px-3 py-2 text-xs font-medium flex items-center gap-1.5 transition-all ${
+                  dataSource === opt.value
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+                title={opt.desc}
+              >
+                <opt.icon size={12} />
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <button onClick={load} className="btn-secondary">
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
+          </button>
+        </div>
       </div>
+
+      {/* Active batch info banner */}
+      {dataSource === 'batch_only' && stats?.active_batch && (
+        <div className="rounded-xl p-3 flex items-center gap-3 animate-fade-up"
+             style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(99,102,241,0.2)' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.15)' }}>
+            <Upload size={18} className="text-indigo-600" />
+          </div>
+          <div>
+            <p className="font-bold text-indigo-700 text-sm">
+              Batch Upload: Section {stats.active_batch.section}
+            </p>
+            <p className="text-xs text-gray-600">
+              {stats.active_batch.count} students in this batch — isolated from demo data
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Dark stat cards ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-up s1">
