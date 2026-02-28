@@ -3,10 +3,11 @@ import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, BrainCircuit, GraduationCap,
   ClipboardList, BookOpen, Menu, X,
-  Sparkles, User, ChevronRight,
+  User, ChevronRight,
   Upload, Trophy, Cpu, Network,
 } from 'lucide-react'
 import NotificationPanel from './NotificationPanel'
+import skpLogo from '../assets/skp-logo.png'
 
 // Global cache check for cluster ready state
 let globalClusterReady = false
@@ -65,14 +66,14 @@ export default function Layout({ children }) {
         </div>
 
         {/* Logo */}
-        <div className={`relative flex items-center gap-3 px-4 py-5
+        <div className={`relative flex items-center gap-3 px-4 py-4
                         border-b border-white/[0.06] ${collapsed ? 'justify-center' : ''}`}>
           <div className="flex-shrink-0 relative">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                 style={{ background: 'linear-gradient(135deg, #6366f1, #a855f7)',
-                          boxShadow: '0 0 20px rgba(99,102,241,0.6)' }}>
-              <Sparkles size={16} className="text-white" />
-            </div>
+            <img 
+              src={skpLogo} 
+              alt="SKP Logo" 
+              className={`${collapsed ? 'w-14 h-14' : 'w-16 h-16'} object-contain rounded-lg`}
+            />
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
