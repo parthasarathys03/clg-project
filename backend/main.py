@@ -94,6 +94,9 @@ _batch_progress = {}   # batch_id → {"total": N, "processed": N, "status": "pr
 _AI_SEMAPHORE = threading.Semaphore(3)
 _AI_CALL_DELAY = 4  # seconds between AI calls in batch mode
 
+# Shared executor for AI advisory calls (avoid creating one per request)
+_ADVISORY_EXECUTOR = _futures.ThreadPoolExecutor(max_workers=2, thread_name_prefix="advisory")
+
 
 @app.on_event("startup")
 def startup():
@@ -198,9 +201,8 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
     # with locally-computed risk factors (never return 503 for AI failure).
     advisory_failed = False
     advisory = None
-    _ex = _futures.ThreadPoolExecutor(max_workers=1)
     try:
-        _fut = _ex.submit(
+        _fut = _ADVISORY_EXECUTOR.submit(
             get_explanation_and_advisory,
             student_name=student.student_name,
             attendance=student.attendance_percentage,
@@ -226,8 +228,6 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
         logger.warning("ADVISORY_FAILED student=%s reason=%s — returning ML result only",
                        student.student_name, str(exc)[:120])
         advisory_failed = True
-    finally:
-        _ex.shutdown(wait=False)   # don't block — background thread finishes on its own
 
     if advisory_failed or advisory is None:
         advisory = {
@@ -247,7 +247,7 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
             "model_name":      None,
         }
 
-    # Also persist to DB cache for demo reset
+    # Also persist to DB cache for demo reset (non-fatal — never block prediction)
     cache_key = _metrics_hash(
         student.student_id,
         student.attendance_percentage,
@@ -255,14 +255,17 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
         student.assignment_score,
         student.study_hours_per_day,
     )
-    db.store_cached_advisory(
-        cache_key=cache_key,
-        student_id=student.student_id,
-        metrics_hash=cache_key,
-        ai_response=advisory,
-        ai_provider=advisory.get("ai_provider", "gemini"),
-        model_name=advisory.get("model_name", ""),
-    )
+    try:
+        db.store_cached_advisory(
+            cache_key=cache_key,
+            student_id=student.student_id,
+            metrics_hash=cache_key,
+            ai_response=advisory,
+            ai_provider=advisory.get("ai_provider", "gemini"),
+            model_name=advisory.get("model_name", ""),
+        )
+    except Exception as exc:
+        logger.warning("CACHE_WRITE_FAILED student=%s reason=%s", student.student_name, str(exc)[:80])
 
     record = {
         "id":                 str(uuid.uuid4()),
@@ -293,7 +296,11 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
         "department":   student.department,
         "current_year": student.current_year,
     }
-    db.insert_prediction(record, batch_id=batch_id)
+    try:
+        db.insert_prediction(record, batch_id=batch_id)
+    except Exception as exc:
+        logger.warning("DB_WRITE_FAILED student=%s reason=%s — returning result anyway",
+                       student.student_name, str(exc)[:80])
     return record
 
 
@@ -372,6 +379,13 @@ def reset_demo():
         result = reset_demo_data()
         return result
     except Exception as exc:
+        err = str(exc)
+        # Provide actionable message for DB lock instead of generic error
+        if "locked" in err.lower():
+            raise HTTPException(
+                status_code=409,
+                detail="Database is busy (another operation in progress). Please wait a few seconds and try again."
+            )
         raise HTTPException(status_code=500, detail=f"Demo reset failed: {exc}")
 
 

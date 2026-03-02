@@ -1,19 +1,55 @@
 import sqlite3
 import json
 import os
+import time
+import logging
 from datetime import datetime
+
+logger = logging.getLogger("database")
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "student_performance.db")
 
+# ── WAL mode initialisation (once per process) ──────────────────────────────
+_wal_initialised = False
+
 
 def _get_conn():
-    conn = sqlite3.connect(DB_PATH)
+    """Return a connection with WAL mode and busy timeout for concurrent access."""
+    global _wal_initialised
+    conn = sqlite3.connect(DB_PATH, timeout=30)  # wait up to 30s for locks
     conn.row_factory = sqlite3.Row
+    # Enable WAL journal mode — allows concurrent readers + 1 writer.
+    # Only needs to be set once (persists on the DB file), but is safe to repeat.
+    if not _wal_initialised:
+        try:
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA synchronous=NORMAL")  # faster writes, safe with WAL
+            _wal_initialised = True
+        except Exception:
+            pass  # already WAL or read-only — ignore
+    conn.execute("PRAGMA busy_timeout=10000")  # per-connection: wait 10s for locks
     return conn
+
+
+def _retry_on_locked(fn, max_retries=3, delay=1.0):
+    """Retry a database operation if it hits 'database is locked'."""
+    for attempt in range(max_retries):
+        try:
+            return fn()
+        except sqlite3.OperationalError as e:
+            if "locked" in str(e).lower() and attempt < max_retries - 1:
+                logger.warning("DB locked (attempt %d/%d), retrying in %.1fs...",
+                               attempt + 1, max_retries, delay)
+                time.sleep(delay * (attempt + 1))  # exponential backoff
+            else:
+                raise
 
 
 def init_db():
     conn = _get_conn()
+    # Ensure WAL mode is active (critical for Render concurrent access)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=NORMAL")
     cur = conn.cursor()
     cur.executescript("""
         CREATE TABLE IF NOT EXISTS predictions (
@@ -118,45 +154,49 @@ def _row_to_record(row: sqlite3.Row) -> dict:
 # ─── predictions ─────────────────────────────────────────────────────────────
 
 def insert_prediction(record: dict, batch_id: str = None):
-    conn = _get_conn()
-    # Pack the rich AI fields into a single ai_data JSON blob
-    ai_data = json.dumps({
-        "risk_factors":    record.get("risk_factors", []),
-        "strengths":       record.get("strengths", []),
-        "recommendations": record.get("recommendations", []),
-        "weekly_plan":     record.get("weekly_plan", {}),
-        "report_summary":  record.get("report_summary", ""),
-    })
-    # Keep recommendations as flat strings for backward-compat columns
-    recs_flat = [
-        r["action"] if isinstance(r, dict) else r
-        for r in record.get("recommendations", [])
-    ]
-    conn.execute("""
-        INSERT INTO predictions
-          (id, student_id, student_name, risk_level, confidence,
-           inputs, explanation, recommendations, key_factors, timestamp, batch_id, ai_data,
-           section, department, current_year)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-    """, (
-        record["id"],
-        record["student_id"],
-        record["student_name"],
-        record["risk_level"],
-        record["confidence"],
-        json.dumps(record.get("inputs", {})),
-        record.get("explanation", ""),
-        json.dumps(recs_flat),
-        json.dumps(record.get("key_factors", [])),
-        record["timestamp"],
-        batch_id,
-        ai_data,
-        record.get("section"),
-        record.get("department"),
-        record.get("current_year"),
-    ))
-    conn.commit()
-    conn.close()
+    def _do():
+        conn = _get_conn()
+        try:
+            # Pack the rich AI fields into a single ai_data JSON blob
+            ai_data = json.dumps({
+                "risk_factors":    record.get("risk_factors", []),
+                "strengths":       record.get("strengths", []),
+                "recommendations": record.get("recommendations", []),
+                "weekly_plan":     record.get("weekly_plan", {}),
+                "report_summary":  record.get("report_summary", ""),
+            })
+            # Keep recommendations as flat strings for backward-compat columns
+            recs_flat = [
+                r["action"] if isinstance(r, dict) else r
+                for r in record.get("recommendations", [])
+            ]
+            conn.execute("""
+                INSERT INTO predictions
+                  (id, student_id, student_name, risk_level, confidence,
+                   inputs, explanation, recommendations, key_factors, timestamp, batch_id, ai_data,
+                   section, department, current_year)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (
+                record["id"],
+                record["student_id"],
+                record["student_name"],
+                record["risk_level"],
+                record["confidence"],
+                json.dumps(record.get("inputs", {})),
+                record.get("explanation", ""),
+                json.dumps(recs_flat),
+                json.dumps(record.get("key_factors", [])),
+                record["timestamp"],
+                batch_id,
+                ai_data,
+                record.get("section"),
+                record.get("department"),
+                record.get("current_year"),
+            ))
+            conn.commit()
+        finally:
+            conn.close()
+    _retry_on_locked(_do)
 
 
 def get_predictions(page: int = 1, limit: int = 15,
@@ -192,11 +232,17 @@ def get_prediction_by_id(pred_id: str) -> dict | None:
 
 
 def delete_prediction(pred_id: str) -> bool:
-    conn = _get_conn()
-    cur = conn.execute("DELETE FROM predictions WHERE id = ?", (pred_id,))
-    conn.commit()
-    conn.close()
-    return cur.rowcount > 0
+    result = [False]
+    def _do():
+        conn = _get_conn()
+        try:
+            cur = conn.execute("DELETE FROM predictions WHERE id = ?", (pred_id,))
+            conn.commit()
+            result[0] = cur.rowcount > 0
+        finally:
+            conn.close()
+    _retry_on_locked(_do)
+    return result[0]
 
 
 def get_all_predictions_for_student(student_id: str) -> list:
@@ -385,27 +431,40 @@ def get_prediction_count() -> int:
 
 def clear_predictions():
     """Delete all rows from the predictions table."""
-    conn = _get_conn()
-    conn.execute("DELETE FROM predictions")
-    conn.commit()
-    conn.close()
+    def _do():
+        conn = _get_conn()
+        try:
+            conn.execute("DELETE FROM predictions")
+            conn.commit()
+        finally:
+            conn.close()
+    _retry_on_locked(_do)
 
 
 def clear_batch_jobs():
     """Delete all rows from the batch_jobs table."""
-    conn = _get_conn()
-    conn.execute("DELETE FROM batch_jobs")
-    conn.commit()
-    conn.close()
+    def _do():
+        conn = _get_conn()
+        try:
+            conn.execute("DELETE FROM batch_jobs")
+            conn.commit()
+        finally:
+            conn.close()
+    _retry_on_locked(_do)
 
 
 def clear_batch_predictions():
     """Delete only batch predictions (WHERE batch_id IS NOT NULL), preserving manual and demo data."""
-    conn = _get_conn()
-    deleted = conn.execute("DELETE FROM predictions WHERE batch_id IS NOT NULL").rowcount
-    conn.commit()
-    conn.close()
-    return deleted
+    result = [0]
+    def _do():
+        conn = _get_conn()
+        try:
+            result[0] = conn.execute("DELETE FROM predictions WHERE batch_id IS NOT NULL").rowcount
+            conn.commit()
+        finally:
+            conn.close()
+    _retry_on_locked(_do)
+    return result[0]
 
 
 def get_batch_prediction_count():
@@ -437,47 +496,64 @@ def get_predictions_by_batch(batch_id: str) -> list:
 
 def clear_predictions_by_batch(batch_id: str) -> int:
     """Delete predictions for a specific batch only."""
-    conn = _get_conn()
-    deleted = conn.execute("DELETE FROM predictions WHERE batch_id = ?", (batch_id,)).rowcount
-    conn.commit()
-    conn.close()
-    return deleted
+    result = [0]
+    def _do():
+        conn = _get_conn()
+        try:
+            result[0] = conn.execute("DELETE FROM predictions WHERE batch_id = ?", (batch_id,)).rowcount
+            conn.commit()
+        finally:
+            conn.close()
+    _retry_on_locked(_do)
+    return result[0]
 
 
 # ─── batch jobs ──────────────────────────────────────────────────────────────
 
 def insert_batch_job(job_id: str, filename: str, total_rows: int):
-    conn = _get_conn()
-    conn.execute(
-        "INSERT INTO batch_jobs (id, filename, total_rows, processed, status, created_at) VALUES (?,?,?,0,'pending',?)",
-        (job_id, filename, total_rows, datetime.utcnow().isoformat())
-    )
-    conn.commit()
-    conn.close()
+    def _do():
+        conn = _get_conn()
+        try:
+            conn.execute(
+                "INSERT INTO batch_jobs (id, filename, total_rows, processed, status, created_at) VALUES (?,?,?,0,'pending',?)",
+                (job_id, filename, total_rows, datetime.utcnow().isoformat())
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    _retry_on_locked(_do)
 
 
 def update_batch_job(job_id: str, processed: int, status: str = "done"):
-    conn = _get_conn()
-    conn.execute(
-        "UPDATE batch_jobs SET processed = ?, status = ? WHERE id = ?",
-        (processed, status, job_id)
-    )
-    conn.commit()
-    conn.close()
+    def _do():
+        conn = _get_conn()
+        try:
+            conn.execute(
+                "UPDATE batch_jobs SET processed = ?, status = ? WHERE id = ?",
+                (processed, status, job_id)
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    _retry_on_locked(_do)
 
 
 # ─── training history ─────────────────────────────────────────────────────────
 
 def insert_training_history(accuracy: float, cv_score: float,
                             dataset_rows: int, feature_importances: dict):
-    conn = _get_conn()
-    conn.execute("""
-        INSERT INTO training_history (accuracy, cv_score, dataset_rows, feature_importances, trained_at)
-        VALUES (?,?,?,?,?)
-    """, (accuracy, cv_score, dataset_rows, json.dumps(feature_importances),
-          datetime.utcnow().isoformat()))
-    conn.commit()
-    conn.close()
+    def _do():
+        conn = _get_conn()
+        try:
+            conn.execute("""
+                INSERT INTO training_history (accuracy, cv_score, dataset_rows, feature_importances, trained_at)
+                VALUES (?,?,?,?,?)
+            """, (accuracy, cv_score, dataset_rows, json.dumps(feature_importances),
+                  datetime.utcnow().isoformat()))
+            conn.commit()
+        finally:
+            conn.close()
+    _retry_on_locked(_do)
 
 
 def has_null_cv_scores() -> bool:
@@ -492,13 +568,17 @@ def has_null_cv_scores() -> bool:
 
 def backfill_cv_scores(cv_score: float):
     """Set cv_score for all training_history rows where it is currently NULL."""
-    conn = _get_conn()
-    conn.execute(
-        "UPDATE training_history SET cv_score = ? WHERE cv_score IS NULL",
-        (cv_score,)
-    )
-    conn.commit()
-    conn.close()
+    def _do():
+        conn = _get_conn()
+        try:
+            conn.execute(
+                "UPDATE training_history SET cv_score = ? WHERE cv_score IS NULL",
+                (cv_score,)
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    _retry_on_locked(_do)
 
 
 def get_training_history() -> list:
@@ -530,15 +610,19 @@ def get_cached_advisory(cache_key: str) -> dict | None:
 def store_cached_advisory(cache_key: str, student_id: str, metrics_hash: str,
                           ai_response: dict, ai_provider: str, model_name: str):
     """Store an AI advisory response in the persistent cache."""
-    conn = _get_conn()
-    conn.execute("""
-        INSERT OR REPLACE INTO advisory_cache
-          (cache_key, student_id, metrics_hash, ai_response, ai_provider, model_name, created_at)
-        VALUES (?,?,?,?,?,?,?)
-    """, (cache_key, student_id, metrics_hash, json.dumps(ai_response),
-          ai_provider, model_name, datetime.utcnow().isoformat()))
-    conn.commit()
-    conn.close()
+    def _do():
+        conn = _get_conn()
+        try:
+            conn.execute("""
+                INSERT OR REPLACE INTO advisory_cache
+                  (cache_key, student_id, metrics_hash, ai_response, ai_provider, model_name, created_at)
+                VALUES (?,?,?,?,?,?,?)
+            """, (cache_key, student_id, metrics_hash, json.dumps(ai_response),
+                  ai_provider, model_name, datetime.utcnow().isoformat()))
+            conn.commit()
+        finally:
+            conn.close()
+    _retry_on_locked(_do)
 
 
 def get_all_cached_advisories() -> list:
@@ -551,10 +635,14 @@ def get_all_cached_advisories() -> list:
 
 def clear_advisory_cache():
     """Delete all cached advisories."""
-    conn = _get_conn()
-    conn.execute("DELETE FROM advisory_cache")
-    conn.commit()
-    conn.close()
+    def _do():
+        conn = _get_conn()
+        try:
+            conn.execute("DELETE FROM advisory_cache")
+            conn.commit()
+        finally:
+            conn.close()
+    _retry_on_locked(_do)
 
 
 def get_advisory_cache_count() -> int:
