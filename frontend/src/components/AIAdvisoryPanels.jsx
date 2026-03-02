@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import {
   BrainCircuit, Lightbulb, CheckCircle, XCircle, AlertCircle,
   Star, FileText, Shield, Calendar, Clock, BookOpen, ClipboardList,
-  TrendingUp, ChevronDown, ChevronUp, Cloud, Zap, Sparkles,
+  TrendingUp, ChevronDown, ChevronUp, Cloud, Zap, Sparkles, ServerCrash, RefreshCw,
 } from 'lucide-react'
 
 export const SEV_CONFIG = {
@@ -55,6 +55,90 @@ export default function AIAdvisoryPanels({ result, theme }) {
   const hasWeeklyPlan = Object.keys(plan).length > 0
   const accent    = theme?.accent || '#818cf8'
 
+  // ── AI temporarily unavailable — show risk factors + info banner ──────────
+  if (result.ai_advisory_failed) {
+    return (
+      <div className="space-y-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+          {/* Info banner */}
+          <div className="card space-y-4" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: '4px solid rgba(245,158,11,0.7)' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                   style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                <ServerCrash size={18} className="text-amber-500" />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900 text-base">AI Advisory Temporarily Unavailable</p>
+                <p className="text-xs text-amber-600 font-semibold">All AI providers timed out</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Your ML prediction above is accurate — the risk level, confidence score, and metric breakdown are fully computed.
+              The AI-generated explanation and study plan could not be generated within the time limit.
+            </p>
+            <div className="rounded-xl p-3 text-xs text-amber-800 leading-relaxed"
+                 style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.15)' }}>
+              <strong>Why this happens:</strong> Free hosting limits each request to 30 seconds.
+              When Gemini API quota is exhausted and Groq is slow, the advisory times out.
+              Try again in a few seconds — results are cached so subsequent predictions are instant.
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white w-fit"
+              style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+              <RefreshCw size={14} /> Retry Prediction
+            </button>
+          </div>
+
+          {/* Risk factors — always computed locally, always available */}
+          <div className="card space-y-5" style={{ background: 'rgba(255,255,255,0.97)', borderLeft: `4px solid ${accent}` }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                   style={{ background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)' }}>
+                <Shield size={18} className="text-rose-500" />
+              </div>
+              <p className="font-bold text-gray-900 text-lg">Risk Factor Analysis</p>
+            </div>
+            {rfs.length > 0 ? (
+              <div className="space-y-4">
+                {rfs.map((rf, i) => {
+                  const cfg = SEV_CONFIG[rf.severity] || SEV_CONFIG.good
+                  const pct = Math.min(100, (rf.value / (rf.threshold * 1.4)) * 100)
+                  return (
+                    <div key={rf.key || i} className="rounded-xl p-4 animate-fade-up"
+                         style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, animationDelay: `${i * 0.06}s` }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <cfg.icon size={14} style={{ color: cfg.color }} />
+                          <span className="font-bold text-gray-900 text-sm">{rf.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-black text-lg" style={{ color: cfg.color }}>{rf.value}</span>
+                          <span className="text-xs font-bold px-2 py-1 rounded-full"
+                                style={{ background: cfg.color + '20', color: cfg.color }}>
+                            {cfg.label}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="h-2 rounded-full mb-2" style={{ background: 'rgba(0,0,0,0.08)' }}>
+                        <div className="h-full rounded-full transition-all duration-700"
+                             style={{ width: `${pct}%`, background: cfg.color, boxShadow: `0 0 6px ${cfg.color}66` }} />
+                      </div>
+                      <p className="text-sm font-medium" style={{ color: cfg.color }}>{rf.message}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-6">No risk factor data available.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // Auto-scroll weekly plan cards
   useEffect(() => {
     if (!weekOpen || !scrollRef.current || isHovered) return
@@ -98,7 +182,7 @@ export default function AIAdvisoryPanels({ result, theme }) {
                       color: result.fallback_used ? '#f59e0b' : '#6366f1',
                     }}>
                 {result.fallback_used
-                  ? <><Zap size={10} /> Ollama AI (Fallback)</>
+                  ? <><Zap size={10} /> {result.ai_provider === 'groq' ? 'Groq AI (Fallback)' : 'Ollama AI (Fallback)'}</>
                   : <><Sparkles size={10} /> Gemini AI</>
                 }
               </span>
@@ -114,7 +198,7 @@ export default function AIAdvisoryPanels({ result, theme }) {
             <Cloud size={12} className={result.fallback_used ? 'text-amber-500 flex-shrink-0' : 'text-indigo-400 flex-shrink-0'} />
             <span className="text-gray-600">
               {result.fallback_used
-                ? <>Gemini unavailable — generated via <strong className="text-amber-700">{result.model_name || 'Ollama'}</strong> fallback</>
+                ? <>Gemini unavailable — generated via <strong className="text-amber-700">{result.model_name || (result.ai_provider === 'groq' ? 'Groq' : 'Ollama')}</strong> fallback</>
                 : <>Generated using <strong className="text-indigo-600">{result.model_name || 'Gemini AI'}</strong> (Primary)</>
               }
             </span>

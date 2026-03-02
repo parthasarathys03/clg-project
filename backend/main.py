@@ -30,6 +30,7 @@ import uuid
 import time
 import threading
 import logging
+import concurrent.futures as _futures
 from datetime import datetime
 from typing import Optional
 from concurrent.futures import ThreadPoolExecutor
@@ -54,9 +55,14 @@ from ml_model import predict as predictor
 from ml_model import train as trainer
 from ai_advisory.advisor import (
     get_explanation_and_advisory,
+    _build_risk_factors,
     _metrics_hash,
     get_cache_size as get_advisor_cache_size,
 )
+
+# Hard time budget for AI advisory — Render free tier drops connections after 30s.
+# We cap total AI time at 22s, leaving 8s buffer for ML + DB + response.
+_ADVISORY_TIMEOUT = 22
 import database as db
 from ml_analysis import analysis_service as cluster_svc
 
@@ -187,9 +193,15 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
     except Exception:
         _class_avg = None
 
-    # AI advisory with caching (checks in-memory + DB cache)
+    # AI advisory — hard 22s budget so Render's 30s connection limit is never hit.
+    # If AI times out or all providers fail, we still return the ML prediction
+    # with locally-computed risk factors (never return 503 for AI failure).
+    advisory_failed = False
+    advisory = None
+    _ex = _futures.ThreadPoolExecutor(max_workers=1)
     try:
-        advisory = get_explanation_and_advisory(
+        _fut = _ex.submit(
+            get_explanation_and_advisory,
             student_name=student.student_name,
             attendance=student.attendance_percentage,
             internal_marks=student.internal_marks,
@@ -205,11 +217,35 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
             student_id=student.student_id,
             use_cache=True,
         )
-    except RuntimeError as exc:
-        raise HTTPException(
-            status_code=503,
-            detail=f"AI advisory generation failed — all providers unavailable. {exc}"
-        )
+        advisory = _fut.result(timeout=_ADVISORY_TIMEOUT)
+    except _futures.TimeoutError:
+        logger.warning("ADVISORY_TIMEOUT student=%s budget=%ss — returning ML result only",
+                       student.student_name, _ADVISORY_TIMEOUT)
+        advisory_failed = True
+    except Exception as exc:
+        logger.warning("ADVISORY_FAILED student=%s reason=%s — returning ML result only",
+                       student.student_name, str(exc)[:120])
+        advisory_failed = True
+    finally:
+        _ex.shutdown(wait=False)   # don't block — background thread finishes on its own
+
+    if advisory_failed or advisory is None:
+        advisory = {
+            "explanation":     "",
+            "risk_factors":    _build_risk_factors(
+                student.attendance_percentage,
+                student.internal_marks,
+                student.assignment_score,
+                student.study_hours_per_day,
+            ),
+            "strengths":       [],
+            "recommendations": [],
+            "weekly_plan":     {},
+            "report_summary":  "",
+            "fallback_used":   False,
+            "ai_provider":     None,
+            "model_name":      None,
+        }
 
     # Also persist to DB cache for demo reset
     cache_key = _metrics_hash(
@@ -229,22 +265,23 @@ def _run_prediction(student: StudentInput, batch_id: str = None) -> dict:
     )
 
     record = {
-        "id":              str(uuid.uuid4()),
-        "student_id":      student.student_id,
-        "student_name":    student.student_name,
-        "risk_level":      ml_result["risk_level"],
-        "confidence":      ml_result["confidence"],
-        "probabilities":   ml_result["probabilities"],
-        "key_factors":     ml_result["key_factors"],
-        "explanation":     advisory["explanation"],
-        "risk_factors":    advisory.get("risk_factors", []),
-        "strengths":       advisory.get("strengths", []),
-        "recommendations": advisory["recommendations"],
-        "weekly_plan":     advisory.get("weekly_plan", {}),
-        "report_summary":  advisory.get("report_summary", ""),
-        "fallback_used":   advisory["fallback_used"],
-        "ai_provider":     advisory.get("ai_provider", "gemini"),
-        "model_name":      advisory.get("model_name", ""),
+        "id":                 str(uuid.uuid4()),
+        "student_id":         student.student_id,
+        "student_name":       student.student_name,
+        "risk_level":         ml_result["risk_level"],
+        "confidence":         ml_result["confidence"],
+        "probabilities":      ml_result["probabilities"],
+        "key_factors":        ml_result["key_factors"],
+        "explanation":        advisory["explanation"],
+        "risk_factors":       advisory.get("risk_factors", []),
+        "strengths":          advisory.get("strengths", []),
+        "recommendations":    advisory.get("recommendations", []),
+        "weekly_plan":        advisory.get("weekly_plan", {}),
+        "report_summary":     advisory.get("report_summary", ""),
+        "fallback_used":      advisory.get("fallback_used", False),
+        "ai_provider":        advisory.get("ai_provider") or "none",
+        "model_name":         advisory.get("model_name") or "",
+        "ai_advisory_failed": advisory_failed,
         "inputs": {
             "attendance_percentage": student.attendance_percentage,
             "internal_marks":        student.internal_marks,

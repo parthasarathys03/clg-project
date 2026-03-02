@@ -463,9 +463,11 @@ export default function PredictPage() {
                             ? 'rgba(245,158,11,0.25)'
                             : 'rgba(99,102,241,0.3)'}`,
                         }}>
-                    {result.fallback_used
-                      ? <><Zap size={8} /> Ollama AI (Fallback)</>
-                      : <><Sparkles size={8} /> Gemini AI</>
+                    {result.ai_advisory_failed
+                      ? <><ServerCrash size={8} /> AI Unavailable</>
+                      : result.fallback_used
+                        ? <><Zap size={8} /> {result.ai_provider === 'groq' ? 'Groq AI' : 'Ollama AI'} (Fallback)</>
+                        : <><Sparkles size={8} /> Gemini AI</>
                     }
                   </span>
                 </div>

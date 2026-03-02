@@ -57,11 +57,9 @@ except ImportError:
 # Override via OLLAMA_MODEL env-var if a different local model is available
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "mistral")
 
-# Groq models to try (fast inference)
+# Groq models to try — only 8B instant model (lowest latency, fits Render 30s limit)
 _GROQ_MODELS = [
-    "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
-    "mixtral-8x7b-32768",
 ]
 
 THRESHOLDS = {
@@ -301,8 +299,7 @@ def _normalize_weekly_plan(plan: dict) -> dict:
 # ─── Provider 1: Gemini (multi-key rotation + model cascade) ────────────────
 
 _GEMINI_MODELS = [
-    "gemini-2.0-flash-lite",
-    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",   # Only the fastest model — reduces total attempt time
 ]
 
 
@@ -345,7 +342,7 @@ def _parse_gemini_json(raw_text: str) -> dict:
 # Retry config per model
 _RETRIES_PER_MODEL = 1  # 1 attempt per model, no retry
 _RETRY_DELAY = 0        # no delay between attempts
-_AI_TIMEOUT = 12        # seconds per API call (hard cutoff)
+_AI_TIMEOUT = 10        # seconds per API call — tight cutoff for Render free tier
 
 
 def _call_gemini(
