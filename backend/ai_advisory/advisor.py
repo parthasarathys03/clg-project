@@ -301,11 +301,8 @@ def _normalize_weekly_plan(plan: dict) -> dict:
 # ─── Provider 1: Gemini (multi-key rotation + model cascade) ────────────────
 
 _GEMINI_MODELS = [
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
-    "gemini-2.0-flash",
     "gemini-2.0-flash-lite",
-    # Gemma models removed - "Developer instruction not enabled" error
+    "gemini-2.0-flash",
 ]
 
 
@@ -346,9 +343,9 @@ def _parse_gemini_json(raw_text: str) -> dict:
 
 
 # Retry config per model
-_RETRIES_PER_MODEL = 1  # Reduced from 2 - quota errors don't benefit from retry
-_RETRY_DELAY = 1  # seconds - reduced from 3
-_AI_TIMEOUT = 30  # seconds max per request
+_RETRIES_PER_MODEL = 1  # 1 attempt per model, no retry
+_RETRY_DELAY = 0        # no delay between attempts
+_AI_TIMEOUT = 12        # seconds per API call (hard cutoff)
 
 
 def _call_gemini(
@@ -392,7 +389,10 @@ def _call_gemini(
                     logger.info("AI_REQUEST_STARTED provider=gemini key=%d/%d model=%s attempt=%d/%d student=%s",
                                 key_idx, len(keys), display_name, attempt, _RETRIES_PER_MODEL, student_name)
                     t0 = time.time()
-                    response = model.generate_content(prompt)
+                    response = model.generate_content(
+                        prompt,
+                        request_options={"timeout": _AI_TIMEOUT},
+                    )
                     raw_text = response.text
                     data = _parse_gemini_json(raw_text)
                     elapsed = round(time.time() - t0, 2)
@@ -469,7 +469,7 @@ def _call_groq(
     last_error = None
 
     for key_idx, api_key in enumerate(keys, 1):
-        client = Groq(api_key=api_key)
+        client = Groq(api_key=api_key, timeout=_AI_TIMEOUT)
 
         for model_name in _GROQ_MODELS:
             try:
